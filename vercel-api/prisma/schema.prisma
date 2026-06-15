@@ -1,0 +1,207 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                Int       @id @default(autoincrement())
+  name              String
+  email             String    @unique
+  phone             String?   @unique
+  passwordHash      String    @map("password_hash")
+  phoneVerifiedAt   DateTime? @map("phone_verified_at")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+
+  profile    UserProfile?
+  tokens     ApiToken[]
+  dailyLogs  DailyLog[]
+  waterLogs  WaterLog[]
+  weights    WeightEntry[]
+  mealPlan   MealPlan?
+
+  @@map("users")
+}
+
+model UserProfile {
+  id                  Int      @id @default(autoincrement())
+  userId              Int      @unique @map("user_id")
+  displayName         String?  @map("display_name")
+  weight              Float    @default(70)
+  height              Float    @default(175)
+  age                 Int      @default(25)
+  gender              String   @default("male")
+  activityLevel       String   @default("moderatelyActive") @map("activity_level")
+  goal                String   @default("stayHealthy")
+  sicknesses          Json?
+  allergies           Json?
+  disabilities        Json?
+  dailyCalories       Int      @default(2200) @map("daily_calories")
+  dailyCarbs          Int      @default(250) @map("daily_carbs")
+  dailyProtein        Int      @default(120) @map("daily_protein")
+  dailyFat            Int      @default(70) @map("daily_fat")
+  language            String   @default("en")
+  theme               String   @default("light")
+  onboarded           Boolean  @default(false)
+  targetWeight        Float?   @map("target_weight")
+  pace                String   @default("moderate")
+  bodyFatPct          Float?   @map("body_fat_pct")
+  pregnancyStatus     String   @default("none") @map("pregnancy_status")
+  dietaryPattern      String   @default("omnivore") @map("dietary_pattern")
+  dislikedFoods       Json?    @map("disliked_foods")
+  cuisinePreference   String   @default("mixed") @map("cuisine_preference")
+  mealsPerDay         Int      @default(3) @map("meals_per_day")
+  fastingWindow       String   @default("none") @map("fasting_window")
+  sleepHours          Float?   @map("sleep_hours")
+  stressLevel         String   @default("medium") @map("stress_level")
+  waterTargetMl       Int?     @map("water_target_ml")
+  medications         String?
+  workoutDaysPerWeek  Int      @default(0) @map("workout_days_per_week")
+  workoutType         String   @default("none") @map("workout_type")
+  cookingSkill        String   @default("intermediate") @map("cooking_skill")
+  cookingTime         String   @default("under30") @map("cooking_time")
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_profiles")
+}
+
+model PhoneOtp {
+  id         Int       @id @default(autoincrement())
+  phone      String
+  codeHash   String    @map("code_hash")
+  attempts   Int       @default(0)
+  expiresAt  DateTime  @map("expires_at")
+  consumedAt DateTime? @map("consumed_at")
+  createdAt  DateTime  @default(now()) @map("created_at")
+
+  @@index([phone])
+  @@map("phone_otps")
+}
+
+model ApiToken {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  token     String   @unique
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("api_tokens")
+}
+
+model DailyLog {
+  id              Int       @id @default(autoincrement())
+  userId          Int       @map("user_id")
+  foodItemId      Int?      @map("food_item_id")
+  externalFoodId  String?   @map("external_food_id")
+  name            String
+  amount          Float     @default(0)
+  calories        Float     @default(0)
+  protein         Float     @default(0)
+  carbs           Float     @default(0)
+  fat             Float     @default(0)
+  micros          Json?
+  mealType        String?   @map("meal_type")
+  loggedAt        DateTime  @db.Date @map("logged_at")
+  consumedAt      DateTime? @map("consumed_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, loggedAt])
+  @@map("daily_logs")
+}
+
+model WaterLog {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  logDate   DateTime @db.Date @map("log_date")
+  glasses   Int      @default(0)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, logDate])
+  @@map("water_logs")
+}
+
+model WeightEntry {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  logDate   DateTime @db.Date @map("log_date")
+  weight    Float
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, logDate])
+  @@map("weight_entries")
+}
+
+model MealPlan {
+  id          Int            @id @default(autoincrement())
+  userId      Int            @unique @map("user_id")
+  generatedAt DateTime?      @map("generated_at")
+  items       MealPlanItem[]
+  user        User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("meal_plans")
+}
+
+model MealPlanItem {
+  id           Int     @id @default(autoincrement())
+  mealPlanId   Int     @map("meal_plan_id")
+  slot         String
+  name         String
+  names        Json?
+  ingredients  Json?
+  instructions Json?
+  calories     Int     @default(0)
+  protein      Int     @default(0)
+  carbs        Int     @default(0)
+  fat          Int     @default(0)
+  micros       Json?
+
+  mealPlan MealPlan @relation(fields: [mealPlanId], references: [id], onDelete: Cascade)
+
+  @@map("meal_plan_items")
+}
+
+model FoodItem {
+  id           Int                   @id @default(autoincrement())
+  externalId   String?               @unique @map("external_id")
+  category     String?
+  calories     Float
+  protein      Float
+  carbs        Float
+  fats         Float
+  servingSize  Float                 @default(100) @map("serving_size")
+  servingUnit  String                @default("g") @map("serving_unit")
+  micros       Json?
+  translations FoodItemTranslation[]
+
+  @@map("food_items")
+}
+
+model FoodItemTranslation {
+  id          Int     @id @default(autoincrement())
+  foodItemId  Int     @map("food_item_id")
+  locale      String
+  name        String
+  description String?
+
+  foodItem FoodItem @relation(fields: [foodItemId], references: [id], onDelete: Cascade)
+
+  @@unique([foodItemId, locale])
+  @@map("food_item_translations")
+}
