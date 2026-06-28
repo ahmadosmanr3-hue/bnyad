@@ -12,19 +12,55 @@ model User {
   name              String
   email             String    @unique
   phone             String?   @unique
+  fcmToken          String?   @map("fcm_token")
   passwordHash      String    @map("password_hash")
   phoneVerifiedAt   DateTime? @map("phone_verified_at")
   createdAt         DateTime  @default(now()) @map("created_at")
   updatedAt         DateTime  @updatedAt @map("updated_at")
 
-  profile    UserProfile?
-  tokens     ApiToken[]
-  dailyLogs  DailyLog[]
-  waterLogs  WaterLog[]
-  weights    WeightEntry[]
-  mealPlan   MealPlan?
+  profile       UserProfile?
+  tokens        ApiToken[]
+  dailyLogs     DailyLog[]
+  waterLogs     WaterLog[]
+  weights       WeightEntry[]
+  mealPlan      MealPlan?
+  subscriptions Subscription[]
+  notifications Notification[]
 
   @@map("users")
+}
+
+model Subscription {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  plan      String   @default("custom")
+  amount    Float    @default(0)
+  currency  String   @default("USD")
+  startedAt DateTime @default(now()) @map("started_at")
+  expiresAt DateTime @map("expires_at")
+  note      String?
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("subscriptions")
+}
+
+model Notification {
+  id        Int      @id @default(autoincrement())
+  userId    Int?     @map("user_id")
+  title     String
+  body      String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([createdAt])
+  @@map("notifications")
 }
 
 model UserProfile {

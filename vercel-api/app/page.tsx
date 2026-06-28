@@ -6,6 +6,9 @@ export default function Home() {
       <p>
         Health: <a href="/api/up">/api/up</a>
       </p>
+      <p>
+        Admin panel: <a href="/admin">/admin</a>
+      </p>
     </main>
   );
 }
