@@ -1,6 +1,7 @@
 # BNYAD Backend
 
-Backend code for the **Nutrify / BNYAD** Flutter app.
+Backend code for the **Nutrify / BNYAD** Flutter app.  
+**Last synced with [nutrify](https://github.com/ahmadosmanr3-hue/nutrify) main:** June 2026
 
 ## Folders
 
@@ -13,8 +14,19 @@ Backend code for the **Nutrify / BNYAD** Flutter app.
 ## Live production
 
 - **API URL:** `https://nutrify-api-lovat.vercel.app/api`
+- **Admin panel:** `https://nutrify-api-lovat.vercel.app/admin`
 - **Health:** `https://nutrify-api-lovat.vercel.app/api/up`
 - **Demo OTP:** `123456` (while `APP_ENV=development`)
+
+### Vercel env vars (production)
+
+| Variable | Purpose |
+|----------|---------|
+| `DATABASE_URL` | Neon Postgres |
+| `APP_ENV` | `development` = demo OTP `123456` |
+| `SETUP_SECRET` | One-time food seed (`POST /api/setup`) |
+| `ADMIN_SECRET` | Admin panel password |
+| `FIREBASE_SERVICE_ACCOUNT_JSON` | Push notifications (FCM) |
 
 ## Flutter app
 

@@ -1,5 +1,9 @@
 # BNYAD — Laravel Backend (Firebase migration)
 
+> **BNYAD mirror note (June 2026):** This folder matches `laravel-backend/` in the
+> [nutrify](https://github.com/ahmadosmanr3-hue/nutrify) repo. Production uses
+> `vercel-api/` on Vercel; this is a reference / optional Laravel deploy.
+
 This folder is the Laravel backend that replaces the app's Firebase (Cloud
 Firestore + Firebase Auth) backend. It contains the **full data layer + REST
 API**: migrations, Eloquent models, controllers, routes, API resources, form

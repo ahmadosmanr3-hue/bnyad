@@ -2,6 +2,8 @@
 
 Production backend for the BNYAD / Nutrify Flutter app.
 
+**Synced with nutrify main:** June 2026
+
 **Live:** `https://nutrify-api-lovat.vercel.app`  
 **Admin:** `/admin`  
 **Health:** `/api/up`
