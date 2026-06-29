@@ -4,7 +4,6 @@ import {
   hashPassword,
   userToJson,
   verifyOtp,
-  verifyPassword,
 } from '@/lib/auth';
 import { error, json, options, readJson } from '@/lib/http';
 
@@ -31,9 +30,6 @@ export async function POST(req: Request) {
   }
   if (!code || !/^\d{6}$/.test(code)) {
     return error('The verification code must be 6 digits.', 422);
-  }
-  if (password.length < 6) {
-    return error('Password must be at least 6 characters.', 422);
   }
 
   const otp = await prisma.phoneOtp.findFirst({
@@ -66,10 +62,11 @@ export async function POST(req: Request) {
   });
 
   if (user) {
-    if (!(await verifyPassword(password, user.passwordHash))) {
-      return error('Incorrect password for this number.', 422);
-    }
+    // Returning user — OTP only (no password re-entry).
   } else {
+    if (password.length < 6) {
+      return error('Password must be at least 6 characters.', 422);
+    }
     user = await prisma.user.create({
       data: {
         name: body.name?.trim() || 'BNYAD user',

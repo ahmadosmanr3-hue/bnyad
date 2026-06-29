@@ -49,6 +49,20 @@ class AuthController extends Controller
     }
 
     /**
+     * Check whether a phone number already has an account.
+     */
+    public function checkPhone(Request $request): JsonResponse
+    {
+        $request->validate([
+            'phone' => ['required', 'string', 'regex:/^\+?[0-9]{7,15}$/'],
+        ]);
+
+        $registered = User::where('phone', $request->input('phone'))->exists();
+
+        return response()->json(['registered' => $registered]);
+    }
+
+    /**
      * Step 2 — verify the OTP + password. Registers the user on first sign-in,
      * otherwise logs them in. Returns a Sanctum token.
      */
@@ -85,19 +99,21 @@ class AuthController extends Controller
         $user = User::where('phone', $phone)->first();
 
         if ($user) {
-            // Existing account → password acts as the login credential.
-            if (! Hash::check($request->input('password'), $user->password)) {
+            // Returning user — OTP only (no password re-entry).
+        } else {
+            $password = $request->input('password');
+            if (! is_string($password) || strlen($password) < 6) {
                 throw ValidationException::withMessages([
-                    'password' => ['Incorrect password for this number.'],
+                    'password' => ['Password must be at least 6 characters.'],
                 ]);
             }
-        } else {
+
             // First sign-in → register.
             $user = User::create([
                 'name' => $request->input('name') ?: 'BNYAD user',
                 'phone' => $phone,
                 'email' => $phone.'@phone.bnyad.app', // placeholder unique email
-                'password' => $request->input('password'),
+                'password' => $password,
                 'phone_verified_at' => now(),
             ]);
 

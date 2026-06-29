@@ -21,6 +21,8 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('auth')->group(function () {
     Route::post('request-otp', [AuthController::class, 'requestOtp'])
         ->middleware('throttle:6,1');
+    Route::post('check-phone', [AuthController::class, 'checkPhone'])
+        ->middleware('throttle:12,1');
     Route::post('verify-otp', [AuthController::class, 'verifyOtp'])
         ->middleware('throttle:10,1');
 });

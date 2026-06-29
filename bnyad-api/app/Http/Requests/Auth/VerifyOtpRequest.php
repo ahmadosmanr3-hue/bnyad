@@ -16,7 +16,7 @@ class VerifyOtpRequest extends FormRequest
         return [
             'phone' => ['required', 'string', 'regex:/^\+?[0-9]{7,15}$/'],
             'code' => ['required', 'string', 'digits:6'],
-            'password' => ['required', 'string', 'min:6'],
+            'password' => ['nullable', 'string', 'min:6'],
             // Provided on first sign-in (registration); optional on later logins.
             'name' => ['nullable', 'string', 'max:120'],
         ];
