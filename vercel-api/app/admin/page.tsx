@@ -28,6 +28,7 @@ type AdminUser = {
   phoneVerified: boolean;
   createdAt: string;
   isPremium: boolean;
+  plan: string | null;
   daysLeft: number;
   expiresAt: string | null;
   subscriptionCount: number;
@@ -409,6 +410,7 @@ function Users({ secret }: { secret: string }) {
   const [err, setErr] = useState('');
   const [loading, setLoading] = useState(true);
   const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [showAddModal, setShowAddModal] = useState(false);
 
   const load = useCallback(
     (search = '') => {
@@ -440,6 +442,9 @@ function Users({ secret }: { secret: string }) {
         <button onClick={() => load(q)} style={btn(C.indigo, '#fff')}>
           Search
         </button>
+        <button onClick={() => setShowAddModal(true)} style={btn(C.green, '#fff')}>
+          Add User
+        </button>
       </div>
 
       {loading ? (
@@ -447,7 +452,7 @@ function Users({ secret }: { secret: string }) {
       ) : (
         <div style={card(0)}>
           <Table
-            head={['#', 'Name', 'Phone', 'Status', 'Days left', 'Paid', 'Joined', '']}
+            head={['#', 'Name', 'Phone', 'Status', 'Plan', 'Days left', 'Paid', 'Joined', '']}
             rows={users.map((u) => [
               u.id,
               <span key="n">
@@ -456,6 +461,7 @@ function Users({ secret }: { secret: string }) {
               </span>,
               u.phone ?? '—',
               u.isPremium ? <Tag color={C.green}>Premium</Tag> : <Tag color={C.muted}>Free</Tag>,
+              u.isPremium ? <Tag color={C.violet}>{u.plan || 'custom'}</Tag> : '—',
               u.isPremium ? `${u.daysLeft}d` : '—',
               money(u.totalPaid),
               fmtDate(u.createdAt),
@@ -476,6 +482,111 @@ function Users({ secret }: { secret: string }) {
           onChanged={() => load(q)}
         />
       )}
+
+      {showAddModal && (
+        <AddUserModal
+          secret={secret}
+          onClose={() => setShowAddModal(false)}
+          onChanged={() => load(q)}
+        />
+      )}
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Add User Modal                                                     */
+/* ------------------------------------------------------------------ */
+
+function AddUserModal({
+  secret,
+  onClose,
+  onChanged,
+}: {
+  secret: string;
+  onClose: () => void;
+  onChanged: () => void;
+}) {
+  const api = useApi(secret);
+  const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [phoneVerified, setPhoneVerified] = useState(false);
+  const [err, setErr] = useState('');
+  const [busy, setBusy] = useState(false);
+
+  const save = async () => {
+    setErr('');
+    setBusy(true);
+    try {
+      await api('/api/admin/users', {
+        method: 'POST',
+        body: JSON.stringify({
+          name: name.trim(),
+          phone: phone.trim() || undefined,
+          email: email.trim() || undefined,
+          password: password,
+          phoneVerified,
+        }),
+      });
+      onChanged();
+      onClose();
+    } catch (e) {
+      setErr((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div
+      onClick={onClose}
+      style={{
+        position: 'fixed',
+        inset: 0,
+        background: 'rgba(0,0,0,0.6)',
+        display: 'grid',
+        placeItems: 'center',
+        zIndex: 50,
+        padding: 16,
+      }}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{ ...card(), width: 420, maxWidth: '100%', maxHeight: '90vh', overflowY: 'auto' }}
+      >
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+          <h3 style={{ margin: 0, fontSize: 16 }}>Add new user</h3>
+          <button onClick={onClose} style={btn(C.panel2, C.muted, true)}>
+            Close
+          </button>
+        </div>
+
+        <Field label="Name">
+          <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Full name" style={input()} />
+        </Field>
+        <Field label="Phone (optional)">
+          <input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+9647..." style={input()} />
+        </Field>
+        <Field label="Email (optional)">
+          <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="user@example.com" style={input()} />
+        </Field>
+        <Field label="Password">
+          <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="At least 6 characters" style={input()} />
+        </Field>
+
+        <label style={{ display: 'flex', alignItems: 'center', gap: 8, margin: '14px 0', cursor: 'pointer' }}>
+          <input type="checkbox" checked={phoneVerified} onChange={(e) => setPhoneVerified(e.target.checked)} />
+          <span style={{ fontSize: 13.5 }}>Phone Verified</span>
+        </label>
+
+        {err && <div style={{ color: C.red, fontSize: 13, marginTop: 12 }}>{err}</div>}
+
+        <button onClick={save} disabled={busy || !name || !password} style={{ ...btn(C.indigo, '#fff'), width: '100%', marginTop: 16, padding: 12 }}>
+          {busy ? 'Creating…' : 'Create user'}
+        </button>
+      </div>
     </div>
   );
 }
@@ -492,7 +603,9 @@ type UserDetail = {
   phoneVerified: boolean;
   createdAt: string;
   isPremium: boolean;
+  plan: string | null;
   daysLeft: number;
+  expiresAt: string | null;
   profile: Record<string, unknown> | null;
 };
 
@@ -521,6 +634,7 @@ function UserModal({
   const [protein, setProtein] = useState('');
   const [carbs, setCarbs] = useState('');
   const [fat, setFat] = useState('');
+  const [password, setPassword] = useState('');
 
   const load = useCallback(() => {
     api(`/api/admin/users/${userId}`)
@@ -558,9 +672,11 @@ function UserModal({
           daily_protein: Number(protein) || 0,
           daily_carbs: Number(carbs) || 0,
           daily_fat: Number(fat) || 0,
+          password: password.trim() || undefined,
         }),
       });
       setMsg('Saved.');
+      setPassword('');
       onChanged();
     } catch (e) {
       setErr((e as Error).message);
@@ -628,7 +744,7 @@ function UserModal({
         ) : (
           <>
             <div style={{ fontSize: 12, color: C.muted, marginBottom: 16 }}>
-              Joined {fmtDate(user.createdAt)} · {user.isPremium ? `Premium (${user.daysLeft}d left)` : 'Free'}
+              Joined {fmtDate(user.createdAt)} · {user.isPremium ? `${user.plan || 'Premium'} (${user.daysLeft}d left, expires ${fmtDate(user.expiresAt!)})` : 'Free'}
             </div>
 
             <Field label="Login name">
@@ -639,6 +755,9 @@ function UserModal({
             </Field>
             <Field label="Display name">
               <input value={displayName} onChange={(e) => setDisplayName(e.target.value)} style={input()} />
+            </Field>
+            <Field label="Password (leave blank to keep unchanged)">
+              <input type="password" value={password} placeholder="••••••" onChange={(e) => setPassword(e.target.value)} style={input()} />
             </Field>
 
             <div style={{ fontSize: 12, color: C.muted, margin: '14px 0 8px', textTransform: 'uppercase', letterSpacing: 0.5 }}>

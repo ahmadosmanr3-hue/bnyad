@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/db';
 import { DEMO_OTP, hashOtp, isProduction } from '@/lib/auth';
 import { error, json, options, readJson } from '@/lib/http';
+import { sendSmsOtp } from '@/lib/sms';
 
 export const runtime = 'nodejs';
 
@@ -15,9 +16,15 @@ export async function POST(req: Request) {
     return error('Enter a valid phone number.', 422);
   }
 
+  // Check if user is registered
+  const user = await prisma.user.findUnique({ where: { phone } });
+  const registered = !!user;
+
   await prisma.phoneOtp.deleteMany({ where: { phone, consumedAt: null } });
 
-  const code = isProduction() ? String(Math.floor(100000 + Math.random() * 900000)) : DEMO_OTP;
+  const isRealOtp = isProduction() || !!process.env.OTPIQ_API_KEY;
+  const code = isRealOtp ? String(Math.floor(100000 + Math.random() * 900000)) : DEMO_OTP;
+
   await prisma.phoneOtp.create({
     data: {
       phone,
@@ -26,7 +33,12 @@ export async function POST(req: Request) {
     },
   });
 
+  if (isRealOtp) {
+    await sendSmsOtp(phone, code);
+  }
+
   return json({
+    registered,
     message: 'OTP sent.',
     demo_code: isProduction() ? null : code,
   });

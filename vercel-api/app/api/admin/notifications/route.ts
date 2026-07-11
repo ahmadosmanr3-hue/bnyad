@@ -74,7 +74,29 @@ export async function POST(req: Request) {
       push = { sent: false, error: 'User has no FCM token yet (app not opened since update).' };
     }
   } else {
-    push = await sendPush({ topic: ALL_USERS_TOPIC }, title, message);
+    // Find all unique FCM tokens in the database
+    const users = await prisma.user.findMany({
+      where: { fcmToken: { not: null } },
+      select: { fcmToken: true },
+    });
+    const tokens = Array.from(new Set(users.map((u) => u.fcmToken as string).filter(Boolean)));
+
+    if (tokens.length > 0) {
+      const results = await Promise.all(
+        tokens.map((token) => sendPush({ token }, title, message))
+      );
+      const failed = results.filter((r) => !r.sent);
+      if (failed.length === 0) {
+        push = { sent: true };
+      } else {
+        push = {
+          sent: failed.length < tokens.length,
+          error: `Failed to send to ${failed.length} of ${tokens.length} devices.`,
+        };
+      }
+    } else {
+      push = { sent: false, error: 'No registered devices with FCM tokens found.' };
+    }
   }
 
   return json({ ok: true, notification: note, push }, 201);

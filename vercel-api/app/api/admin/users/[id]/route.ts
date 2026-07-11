@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/db';
 import { daysLeft, isAdminAuthed } from '@/lib/admin';
-import { mapProfileUpdate, profileToJson } from '@/lib/auth';
+import { mapProfileUpdate, profileToJson, hashPassword } from '@/lib/auth';
 import { error, json, options, readJson } from '@/lib/http';
 
 export const runtime = 'nodejs';
@@ -47,6 +47,7 @@ export async function GET(req: Request, { params }: Params) {
       phoneVerified: !!user.phoneVerifiedAt,
       createdAt: user.createdAt,
       isPremium: !!active,
+      plan: active?.plan ?? null,
       daysLeft: active ? daysLeft(active.expiresAt, now) : 0,
       expiresAt: active?.expiresAt ?? null,
       profile: user.profile ? profileToJson(user.profile) : null,
@@ -73,12 +74,25 @@ export async function PATCH(req: Request, { params }: Params) {
   // Separate user-table fields from profile fields.
   const userData: Record<string, unknown> = {};
   const profileBody: Record<string, unknown> = {};
+  let newPassword = '';
+
   for (const [key, value] of Object.entries(body)) {
     if (key === 'name' || key === 'phone' || key === 'email') {
       userData[key] = typeof value === 'string' ? value.trim() : value;
+    } else if (key === 'password') {
+      if (typeof value === 'string') {
+        newPassword = value.trim();
+      }
     } else {
       profileBody[key] = value;
     }
+  }
+
+  if (newPassword) {
+    if (newPassword.length < 6) {
+      return error('Password must be at least 6 characters.', 422);
+    }
+    userData.passwordHash = await hashPassword(newPassword);
   }
 
   // Validate phone/email uniqueness if changed.

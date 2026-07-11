@@ -19,11 +19,14 @@ export async function POST(req: Request) {
     code?: string;
     password?: string;
     name?: string;
+    fcmToken?: string;
+    fcm_token?: string;
   }>(req);
 
   const phone = body.phone?.trim();
   const code = body.code?.trim();
   const password = body.password ?? '';
+  const fcmToken = body.fcmToken?.trim() || body.fcm_token?.trim();
 
   if (!phone || !/^\+?[0-9]{7,15}$/.test(phone)) {
     return error('Enter a valid phone number.', 422);
@@ -58,11 +61,18 @@ export async function POST(req: Request) {
 
   let user = await prisma.user.findUnique({
     where: { phone },
-    include: { profile: true },
+    include: { profile: true, subscriptions: true },
   });
 
   if (user) {
-    // Returning user — OTP only (no password re-entry).
+    // Returning user — OTP only (no password re-entry). Update FCM token if sent.
+    if (fcmToken) {
+      user = await prisma.user.update({
+        where: { id: user.id },
+        data: { fcmToken },
+        include: { profile: true, subscriptions: true },
+      });
+    }
   } else {
     if (password.length < 6) {
       return error('Password must be at least 6 characters.', 422);
@@ -77,16 +87,20 @@ export async function POST(req: Request) {
         profile: {
           create: { displayName: body.name?.trim() || '' },
         },
+        fcmToken: fcmToken || null,
       },
-      include: { profile: true },
+      include: { profile: true, subscriptions: true },
     });
   }
 
   if (!user.phoneVerifiedAt) {
     user = await prisma.user.update({
       where: { id: user.id },
-      data: { phoneVerifiedAt: new Date() },
-      include: { profile: true },
+      data: { 
+        phoneVerifiedAt: new Date(),
+        ...(fcmToken ? { fcmToken } : {})
+      },
+      include: { profile: true, subscriptions: true },
     });
   }
 

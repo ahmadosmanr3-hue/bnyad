@@ -1,6 +1,6 @@
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
-import type { User, UserProfile } from '@prisma/client';
+import type { User, UserProfile, Subscription } from '@prisma/client';
 import { prisma } from './db';
 
 export const DEMO_OTP = '123456';
@@ -41,7 +41,7 @@ export async function userFromAuthHeader(authHeader: string | null) {
   if (!token) return null;
   const row = await prisma.apiToken.findUnique({
     where: { token },
-    include: { user: { include: { profile: true } } },
+    include: { user: { include: { profile: true, subscriptions: true } } },
   });
   return row?.user ?? null;
 }
@@ -85,13 +85,24 @@ export function profileToJson(p: UserProfile) {
   };
 }
 
-export function userToJson(user: User & { profile: UserProfile | null }) {
+export function userToJson(user: User & { profile: UserProfile | null; subscriptions?: Subscription[] | null }) {
+  const now = new Date();
+  const activeSub = user.subscriptions
+    ? user.subscriptions.find((sub) => sub.active && new Date(sub.expiresAt) > now)
+    : null;
+
   return {
     id: user.id,
     name: user.name,
     phone: user.phone,
     email: user.email,
     profile: user.profile ? profileToJson(user.profile) : null,
+    subscription: {
+      isPremium: !!activeSub,
+      plan: activeSub?.plan ?? null,
+      expiresAt: activeSub?.expiresAt ? activeSub.expiresAt.toISOString() : null,
+      active: !!activeSub,
+    },
   };
 }
 

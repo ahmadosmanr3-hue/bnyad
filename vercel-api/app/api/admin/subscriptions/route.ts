@@ -96,5 +96,9 @@ export async function POST(req: Request) {
     },
   });
 
+  console.log(
+    `[Subscription Admin Recorded] User ID: ${userId}, Name: "${exists.name}", Phone: "${exists.phone ?? '—'}", Plan: "${sub.plan}", Amount: ${sub.amount} ${sub.currency}, Days: ${days}, Expires: ${expiresAt.toISOString()}`
+  );
+
   return json({ ok: true, subscription: sub }, 201);
 }
