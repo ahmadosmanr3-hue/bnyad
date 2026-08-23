@@ -3,9 +3,9 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "cd vercel-api && npm run dev",
-    "build": "cd vercel-api && npm install && npm run build",
-    "vercel-build": "cd vercel-api && npm install && npm run vercel-build"
+    "dev": "if [ -d vercel-api ]; then cd vercel-api && npm run dev; else npm run dev; fi",
+    "build": "if [ -d vercel-api ]; then cd vercel-api && npm install && npm run build; else npm run build; fi",
+    "vercel-build": "if [ -d vercel-api ]; then cd vercel-api && npm install && npm run vercel-build; else npm run vercel-build; fi"
   },
   "dependencies": {
     "next": "^15.3.4"
