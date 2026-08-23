@@ -115,8 +115,24 @@ export default function TermsOfUsePage() {
           </p>
         </section>
 
-        <div style={{ borderTop: '1px solid #334155', paddingTop: '20px', marginTop: '40px', textAlign: 'center', fontSize: '13px', color: '#64748B' }}>
-          &copy; 2026 BNYAD (Nutrify). All rights reserved.
+        <div style={{
+          borderTop: '1px solid #334155',
+          paddingTop: '20px',
+          marginTop: '40px',
+          textAlign: 'center',
+          fontSize: '13px',
+          color: '#64748B',
+          display: 'flex',
+          justifyContent: 'center',
+          gap: '20px'
+        }}>
+          <a href="/privacy" style={{ color: '#38BDF8', textDecoration: 'none' }}>Privacy Policy</a>
+          <span>•</span>
+          <a href="/terms" style={{ color: '#38BDF8', textDecoration: 'none' }}>Terms of Service</a>
+          <span>•</span>
+          <a href="/delete-account" style={{ color: '#38BDF8', textDecoration: 'none' }}>Delete Account</a>
+          <span>•</span>
+          <span>&copy; 2026 BNYAD (Nutrify)</span>
         </div>
       </div>
     </div>

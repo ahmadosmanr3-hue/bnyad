@@ -9,6 +9,9 @@ export default function Home() {
       <p>
         Admin panel: <a href="/admin">/admin</a>
       </p>
+      <p>
+        <a href="/privacy">Privacy Policy</a> | <a href="/terms">Terms of Service</a> | <a href="/delete-account">Delete Account</a>
+      </p>
     </main>
   );
 }

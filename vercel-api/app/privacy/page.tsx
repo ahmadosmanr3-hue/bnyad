@@ -100,14 +100,28 @@ export default function PrivacyPolicyPage() {
         <section style={{ marginBottom: '28px' }}>
           <h2 style={{ fontSize: '20px', color: '#38BDF8', marginBottom: '12px' }}>7. User Rights & Account Deletion</h2>
           <p>
-            You have the right to inspect, edit, or delete your profile information and nutrition logs at any time directly within the BNYAD app settings. You can request complete account deletion and data wipe by contacting our support team at <a href="mailto:support@bnyad.app" style={{ color: '#38BDF8', textDecoration: 'underline' }}>support@bnyad.app</a>.
+            In accordance with applicable privacy standards and App Store guidelines (Guideline 5.1.1(v)), you have the right to access, export, or permanently delete your account and all associated personal data at any time.
+          </p>
+          <p style={{ marginTop: '8px' }}>
+            <strong>How to delete your account:</strong>
+          </p>
+          <ul style={{ paddingLeft: '20px', marginTop: '8px' }}>
+            <li style={{ marginBottom: '6px' }}>
+              <strong>In-App:</strong> Open the BNYAD (Nutrify) app &rarr; go to <strong>Settings</strong> &rarr; tap <strong>Delete Account</strong> &rarr; confirm deletion.
+            </li>
+            <li style={{ marginBottom: '6px' }}>
+              <strong>On the Web:</strong> Visit our dedicated self-service <a href="/delete-account" style={{ color: '#38BDF8', textDecoration: 'underline' }}>Account Deletion Portal</a> to immediately and permanently delete your account.
+            </li>
+          </ul>
+          <p style={{ marginTop: '8px' }}>
+            Upon account deletion, all personal profile data, daily food and water logs, weight tracking history, custom recipes, meal plans, and authentication tokens are immediately, permanently, and irreversibly wiped from our production database.
           </p>
         </section>
 
         <section style={{ marginBottom: '28px' }}>
           <h2 style={{ fontSize: '20px', color: '#38BDF8', marginBottom: '12px' }}>8. Contact Us</h2>
           <p>
-            If you have questions, concerns, or requests regarding this Privacy Policy, please contact us:
+            If you have questions, concerns, or inquiries regarding this Privacy Policy, please contact us:
           </p>
           <p style={{ marginTop: '8px', color: '#CBD5E1' }}>
             Email: <a href="mailto:support@bnyad.app" style={{ color: '#38BDF8', textDecoration: 'underline' }}>support@bnyad.app</a><br />
@@ -115,8 +129,24 @@ export default function PrivacyPolicyPage() {
           </p>
         </section>
 
-        <div style={{ borderTop: '1px solid #334155', paddingTop: '20px', marginTop: '40px', textAlign: 'center', fontSize: '13px', color: '#64748B' }}>
-          &copy; 2026 BNYAD (Nutrify). All rights reserved.
+        <div style={{
+          borderTop: '1px solid #334155',
+          paddingTop: '20px',
+          marginTop: '40px',
+          textAlign: 'center',
+          fontSize: '13px',
+          color: '#64748B',
+          display: 'flex',
+          justifyContent: 'center',
+          gap: '20px'
+        }}>
+          <a href="/privacy" style={{ color: '#38BDF8', textDecoration: 'none' }}>Privacy Policy</a>
+          <span>•</span>
+          <a href="/terms" style={{ color: '#38BDF8', textDecoration: 'none' }}>Terms of Service</a>
+          <span>•</span>
+          <a href="/delete-account" style={{ color: '#38BDF8', textDecoration: 'none' }}>Delete Account</a>
+          <span>•</span>
+          <span>&copy; 2026 BNYAD (Nutrify)</span>
         </div>
       </div>
     </div>

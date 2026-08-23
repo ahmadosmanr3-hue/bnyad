@@ -39,3 +39,16 @@ export async function PUT(req: Request) {
 export async function PATCH(req: Request) {
   return PUT(req);
 }
+
+export async function DELETE(req: Request) {
+  const user = await userFromAuthHeader(req.headers.get('authorization'));
+  if (!user) return error('Unauthenticated.', 401);
+
+  await prisma.user.delete({ where: { id: user.id } });
+
+  return json({
+    ok: true,
+    message: 'Profile and account deleted successfully.',
+  });
+}
+

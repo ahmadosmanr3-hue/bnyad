@@ -146,4 +146,18 @@ class AuthController extends Controller
 
         return response()->json(['message' => 'Logged out.']);
     }
+
+    /**
+     * Permanently delete user account and all personal data.
+     */
+    public function deleteAccount(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        $user->tokens()->delete();
+        $user->delete();
+
+        return response()->json([
+            'message' => 'Your account and all associated personal data have been permanently deleted.',
+        ]);
+    }
 }

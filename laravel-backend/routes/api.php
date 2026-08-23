@@ -34,7 +34,9 @@ Route::prefix('auth')->group(function () {
 */
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('auth/me', [AuthController::class, 'me']);
+    Route::delete('auth/me', [AuthController::class, 'deleteAccount']);
     Route::post('auth/logout', [AuthController::class, 'logout']);
+    Route::delete('auth/delete-account', [AuthController::class, 'deleteAccount']);
 
     // Profile (onboarding data)
     Route::get('profile', [ProfileController::class, 'show']);
