@@ -18,6 +18,8 @@ Quick redeploy:
 npx.cmd vercel --prod
 ```
 
+> **Note:** The build command (`npm run vercel-build`) automatically handles Prisma client generation and graceful schema synchronization across Vercel deployments.
+
 ## Structure
 
 ```
