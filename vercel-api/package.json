@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "prisma generate && next build",
-    "vercel-build": "prisma generate && (prisma db push || true) && next build",
+    "vercel-build": "prisma generate && node -e \"try{require('child_process').execSync('npx prisma db push --skip-generate',{stdio:'inherit'})}catch(e){console.warn('Prisma db push skipped:',e.message)}\" && next build",
     "postinstall": "prisma generate",
     "db:seed": "tsx prisma/seed.ts",
     "db:push": "prisma db push"
