@@ -42,45 +42,72 @@ export default function PrivacyPolicyPage() {
 
         <section style={{ marginBottom: '28px' }}>
           <h2 style={{ fontSize: '20px', color: '#38BDF8', marginBottom: '12px' }}>2. Information We Collect</h2>
-          <p>We only collect information necessary to provide tailored nutrition tracking, meal planning, and health metrics estimation:</p>
+          <p>In full compliance with App Store Guidelines, we explicitly disclose what data is collected and how it is gathered:</p>
           <ul style={{ paddingLeft: '20px', marginTop: '8px' }}>
             <li style={{ marginBottom: '8px' }}>
-              <strong>Account Information:</strong> Phone number and optional profile name for authentication via secure OTP verification.
+              <strong>Account Information:</strong> Phone number and optional profile name collected directly from you during sign-up for secure OTP authentication.
             </li>
             <li style={{ marginBottom: '8px' }}>
-              <strong>Health & Physical Metrics:</strong> Age, gender, height, weight, target weight, activity level, and circumference measurements (waist, neck, hip) used exclusively for calculating daily calorie/macronutrient needs and body fat estimates.
+              <strong>Health & Physical Metrics:</strong> Age, gender, height, current weight, target weight, activity level, and body circumference measurements (waist, neck, hip) submitted directly by you to compute daily caloric goals and body fat estimations.
             </li>
             <li style={{ marginBottom: '8px' }}>
-              <strong>Nutrition & Food Logs:</strong> Daily logged foods, water intake, meal photos, and custom recipes saved to track your progress over time.
+              <strong>Nutrition & Food Logs:</strong> Logged food entries, water consumption, custom recipes, meal photos, and text inputs logged in-app to track nutritional progress.
             </li>
             <li style={{ marginBottom: '8px' }}>
-              <strong>Device & Usage Information:</strong> Push notification tokens (FCM) to deliver meal and supplement reminders configured by you.
+              <strong>Device & Technical Telemetry:</strong> Firebase Cloud Messaging (FCM) device tokens collected automatically upon granting notification permissions to deliver opt-in meal reminders.
             </li>
           </ul>
         </section>
 
         <section style={{ marginBottom: '28px' }}>
           <h2 style={{ fontSize: '20px', color: '#38BDF8', marginBottom: '12px' }}>3. How We Use Your Information</h2>
-          <p>Your data is used strictly to deliver and improve core app features:</p>
+          <p>All collected information is used strictly for the following purposes:</p>
           <ul style={{ paddingLeft: '20px', marginTop: '8px' }}>
-            <li style={{ marginBottom: '8px' }}>Compute personalized daily calorie targets, macronutrient distributions, and body fat estimates based on established scientific formulas.</li>
-            <li style={{ marginBottom: '8px' }}>Store and sync your food logs, weight entries, and meal plans securely.</li>
-            <li style={{ marginBottom: '8px' }}>Send user-requested notifications for meal and supplement reminders.</li>
-            <li style={{ marginBottom: '8px' }}>Verify subscription purchase status via RevenueCat and Apple App Store in-app purchases.</li>
+            <li style={{ marginBottom: '8px' }}>Calculate personalized daily caloric targets, macronutrient splits, and body fat metrics using peer-reviewed mathematical formulas (e.g., Mifflin-St Jeor).</li>
+            <li style={{ marginBottom: '8px' }}>Sync, organize, and present your historical food logs, weight entries, and meal schedules across your authorized devices.</li>
+            <li style={{ marginBottom: '8px' }}>Dispatch requested push notifications for meal and supplement schedules configured by you.</li>
+            <li style={{ marginBottom: '8px' }}>Verify subscription entitlements and receipt validity via Apple In-App Purchases and RevenueCat.</li>
+            <li style={{ marginBottom: '8px' }}>Provide optional AI-assisted meal analysis, barcode resolution, or nutrition advice (subject to explicit in-app user permission as detailed below).</li>
           </ul>
         </section>
 
         <section style={{ marginBottom: '28px' }}>
           <h2 style={{ fontSize: '20px', color: '#38BDF8', marginBottom: '12px' }}>4. Data Sharing & Third Parties</h2>
           <p>
-            <strong>We do NOT sell, rent, or trade your personal health data to third parties or advertisers.</strong>
+            <strong>We do NOT sell, rent, or trade your personal health data to third parties, data brokers, or advertisers.</strong>
           </p>
-          <p style={{ marginTop: '8px' }}>We utilize reliable service providers strictly to process data for core app functionality:</p>
+          <p style={{ marginTop: '8px' }}>We share data only with essential service providers necessary for operating core app functions:</p>
           <ul style={{ paddingLeft: '20px', marginTop: '8px' }}>
             <li style={{ marginBottom: '8px' }}><strong>Apple App Store / RevenueCat:</strong> To manage in-app subscriptions and purchase receipts securely.</li>
-            <li style={{ marginBottom: '8px' }}><strong>Firebase Cloud Messaging (FCM):</strong> To dispatch opt-in push reminders.</li>
-            <li style={{ marginBottom: '8px' }}><strong>Open Food Facts / USDA API:</strong> To fetch public nutritional facts when scanning barcodes or searching food items.</li>
+            <li style={{ marginBottom: '8px' }}><strong>Firebase Cloud Messaging (FCM):</strong> To dispatch opt-in push notifications.</li>
+            <li style={{ marginBottom: '8px' }}><strong>Open Food Facts / USDA API:</strong> To fetch public nutritional facts when searching or scanning food items.</li>
           </ul>
+
+          <div style={{
+            marginTop: '20px',
+            backgroundColor: '#0F172A',
+            padding: '20px',
+            borderRadius: '12px',
+            border: '1px solid #0EA5E9'
+          }}>
+            <h3 style={{ fontSize: '18px', color: '#38BDF8', margin: '0 0 10px 0' }}>
+              4.1 Third-Party Artificial Intelligence (AI) Services & Data Sharing
+            </h3>
+            <p style={{ marginBottom: '10px' }}>
+              BNYAD (Nutrify) may offer optional features powered by third-party Artificial Intelligence (AI) service providers (such as OpenAI LLC or Google AI) to perform meal image recognition, automated nutritional estimation, or personalized meal suggestions.
+            </p>
+            <p style={{ marginBottom: '10px' }}>
+              <strong>Before transmitting any personal data or photos to a third-party AI service, the app will:</strong>
+            </p>
+            <ul style={{ paddingLeft: '20px', marginBottom: '10px' }}>
+              <li style={{ marginBottom: '6px' }}><strong>Disclose exact data sent:</strong> Clearly present to you the exact prompt, text description, or meal image being transmitted.</li>
+              <li style={{ marginBottom: '6px' }}><strong>Specify recipient:</strong> Identify the specific third-party AI provider receiving the data (e.g., OpenAI LLC / Google LLC).</li>
+              <li style={{ marginBottom: '6px' }}><strong>Obtain explicit permission:</strong> Require your affirmative in-app consent (Opt-In Permission) before any request is sent. You may decline or revoke permission at any time in App Settings.</li>
+            </ul>
+            <p style={{ margin: 0, color: '#CBD5E1' }}>
+              <strong>Equal Protection Guarantee:</strong> BNYAD confirms that any third-party AI provider receiving data is contractually obligated to provide the same or equal level of privacy and data protection as outlined in this policy. Transmitted data is encrypted via TLS 1.3 in transit, stored securely, and <em>never used to train third-party AI models</em> or shared with external entities. If AI features are not activated by the user, zero data is sent to any AI service provider.
+            </p>
+          </div>
         </section>
 
         <section style={{ marginBottom: '28px' }}>
