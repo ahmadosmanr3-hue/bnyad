@@ -1,4 +1,8 @@
 import 'dart:typed_data';
+import 'package:nutrify/utils/ai_nutrition.dart';
+import 'package:nutrify/models/meal.dart';
+import 'package:nutrify/widgets/ai_consent.dart';
+import 'package:nutrify/utils/ai_strings.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
@@ -60,10 +64,14 @@ class _ScannerScreenState extends State<ScannerScreen> {
   String _selectedMealType = 'lunch';
 
   Future<void> _pickAndAnalyze(ImageSource source) async {
+    final state = context.read<AppState>();
+    if (!await ensureAiConsent(context, state) || !mounted) return;
     try {
       final XFile? image = await _picker.pickImage(
         source: source,
         maxWidth: 800,
+        maxHeight: 1600,
+        requestFullMetadata: false,
         imageQuality: 80,
       );
       if (image == null || !mounted) return;
@@ -115,7 +123,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
       if (!mounted) return;
       setState(() {
         if (result == null) {
-          _error = state.t.scanFailed;
+          _error = AiStrings.get(state.lang, state.aiErrorCode);
           _scannedFood = null;
         } else {
           _scannedFood = result;
@@ -140,10 +148,14 @@ class _ScannerScreenState extends State<ScannerScreen> {
   }
 
   Future<void> _scanFridge(ImageSource source) async {
+    final initialState = context.read<AppState>();
+    if (!await ensureAiConsent(context, initialState) || !mounted) return;
     try {
       final XFile? image = await _picker.pickImage(
         source: source,
         maxWidth: 1200,
+        maxHeight: 1600,
+        requestFullMetadata: false,
         imageQuality: 85,
       );
       if (image == null || !mounted) return;
@@ -180,7 +192,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
       final df = g?.fat ?? 70;
       final result = await state.ai.analyzeFridge(
         imageBytes: bytes,
-        mealPeriodLabel: state.t.mealSlotLabel(_selectedMealType),
+        mealPeriodLabel: _selectedMealType,
         targetCalories: mealCalories,
         goal: state.localizedNutritionGoalLabel,
         allergiesSummary: alle.isEmpty
@@ -197,7 +209,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
           if (result != null) {
             _fridgeResult = result;
           } else {
-            _fridgeError = state.t.fridgeScanError;
+            _fridgeError = AiStrings.get(state.lang, state.aiErrorCode);
           }
           _fridgeAnalyzing = false;
         });
@@ -608,9 +620,15 @@ class _ScannerScreenState extends State<ScannerScreen> {
                         width: double.infinity,
                         child: ElevatedButton.icon(
                           onPressed: () async {
-                            final rawMicros =
-                                scan['micros'] as Map<String, dynamic>? ?? {};
-                            final microScale = hasComponents ? 1.0 : ratio;
+                            if (!await confirmAiEstimate(
+                                  context,
+                                  state,
+                                  details:
+                                      '$dishName\n${displayGrams.round()} ${t.grams}',
+                                ) ||
+                                !mounted) {
+                              return;
+                            }
                             final saved = await state.addLogEntry(
                               LogEntry(
                                 id: DateTime.now().millisecondsSinceEpoch
@@ -627,11 +645,10 @@ class _ScannerScreenState extends State<ScannerScreen> {
                                 fat: fatScaled,
                                 timestamp:
                                     DateTime.now().millisecondsSinceEpoch,
-                                micros: rawMicros.map(
-                                  (k, v) => MapEntry(
-                                    k,
-                                    (v as num).toDouble() * microScale,
-                                  ),
+                                micros: scaledAiScanMicros(
+                                  scan,
+                                  displayGrams,
+                                  hasComponents ? _componentGrams : null,
                                 ),
                               ),
                             );
@@ -1131,6 +1148,14 @@ class _ScannerScreenState extends State<ScannerScreen> {
             width: double.infinity,
             child: ElevatedButton.icon(
               onPressed: () async {
+                if (!await confirmAiEstimate(
+                      context,
+                      state,
+                      details: ingList.join('\n'),
+                    ) ||
+                    !mounted) {
+                  return;
+                }
                 final rawMicros =
                     recipe['micros'] as Map<String, dynamic>? ?? {};
                 final saved = await state.addLogEntry(
@@ -1139,7 +1164,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
                     foodId:
                         'fridge-${recipeNameEn.isNotEmpty ? recipeNameEn : recipeName}',
                     name: recipeName.isNotEmpty ? recipeName : t.unknownFood,
-                    amount: 1,
+                    amount: Meal.fromMap(recipe).portionGrams ?? 100,
                     calories: (recipe['calories'] as num?)?.round() ?? 0,
                     protein: (recipe['protein'] as num?)?.round() ?? 0,
                     carbs: (recipe['carbs'] as num?)?.round() ?? 0,

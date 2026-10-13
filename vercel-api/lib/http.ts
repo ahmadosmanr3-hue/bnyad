@@ -36,14 +36,14 @@ export async function readJson<T = Record<string, unknown>>(req: Request): Promi
 }
 
 export class RequestError extends Error {
-  constructor(message: string, public status = 422) { super(message); }
+  constructor(message: string, public status = 422, public code?: string) { super(message); }
 }
 
 export function safeRoute<T extends unknown[]>(handler: (...args: T) => Promise<Response>) {
   return async (...args: T): Promise<Response> => {
     try { return await handler(...args); }
     catch (e) {
-      if (e instanceof RequestError) return error(e.message, e.status);
+      if (e instanceof RequestError) return json({ message: e.message, ...(e.code ? { code: e.code } : {}) }, e.status);
       // Never expose Prisma queries, database URLs, credentials or stack traces.
       console.error('API request failed', e instanceof Error ? e.name : 'UnknownError');
       return error('Service temporarily unavailable. Please try again.', 503);

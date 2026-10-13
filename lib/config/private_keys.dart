@@ -1,7 +1,6 @@
 /// Build-time configuration. Never put server credentials in a mobile binary.
 library;
 
-const String geminiApiKey = String.fromEnvironment('GEMINI_API_KEY');
 const String apiBaseUrl = String.fromEnvironment(
   'API_BASE_URL',
   defaultValue: 'https://nutrify-api-lovat.vercel.app/api',

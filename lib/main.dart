@@ -29,13 +29,11 @@ import 'package:nutrify/widgets/app_logo.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  final geminiApiKey = private_keys.geminiApiKey;
   final apiService = ApiService(baseUrl: private_keys.apiBaseUrl);
 
   final appState = AppState(
     authService: AuthService(api: apiService),
     apiService: apiService,
-    geminiApiKey: geminiApiKey,
   );
   runApp(
     ChangeNotifierProvider(create: (_) => appState, child: const BnyadApp()),

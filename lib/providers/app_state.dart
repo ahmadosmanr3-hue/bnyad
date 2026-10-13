@@ -70,7 +70,6 @@ LogEntry _logEntryFromJson(Map<String, dynamic> m) {
 class AppState extends ChangeNotifier {
   final AuthService _authService;
   final ApiService _apiService;
-  final String _geminiApiKey;
 
   // Auth — replaces the old Firebase User? with a simple logged-in flag.
   bool _isLoggedIn = false;
@@ -142,11 +141,9 @@ class AppState extends ChangeNotifier {
   AppState({
     required AuthService authService,
     required ApiService apiService,
-    required String geminiApiKey,
     bool initializeOnCreate = true,
   }) : _authService = authService,
-       _apiService = apiService,
-       _geminiApiKey = geminiApiKey {
+       _apiService = apiService {
     _apiService.onSessionInvalidated = () {
       _sessionNeedsRetry = false;
       _clearData();
@@ -254,7 +251,18 @@ class AppState extends ChangeNotifier {
   String formatAllergiesForPrompt(List<String> keys) =>
       keys.map((k) => t.getAllergy(k)).join(', ');
   bool get isRTL => _lang == 'ar' || _lang == 'ku';
-  AiService get ai => AiService(apiKey: _geminiApiKey);
+  AiService get ai => AiService(api: _apiService);
+  String get aiErrorCode => _apiService.aiErrorCode;
+  int? get sessionAccountId => _apiService.userId;
+  Future<bool?> getAiConsent() => _apiService.getAiConsent();
+  Future<bool> setAiConsent(bool enabled) async {
+    final saved = await _apiService.setAiConsent(enabled);
+    if (saved && !enabled) {
+      _healthGuidanceByLang = null;
+      notifyListeners();
+    }
+    return saved;
+  }
 
   List<String> get eatenMeals =>
       _dailyLog.where((e) => e.mealId != null).map((e) => e.mealId!).toList();
@@ -1123,46 +1131,6 @@ class AppState extends ChangeNotifier {
     Map<String, dynamic> profile, {
     NutritionalGoals? goals,
   }) async {
-    final weight = (profile['weight'] as num).toDouble();
-    final height = (profile['height'] as num).toDouble();
-    final age = profile['age'] as int;
-    final gender = profile['gender'] as String;
-    final activity = profile['activity'] as String;
-    final goal = profile['goal'] as String;
-
-    if (_hasGeminiKey) {
-      try {
-        final ml = await ai.generateDailyWaterTargetMl(
-          weight: weight,
-          height: height,
-          age: age,
-          gender: gender,
-          activityLevel: activity,
-          goal: goal,
-          sicknesses: List<String>.from(profile['sicknesses'] ?? []),
-          allergies: List<String>.from(profile['allergies'] ?? []),
-          disabilities: List<String>.from(profile['disabilities'] ?? []),
-          targetWeight: (profile['targetWeight'] as num?)?.toDouble(),
-          pace: profile['pace'] as String? ?? 'moderate',
-          bodyFatPct: (profile['bodyFatPct'] as num?)?.toDouble(),
-          pregnancyStatus: profile['pregnancyStatus'] as String? ?? 'none',
-          dietaryPattern: profile['dietaryPattern'] as String? ?? 'omnivore',
-          mealsPerDay: (profile['mealsPerDay'] as num?)?.toInt() ?? 3,
-          fastingWindow: profile['fastingWindow'] as String? ?? 'none',
-          sleepHours: (profile['sleepHours'] as num?)?.toDouble(),
-          stressLevel: profile['stressLevel'] as String? ?? 'medium',
-          medications: profile['medications'] as String? ?? '',
-          workoutDaysPerWeek:
-              (profile['workoutDaysPerWeek'] as num?)?.toInt() ?? 0,
-          workoutType: profile['workoutType'] as String? ?? 'none',
-          dailyCalories: goals?.calories,
-        );
-        if (ml != null) return ml;
-      } catch (e) {
-        debugPrint('AI water target failed, using fallback: $e');
-      }
-    }
-
     return _fallbackWaterTargetMl(profile);
   }
 
@@ -1182,39 +1150,6 @@ class AppState extends ChangeNotifier {
       activityLevel: profile['activity'] as String? ?? 'moderatelyActive',
       weightKg: (profile['weight'] as num?)?.toDouble() ?? 70,
     );
-
-    if (_hasGeminiKey) {
-      try {
-        final aiGoals = await ai
-            .generateMicronutrientGoals(
-              weight: (profile['weight'] as num).toDouble(),
-              height: (profile['height'] as num).toDouble(),
-              age: age,
-              gender: gender,
-              activityLevel: profile['activity'] as String,
-              goal: profile['goal'] as String,
-              sicknesses: sicknesses,
-              allergies: List<String>.from(profile['allergies'] ?? []),
-              disabilities: List<String>.from(profile['disabilities'] ?? []),
-              targetWeight: (profile['targetWeight'] as num?)?.toDouble(),
-              pace: profile['pace'] as String? ?? 'moderate',
-              bodyFatPct: (profile['bodyFatPct'] as num?)?.toDouble(),
-              pregnancyStatus: pregnancyStatus,
-              dietaryPattern:
-                  profile['dietaryPattern'] as String? ?? 'omnivore',
-              workoutDaysPerWeek:
-                  (profile['workoutDaysPerWeek'] as num?)?.toInt() ?? 0,
-              workoutType: profile['workoutType'] as String? ?? 'none',
-              fastingWindow: profile['fastingWindow'] as String? ?? 'none',
-            )
-            .timeout(const Duration(seconds: 10));
-        if (aiGoals != null && aiGoals.isNotEmpty) {
-          return validateAndMergeMicroGoals(fallback(), aiGoals);
-        }
-      } catch (e) {
-        debugPrint('AI micro goals failed, using fallback: $e');
-      }
-    }
 
     return fallback();
   }
@@ -1280,8 +1215,6 @@ class AppState extends ChangeNotifier {
 
     return ml.round().clamp(1500, 4000);
   }
-
-  bool get _hasGeminiKey => _geminiApiKey.trim().isNotEmpty;
 
   Future<bool> updateWater(int newVal) async {
     if (_isMockUser) {
@@ -1960,6 +1893,7 @@ class AppState extends ChangeNotifier {
   Future<void> generateHealthGuidance(UserProfile? profile) async {
     if (profile == null) return;
     if (!isPremium) return;
+    if (await getAiConsent() != true) return;
     final g = _goals;
     _healthGuidanceByLang = await ai.generateHealthGuidance(
       disabilities: profile.disabilities,

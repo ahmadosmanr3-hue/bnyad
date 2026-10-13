@@ -1,4 +1,6 @@
 import 'dart:typed_data';
+import 'package:nutrify/widgets/ai_consent.dart';
+import 'package:nutrify/utils/ai_strings.dart';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -75,7 +77,9 @@ class _BodyFatEstimatorScreenState extends State<BodyFatEstimatorScreen> {
     final hip = _isFemale ? _parseCm(_hipController) : null;
 
     if (waist == null || neck == null || (_isFemale && hip == null)) {
-      setState(() => _error = context.read<AppState>().t.bodyFatMeasureRequired);
+      setState(
+        () => _error = context.read<AppState>().t.bodyFatMeasureRequired,
+      );
       return;
     }
 
@@ -92,6 +96,8 @@ class _BodyFatEstimatorScreenState extends State<BodyFatEstimatorScreen> {
   }
 
   Future<void> _pick(ImageSource source) async {
+    final initialState = context.read<AppState>();
+    if (!await ensureAiConsent(context, initialState) || !mounted) return;
     final profile = context.read<AppState>().userProfile;
     if (profile == null) return;
 
@@ -99,6 +105,8 @@ class _BodyFatEstimatorScreenState extends State<BodyFatEstimatorScreen> {
       final XFile? image = await _picker.pickImage(
         source: source,
         maxWidth: 1200,
+        maxHeight: 1600,
+        requestFullMetadata: false,
         imageQuality: 85,
       );
       if (image == null) return;
@@ -157,7 +165,7 @@ class _BodyFatEstimatorScreenState extends State<BodyFatEstimatorScreen> {
         _busy = false;
         _bytes = bytes;
         if (out == null) {
-          _error = state.t.bodyFatFailed;
+          _error = AiStrings.get(state.lang, state.aiErrorCode);
         } else {
           final aiMin = (out['min_percent'] as num?)?.toDouble();
           final aiMax = (out['max_percent'] as num?)?.toDouble();
@@ -224,10 +232,20 @@ class _BodyFatEstimatorScreenState extends State<BodyFatEstimatorScreen> {
 
     final notes = _aiMeta == null
         ? ''
-        : trilingualString(_aiMeta, mapKey: 'notes', legacyKey: 'notes', lang: lang);
+        : trilingualString(
+            _aiMeta,
+            mapKey: 'notes',
+            legacyKey: 'notes',
+            lang: lang,
+          );
     final aiDisclaimer = _aiMeta == null
         ? ''
-        : trilingualString(_aiMeta, mapKey: 'disclaimer', legacyKey: 'disclaimer', lang: lang);
+        : trilingualString(
+            _aiMeta,
+            mapKey: 'disclaimer',
+            legacyKey: 'disclaimer',
+            lang: lang,
+          );
 
     final estimate = _estimate;
 
@@ -236,24 +254,39 @@ class _BodyFatEstimatorScreenState extends State<BodyFatEstimatorScreen> {
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
-          Text(t.bodyFatScreenIntro, style: TextStyle(fontSize: 14, height: 1.45, color: muted)),
+          Text(
+            t.bodyFatScreenIntro,
+            style: TextStyle(fontSize: 14, height: 1.45, color: muted),
+          ),
           const SizedBox(height: 12),
           Container(
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
               color: isDark ? const Color(0xFF1E293B) : const Color(0xFFFEF3C7),
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: isDark ? AppTheme.slate600 : const Color(0xFFFCD34D)),
+              border: Border.all(
+                color: isDark ? AppTheme.slate600 : const Color(0xFFFCD34D),
+              ),
             ),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(Icons.info_outline_rounded, size: 22, color: isDark ? AppTheme.amber : const Color(0xFFB45309)),
+                Icon(
+                  Icons.info_outline_rounded,
+                  size: 22,
+                  color: isDark ? AppTheme.amber : const Color(0xFFB45309),
+                ),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
                     t.bodyFatStaticDisclaimer,
-                    style: TextStyle(fontSize: 12, height: 1.4, color: isDark ? const Color(0xFFE2E8F0) : const Color(0xFF78350F)),
+                    style: TextStyle(
+                      fontSize: 12,
+                      height: 1.4,
+                      color: isDark
+                          ? const Color(0xFFE2E8F0)
+                          : const Color(0xFF78350F),
+                    ),
                   ),
                 ),
               ],
@@ -266,7 +299,9 @@ class _BodyFatEstimatorScreenState extends State<BodyFatEstimatorScreen> {
             label: Text(t.medicalSourcesCitations),
             style: OutlinedButton.styleFrom(
               foregroundColor: isDark ? AppTheme.indigoLight : AppTheme.indigo,
-              side: BorderSide(color: isDark ? AppTheme.indigoLight : AppTheme.indigo),
+              side: BorderSide(
+                color: isDark ? AppTheme.indigoLight : AppTheme.indigo,
+              ),
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -275,13 +310,27 @@ class _BodyFatEstimatorScreenState extends State<BodyFatEstimatorScreen> {
           ),
           if (profile != null) ...[
             const SizedBox(height: 24),
-            Text(t.bodyFatMeasureTitle, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: isDark ? Colors.white : const Color(0xFF0F172A))),
+            Text(
+              t.bodyFatMeasureTitle,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w800,
+                color: isDark ? Colors.white : const Color(0xFF0F172A),
+              ),
+            ),
             const SizedBox(height: 6),
-            Text(t.bodyFatMeasureHint, style: TextStyle(fontSize: 13, height: 1.4, color: muted)),
+            Text(
+              t.bodyFatMeasureHint,
+              style: TextStyle(fontSize: 13, height: 1.4, color: muted),
+            ),
             const SizedBox(height: 12),
             Text(
               '${t.bodyFatProfileContext}: ${profile.weight.round()} kg · ${profile.height.round()} cm · ${profile.age} ${t.age}',
-              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: isDark ? AppTheme.indigoLight : AppTheme.indigo),
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: isDark ? AppTheme.indigoLight : AppTheme.indigo,
+              ),
             ),
             const SizedBox(height: 4),
             Text(
@@ -295,9 +344,21 @@ class _BodyFatEstimatorScreenState extends State<BodyFatEstimatorScreen> {
             const SizedBox(height: 12),
             Row(
               children: [
-                Expanded(child: _measureField(t.bodyFatWaistCm, _waistController, isDark)),
+                Expanded(
+                  child: _measureField(
+                    t.bodyFatWaistCm,
+                    _waistController,
+                    isDark,
+                  ),
+                ),
                 const SizedBox(width: 8),
-                Expanded(child: _measureField(t.bodyFatNeckCm, _neckController, isDark)),
+                Expanded(
+                  child: _measureField(
+                    t.bodyFatNeckCm,
+                    _neckController,
+                    isDark,
+                  ),
+                ),
               ],
             ),
             if (_isFemale) ...[
@@ -311,14 +372,27 @@ class _BodyFatEstimatorScreenState extends State<BodyFatEstimatorScreen> {
                 onPressed: _busy ? null : _calculateFromMeasurements,
                 icon: const Icon(Icons.straighten_rounded, size: 20),
                 label: Text(t.bodyFatCalculateMeasurements),
-                style: FilledButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 14), backgroundColor: AppTheme.indigo),
+                style: FilledButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  backgroundColor: AppTheme.indigo,
+                ),
               ),
             ),
           ],
           const SizedBox(height: 24),
-          Text(t.bodyFatPhotoOptional, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: isDark ? Colors.white : const Color(0xFF0F172A))),
+          Text(
+            t.bodyFatPhotoOptional,
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w800,
+              color: isDark ? Colors.white : const Color(0xFF0F172A),
+            ),
+          ),
           const SizedBox(height: 6),
-          Text(t.bodyFatPhotoHint, style: TextStyle(fontSize: 13, height: 1.4, color: muted)),
+          Text(
+            t.bodyFatPhotoHint,
+            style: TextStyle(fontSize: 13, height: 1.4, color: muted),
+          ),
           const SizedBox(height: 12),
           Row(
             children: [
@@ -327,7 +401,10 @@ class _BodyFatEstimatorScreenState extends State<BodyFatEstimatorScreen> {
                   onPressed: _busy ? null : () => _pick(ImageSource.camera),
                   icon: const Icon(Icons.photo_camera_outlined, size: 20),
                   label: Text(t.startCamera),
-                  style: FilledButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 14), backgroundColor: AppTheme.indigo),
+                  style: FilledButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    backgroundColor: AppTheme.indigo,
+                  ),
                 ),
               ),
               const SizedBox(width: 12),
@@ -336,7 +413,9 @@ class _BodyFatEstimatorScreenState extends State<BodyFatEstimatorScreen> {
                   onPressed: _busy ? null : () => _pick(ImageSource.gallery),
                   icon: const Icon(Icons.photo_library_outlined, size: 20),
                   label: Text(t.uploadPhoto),
-                  style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 14)),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                  ),
                 ),
               ),
             ],
@@ -346,36 +425,66 @@ class _BodyFatEstimatorScreenState extends State<BodyFatEstimatorScreen> {
             Center(
               child: Column(
                 children: [
-                  const SizedBox(width: 36, height: 36, child: CircularProgressIndicator(strokeWidth: 2.5)),
+                  const SizedBox(
+                    width: 36,
+                    height: 36,
+                    child: CircularProgressIndicator(strokeWidth: 2.5),
+                  ),
                   const SizedBox(height: 12),
-                  Text(t.bodyFatAnalyzing, style: TextStyle(color: muted, fontSize: 13)),
+                  Text(
+                    t.bodyFatAnalyzing,
+                    style: TextStyle(color: muted, fontSize: 13),
+                  ),
                 ],
               ),
             ),
           ],
           if (_error != null && !_busy) ...[
             const SizedBox(height: 16),
-            Text(_error!, style: const TextStyle(color: AppTheme.rose, fontSize: 13)),
+            Text(
+              _error!,
+              style: const TextStyle(color: AppTheme.rose, fontSize: 13),
+            ),
           ],
           if (_bytes != null && !_busy) ...[
             const SizedBox(height: 20),
             ClipRRect(
               borderRadius: BorderRadius.circular(16),
-              child: AspectRatio(aspectRatio: 3 / 4, child: Image.memory(_bytes!, fit: BoxFit.cover)),
+              child: AspectRatio(
+                aspectRatio: 3 / 4,
+                child: Image.memory(_bytes!, fit: BoxFit.cover),
+              ),
             ),
           ],
           if (estimate != null && !_busy) ...[
             const SizedBox(height: 24),
-            Text(t.bodyFatEstimatedRange, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, letterSpacing: 1.2, color: muted)),
+            Text(
+              t.bodyFatEstimatedRange,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 1.2,
+                color: muted,
+              ),
+            ),
             const SizedBox(height: 8),
             Text(
               '${_fmtPct(estimate.minPercent)}% — ${_fmtPct(estimate.maxPercent)}%',
-              style: TextStyle(fontSize: 36, fontWeight: FontWeight.w800, letterSpacing: -1, color: isDark ? Colors.white : const Color(0xFF0F172A)),
+              style: TextStyle(
+                fontSize: 36,
+                fontWeight: FontWeight.w800,
+                letterSpacing: -1,
+                color: isDark ? Colors.white : const Color(0xFF0F172A),
+              ),
             ),
             const SizedBox(height: 8),
             Text(
               '${t.bodyFatMethodLabel}: ${_methodLabel(t, estimate.method)}',
-              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: isDark ? AppTheme.indigoLight : AppTheme.indigo),
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: isDark ? AppTheme.indigoLight : AppTheme.indigo,
+              ),
             ),
             const SizedBox(height: 4),
             Text(
@@ -384,15 +493,41 @@ class _BodyFatEstimatorScreenState extends State<BodyFatEstimatorScreen> {
             ),
             if (notes.isNotEmpty) ...[
               const SizedBox(height: 20),
-              Text(t.bodyFatAiNotes, style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: muted)),
+              Text(
+                t.bodyFatAiNotes,
+                style: TextStyle(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 13,
+                  color: muted,
+                ),
+              ),
               const SizedBox(height: 6),
-              Text(notes, style: TextStyle(fontSize: 14, height: 1.45, color: isDark ? const Color(0xFFCBD5E1) : const Color(0xFF334155))),
+              Text(
+                notes,
+                style: TextStyle(
+                  fontSize: 14,
+                  height: 1.45,
+                  color: isDark
+                      ? const Color(0xFFCBD5E1)
+                      : const Color(0xFF334155),
+                ),
+              ),
             ],
             if (aiDisclaimer.isNotEmpty) ...[
               const SizedBox(height: 16),
-              Text(t.bodyFatAiDisclaimer, style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: muted)),
+              Text(
+                t.bodyFatAiDisclaimer,
+                style: TextStyle(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 13,
+                  color: muted,
+                ),
+              ),
               const SizedBox(height: 6),
-              Text(aiDisclaimer, style: TextStyle(fontSize: 13, height: 1.45, color: muted)),
+              Text(
+                aiDisclaimer,
+                style: TextStyle(fontSize: 13, height: 1.45, color: muted),
+              ),
             ],
             const SizedBox(height: 20),
             OutlinedButton.icon(
@@ -416,7 +551,11 @@ class _BodyFatEstimatorScreenState extends State<BodyFatEstimatorScreen> {
     );
   }
 
-  Widget _measureField(String label, TextEditingController controller, bool isDark) {
+  Widget _measureField(
+    String label,
+    TextEditingController controller,
+    bool isDark,
+  ) {
     return TextField(
       controller: controller,
       keyboardType: const TextInputType.numberWithOptions(decimal: true),

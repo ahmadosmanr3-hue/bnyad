@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:nutrify/widgets/ai_consent.dart';
+import 'package:nutrify/utils/ai_strings.dart';
 import 'package:provider/provider.dart';
 import 'package:nutrify/providers/app_state.dart';
 import 'package:nutrify/models/meal.dart';
+import 'package:nutrify/models/nutritional_goals.dart';
 import 'package:nutrify/models/log_entry.dart';
 import 'package:nutrify/models/favorite_template.dart';
-import 'package:nutrify/models/nutritional_goals.dart';
 import 'package:nutrify/theme/app_theme.dart';
 import 'package:nutrify/utils/meal_micro_estimator.dart';
 import 'package:nutrify/utils/meal_micros_resolver.dart';
@@ -34,6 +36,7 @@ class _MealPlanScreenState extends State<MealPlanScreen> {
   };
 
   Future<void> _generate(AppState state) async {
+    if (!await ensureAiConsent(context, state) || !mounted) return;
     if (!state.isOnline) {
       setState(() => _error = state.t.noInternet);
       return;
@@ -71,14 +74,26 @@ class _MealPlanScreenState extends State<MealPlanScreen> {
       );
       if (result != null) {
         final plan = MealPlanData.fromMap(result);
-        final targetCal = state.goals?.calories ?? 2200;
-        final scaledPlan = _scalePlanToGoals(plan, targetCal, state.goals);
-        await state.saveMealPlan(scaledPlan);
+        final review = ['breakfast', 'lunch', 'dinner', 'snacks']
+            .map((id) {
+              final meal = _mealForId(plan, id);
+              return '${meal.nameForLang(state.lang)}\n${meal.ingredientsForLang(state.lang).join('\n')}';
+            })
+            .join('\n\n');
+        if (!mounted ||
+            !await confirmAiEstimate(context, state, details: review) ||
+            !mounted) {
+          return;
+        }
+        await state.saveMealPlan(plan);
       } else {
-        setState(() => _error = state.t.mealGenerationFailed);
+        if (mounted) {
+          setState(() => _error = AiStrings.get(state.lang, state.aiErrorCode));
+        }
       }
     } catch (e) {
       debugPrint('Meal plan error: $e');
+      if (!mounted) return;
       setState(() {
         _error =
             e.toString().contains('SocketException') ||
@@ -88,9 +103,8 @@ class _MealPlanScreenState extends State<MealPlanScreen> {
             ? state.t.errorTimeout
             : state.t.mealGenerationFailed;
       });
-    }
-    if (mounted) {
-      setState(() => _loading = false);
+    } finally {
+      if (mounted) setState(() => _loading = false);
     }
   }
 
@@ -118,6 +132,9 @@ class _MealPlanScreenState extends State<MealPlanScreen> {
     String mealId,
     Meal meal,
   ) async {
+    if (!await ensureAiConsent(context, state) || !mounted) {
+      return state.t.detailsFailed;
+    }
     try {
       final sick = state.userProfile?.sicknesses ?? [];
       final alle = state.userProfile?.allergies ?? [];
@@ -126,6 +143,7 @@ class _MealPlanScreenState extends State<MealPlanScreen> {
           : meal.name;
       final details = await state.ai.generateMealDetails(
         mealName: dishLabel,
+        slot: mealId,
         calories: meal.calories,
         protein: meal.protein,
         carbs: meal.carbs,
@@ -141,14 +159,26 @@ class _MealPlanScreenState extends State<MealPlanScreen> {
         mealCuisine: state.mealPlanCuisine,
       );
 
-      if (details == null) return state.t.detailsFailed;
+      if (details == null) return AiStrings.get(state.lang, state.aiErrorCode);
 
       final detailMicros = parseMicrosFromJson(details['micros']);
       final mergedMap = Map<String, dynamic>.from(meal.toMap());
       mergedMap['ingredients'] = details['ingredients'];
       mergedMap['instructions'] = details['instructions'];
+      for (final key in ['calories', 'protein', 'carbs', 'fat', 'names']) {
+        mergedMap[key] = details[key];
+      }
       if (detailMicros.isNotEmpty) mergedMap['micros'] = detailMicros;
       final updatedMeal = Meal.fromMap(mergedMap);
+      if (!mounted ||
+          !await confirmAiEstimate(
+            context,
+            state,
+            details: updatedMeal.ingredientsForLang(state.lang).join('\n'),
+          ) ||
+          !mounted) {
+        return state.t.detailsFailed;
+      }
 
       final current = state.currentMealPlan;
       if (current == null) return state.t.detailsFailed;
@@ -171,8 +201,9 @@ class _MealPlanScreenState extends State<MealPlanScreen> {
           updatedPlan = current;
       }
 
-      await state.saveMealPlan(updatedPlan);
-      return null;
+      return await state.saveMealPlan(updatedPlan)
+          ? null
+          : state.t.detailsFailed;
     } catch (e) {
       return e.toString().contains('SocketException')
           ? state.t.errorNetwork
@@ -283,11 +314,12 @@ class _MealPlanScreenState extends State<MealPlanScreen> {
     String mealId,
     Meal currentMeal,
   ) async {
+    if (!await ensureAiConsent(context, state) || !mounted) return;
     setState(() => _swapLoading[mealId] = true);
     try {
       final alle = state.userProfile?.allergies ?? [];
       final result = await state.ai.generateSingleMeal(
-        mealSlotLabel: state.t.mealSlotLabel(mealId),
+        mealSlotLabel: mealId,
         currentName: currentMeal.nameForLang('en').isNotEmpty
             ? currentMeal.nameForLang('en')
             : currentMeal.name,
@@ -305,6 +337,15 @@ class _MealPlanScreenState extends State<MealPlanScreen> {
 
       if (result != null) {
         final newMeal = Meal.fromMap(result);
+        if (!mounted ||
+            !await confirmAiEstimate(
+              context,
+              state,
+              details: newMeal.ingredientsForLang(state.lang).join('\n'),
+            ) ||
+            !mounted) {
+          return;
+        }
         final current = state.currentMealPlan;
         if (current == null) return;
 
@@ -332,68 +373,6 @@ class _MealPlanScreenState extends State<MealPlanScreen> {
     } finally {
       if (mounted) setState(() => _swapLoading[mealId] = false);
     }
-  }
-
-  MealPlanData _scalePlanToGoals(
-    MealPlanData plan,
-    int targetCal,
-    NutritionalGoals? goals,
-  ) {
-    if (goals == null) return plan;
-
-    final totalCal =
-        plan.breakfast.calories +
-        plan.lunch.calories +
-        plan.dinner.calories +
-        plan.snacks.calories;
-    if (totalCal == 0) return plan;
-
-    final ratio = targetCal / totalCal;
-    // Only scale if the plan is off by more than 15%
-    if (ratio > 0.85 && ratio < 1.15) return plan;
-
-    final targetP = goals.protein;
-    final targetC = goals.carbs;
-    final targetF = goals.fat;
-    final totalP =
-        plan.breakfast.protein +
-        plan.lunch.protein +
-        plan.dinner.protein +
-        plan.snacks.protein;
-    final totalC =
-        plan.breakfast.carbs +
-        plan.lunch.carbs +
-        plan.dinner.carbs +
-        plan.snacks.carbs;
-    final totalF =
-        plan.breakfast.fat + plan.lunch.fat + plan.dinner.fat + plan.snacks.fat;
-
-    final pRatio = totalP > 0 ? targetP / totalP : 1.0;
-    final cRatio = totalC > 0 ? targetC / totalC : 1.0;
-    final fRatio = totalF > 0 ? targetF / totalF : 1.0;
-
-    Meal scaleMeal(Meal m) {
-      Map<String, double> scaledMicros = m.micros;
-      if (m.micros.isNotEmpty) {
-        scaledMicros = {
-          for (final e in m.micros.entries) e.key: e.value * ratio,
-        };
-      }
-      return m.copyWith(
-        calories: (m.calories * ratio).round(),
-        protein: (m.protein * pRatio).round(),
-        carbs: (m.carbs * cRatio).round(),
-        fat: (m.fat * fRatio).round(),
-        micros: scaledMicros,
-      );
-    }
-
-    return MealPlanData(
-      breakfast: scaleMeal(plan.breakfast),
-      lunch: scaleMeal(plan.lunch),
-      dinner: scaleMeal(plan.dinner),
-      snacks: scaleMeal(plan.snacks),
-    );
   }
 
   void _showIngredientDialog(BuildContext context, AppState state) {
@@ -1576,18 +1555,27 @@ class _MealCard extends StatelessWidget {
                 : Material(
                     color: Colors.transparent,
                     child: InkWell(
-                      onTap: () {
-                        final micros = resolveMicrosForPlannedMeal(
-                          meal,
-                          dailyCalorieGoal: state.goals?.calories ?? 2000,
-                        );
+                      onTap: () async {
+                        if (!await confirmAiEstimate(
+                              context,
+                              state,
+                              details: meal
+                                  .ingredientsForLang(state.lang)
+                                  .join('\n'),
+                            ) ||
+                            !context.mounted) {
+                          return;
+                        }
+                        final micros = meal.micros;
                         state.addLogEntry(
                           LogEntry(
                             id: DateTime.now().millisecondsSinceEpoch
                                 .toString(),
                             foodId: 'ai-meal-$mealId',
                             name: dishName,
-                            amount: estimatedMealGramsForDisplay(meal.calories),
+                            amount:
+                                meal.portionGrams ??
+                                estimatedMealGramsForDisplay(meal.calories),
                             calories: meal.calories,
                             protein: meal.protein,
                             carbs: meal.carbs,
@@ -1791,7 +1779,10 @@ class _DailyTotalCard extends StatelessWidget {
                   AppTheme.indigo.withValues(alpha: 0.15),
                   const Color(0xFF0F172A).withValues(alpha: 0.6),
                 ]
-              : [AppTheme.lightSurfaceTint, Colors.white.withValues(alpha: 0.8)],
+              : [
+                  AppTheme.lightSurfaceTint,
+                  Colors.white.withValues(alpha: 0.8),
+                ],
         ),
         borderRadius: BorderRadius.circular(28),
         border: Border.all(
@@ -1919,6 +1910,7 @@ class _IngredientRecipeSheetState extends State<_IngredientRecipeSheet> {
   }
 
   Future<void> _generate() async {
+    if (!await ensureAiConsent(context, widget.state) || !mounted) return;
     final text = _ctrl.text.trim();
     if (text.isEmpty) return;
 
@@ -1956,9 +1948,18 @@ class _IngredientRecipeSheetState extends State<_IngredientRecipeSheet> {
       );
       if (mounted) {
         if (result != null) {
+          final preview = Meal.fromMap(result);
+          if (!await confirmAiEstimate(
+                context,
+                state,
+                details: preview.ingredientsForLang(state.lang).join('\n'),
+              ) ||
+              !mounted) {
+            return;
+          }
           await state.saveCustomRecipe(result);
         } else {
-          _error = state.t.recipeGenerationFailed;
+          _error = AiStrings.get(state.lang, state.aiErrorCode);
         }
         setState(() => _loading = false);
       }
@@ -1971,6 +1972,8 @@ class _IngredientRecipeSheetState extends State<_IngredientRecipeSheet> {
           _loading = false;
         });
       }
+    } finally {
+      if (mounted) setState(() => _loading = false);
     }
   }
 
@@ -2149,6 +2152,40 @@ class _IngredientRecipeSheetState extends State<_IngredientRecipeSheet> {
                         fontWeight: FontWeight.w800,
                         color: isDark ? Colors.white : const Color(0xFF1E293B),
                       ),
+                    ),
+                    const SizedBox(height: 12),
+                    FilledButton.icon(
+                      icon: const Icon(Icons.add),
+                      label: Text(t.logAsEaten),
+                      onPressed: () async {
+                        final meal = Meal.fromMap(recipeMap!);
+                        if (!await confirmAiEstimate(
+                              context,
+                              state,
+                              details: meal
+                                  .ingredientsForLang(state.lang)
+                                  .join('\n'),
+                            ) ||
+                            !context.mounted) {
+                          return;
+                        }
+                        final saved = await state.addLogEntry(
+                          LogEntry(
+                            id: DateTime.now().millisecondsSinceEpoch
+                                .toString(),
+                            foodId: 'ai-custom-recipe',
+                            name: meal.nameForLang(state.lang),
+                            amount: meal.portionGrams ?? 100,
+                            calories: meal.calories,
+                            protein: meal.protein,
+                            carbs: meal.carbs,
+                            fat: meal.fat,
+                            timestamp: DateTime.now().millisecondsSinceEpoch,
+                            micros: meal.micros,
+                          ),
+                        );
+                        if (saved && context.mounted) Navigator.pop(context);
+                      },
                     ),
                     const SizedBox(height: 12),
                     Row(

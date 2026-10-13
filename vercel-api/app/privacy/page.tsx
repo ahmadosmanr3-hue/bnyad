@@ -80,7 +80,7 @@ export default function PrivacyPolicyPage() {
           <ul style={{ paddingLeft: '20px', marginTop: '8px' }}>
             <li style={{ marginBottom: '8px' }}><strong>Apple App Store / RevenueCat:</strong> To manage in-app subscriptions and purchase receipts securely.</li>
             <li style={{ marginBottom: '8px' }}><strong>Firebase Cloud Messaging (FCM):</strong> To dispatch opt-in push notifications.</li>
-            <li style={{ marginBottom: '8px' }}><strong>Open Food Facts / USDA API:</strong> To fetch public nutritional facts when searching or scanning food items.</li>
+            <li style={{ marginBottom: '8px' }}><strong>Open Food Facts / UPC Item DB:</strong> To look up public packaged-food information. The bundled food catalog works without these services.</li>
           </ul>
 
           <div style={{
@@ -94,18 +94,18 @@ export default function PrivacyPolicyPage() {
               4.1 Third-Party Artificial Intelligence (AI) Services & Data Sharing
             </h3>
             <p style={{ marginBottom: '10px' }}>
-              BNYAD (Nutrify) may offer optional features powered by third-party Artificial Intelligence (AI) service providers (such as OpenAI LLC or Google AI) to perform meal image recognition, automated nutritional estimation, or personalized meal suggestions.
+              Optional AI features use Google Gemini through BNYAD’s authenticated backend for food-photo estimates and recipe suggestions. Basic tracking and local nutrition calculations do not require AI permission.
             </p>
             <p style={{ marginBottom: '10px' }}>
               <strong>Before transmitting any personal data or photos to a third-party AI service, the app will:</strong>
             </p>
             <ul style={{ paddingLeft: '20px', marginBottom: '10px' }}>
-              <li style={{ marginBottom: '6px' }}><strong>Disclose exact data sent:</strong> Clearly present to you the exact prompt, text description, or meal image being transmitted.</li>
-              <li style={{ marginBottom: '6px' }}><strong>Specify recipient:</strong> Identify the specific third-party AI provider receiving the data (e.g., OpenAI LLC / Google LLC).</li>
+              <li style={{ marginBottom: '6px' }}><strong>Disclose data categories:</strong> The selected photo or ingredient/meal text, nutrition targets and cooking preferences are sent to Google Gemini. An optional body-photo estimate also sends the measurement-derived body-fat anchor. Name, phone, account ID, medications and detailed medical history are not sent. Saved restrictions filter the allowed ingredient catalog on BNYAD’s server.</li>
+              <li style={{ marginBottom: '6px' }}><strong>Specify recipient:</strong> Google receives optional AI inputs over HTTPS. BNYAD does not retain uploaded photos or log raw AI prompts.</li>
               <li style={{ marginBottom: '6px' }}><strong>Obtain explicit permission:</strong> Require your affirmative in-app consent (Opt-In Permission) before any request is sent. You may decline or revoke permission at any time in App Settings.</li>
             </ul>
             <p style={{ margin: 0, color: '#CBD5E1' }}>
-              <strong>Equal Protection Guarantee:</strong> BNYAD confirms that any third-party AI provider receiving data is contractually obligated to provide the same or equal level of privacy and data protection as outlined in this policy. Transmitted data is encrypted via TLS 1.3 in transit, stored securely, and <em>never used to train third-party AI models</em> or shared with external entities. If AI features are not activated by the user, zero data is sent to any AI service provider.
+              Validated AI results may be cached privately per account for up to 24 hours; revoking permission removes server-side reusable results. Saved meal plans and recipes remain user data. Minimal usage metadata (account reference, operation, model, token counts and estimated cost) supports quotas and spending controls. Google’s retention and data-use terms depend on the service tier selected by the operator; no unsupported no-training guarantee is made. AI is disabled until the operator reviews those terms and enables it. Estimates may be wrong, including ingredient recognition and allergens; review ingredients, portions, package labels and cooking safety before use. These features are not medical advice.
             </p>
           </div>
         </section>

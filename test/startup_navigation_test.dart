@@ -15,7 +15,6 @@ class StartupState extends AppState {
     : super(
         authService: AuthService(api: api),
         apiService: api,
-        geminiApiKey: '',
         initializeOnCreate: false,
       );
   bool loading = true;

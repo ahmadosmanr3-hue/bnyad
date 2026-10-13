@@ -1,5 +1,15 @@
 class Meal {
+  /// New AI recipes use server-computed edible grams in each ingredient line.
+  double? get portionGrams {
+    final matches = ingredientsForLang(
+      'en',
+    ).map((line) => RegExp(r'^(\d+(?:\.\d+)?) g ').firstMatch(line)).toList();
+    if (matches.isEmpty || matches.any((m) => m == null)) return null;
+    return matches.fold<double>(0, (sum, m) => sum + double.parse(m![1]!));
+  }
+
   final String name;
+
   /// When set, [name] is typically the English fallback for prompts / legacy.
   final Map<String, String>? namesByLang;
   final List<String> ingredients;
@@ -10,6 +20,7 @@ class Meal {
   final int protein;
   final int carbs;
   final int fat;
+
   /// Total micronutrients for this whole meal (same units as [FoodItem.micros] per 100g basis but scaled to the meal).
   final Map<String, double> micros;
 
@@ -76,7 +87,8 @@ class Meal {
   }
 
   bool needsDetailsForLang(String lang) {
-    return ingredientsForLang(lang).isEmpty || instructionsForLang(lang).isEmpty;
+    return ingredientsForLang(lang).isEmpty ||
+        instructionsForLang(lang).isEmpty;
   }
 
   static Map<String, String>? _parseNamesMap(dynamic raw) {
@@ -91,7 +103,12 @@ class Meal {
   static Map<String, List<String>>? _parseListMap(dynamic raw) {
     if (raw is! Map) return null;
     List<String> parseList(dynamic v) {
-      if (v is List) return v.map((e) => e.toString().trim()).where((s) => s.isNotEmpty).toList();
+      if (v is List) {
+        return v
+            .map((e) => e.toString().trim())
+            .where((s) => s.isNotEmpty)
+            .toList();
+      }
       return [];
     }
 
@@ -169,16 +186,16 @@ class Meal {
   }
 
   Map<String, dynamic> toMap() => {
-        'name': name,
-        if (namesByLang != null) 'names': namesByLang,
-        'ingredients': ingredientsByLang ?? ingredients,
-        'instructions': instructionsByLang ?? instructions,
-        'calories': calories,
-        'protein': protein,
-        'carbs': carbs,
-        'fat': fat,
-        if (micros.isNotEmpty) 'micros': micros,
-      };
+    'name': name,
+    if (namesByLang != null) 'names': namesByLang,
+    'ingredients': ingredientsByLang ?? ingredients,
+    'instructions': instructionsByLang ?? instructions,
+    'calories': calories,
+    'protein': protein,
+    'carbs': carbs,
+    'fat': fat,
+    if (micros.isNotEmpty) 'micros': micros,
+  };
 
   Meal copyWith({
     String? name,
@@ -224,7 +241,9 @@ class MealPlanData {
 
   factory MealPlanData.fromMap(Map<String, dynamic> map) {
     return MealPlanData(
-      breakfast: Meal.fromMap(Map<String, dynamic>.from(map['breakfast'] ?? {})),
+      breakfast: Meal.fromMap(
+        Map<String, dynamic>.from(map['breakfast'] ?? {}),
+      ),
       lunch: Meal.fromMap(Map<String, dynamic>.from(map['lunch'] ?? {})),
       dinner: Meal.fromMap(Map<String, dynamic>.from(map['dinner'] ?? {})),
       snacks: Meal.fromMap(Map<String, dynamic>.from(map['snacks'] ?? {})),
@@ -232,11 +251,11 @@ class MealPlanData {
   }
 
   Map<String, dynamic> toMap() => {
-        'breakfast': breakfast.toMap(),
-        'lunch': lunch.toMap(),
-        'dinner': dinner.toMap(),
-        'snacks': snacks.toMap(),
-      };
+    'breakfast': breakfast.toMap(),
+    'lunch': lunch.toMap(),
+    'dinner': dinner.toMap(),
+    'snacks': snacks.toMap(),
+  };
 
   MealPlanData copyWith({
     Meal? breakfast,

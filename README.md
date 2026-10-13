@@ -6,6 +6,8 @@ Mobile source was imported with the owner's approval from `ahmadosmanr3-hue/nutr
 
 Read **[RELEASE_HANDOFF.md](RELEASE_HANDOFF.md)** before building or releasing. See **[AUDIT_REPORT.md](AUDIT_REPORT.md)** for findings, files changed and verification limits.
 
+**Current AI integration:** Read [AI_RELEASE_HANDOFF.md](AI_RELEASE_HANDOFF.md). Existing features now use authenticated backend Gemini access, versioned consent, premium checks, quotas and estimated spending controls. AI is disabled until owner-approved server credentials/budget and live staging tests.
+
 ## Mobile development
 
 Tested with Flutter 3.47.7 / Dart 3.13.5:
@@ -16,7 +18,7 @@ flutter analyze
 flutter test
 ```
 
-Build-time configuration uses `API_BASE_URL`, `RC_ANDROID_PUBLIC_KEY` and `RC_IOS_PUBLIC_KEY`. The legacy AI integration and credential limitations are documented in the handoff. Secrets, signing files and native Firebase configuration are not included. Use the published app's existing signing identities and identifiers.
+Build-time configuration uses `API_BASE_URL`, `RC_ANDROID_PUBLIC_KEY` and `RC_IOS_PUBLIC_KEY` only. Never provide `GEMINI_API_KEY` to a mobile build; that key belongs on the backend. Secrets, signing files and native Firebase configuration are not included. Use the published app's existing signing identities and identifiers.
 
 ## Backend ownership
 

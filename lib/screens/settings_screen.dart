@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:nutrify/widgets/ai_consent.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:nutrify/providers/app_state.dart';
@@ -51,6 +52,7 @@ class SettingsScreen extends StatelessWidget {
 
           _PremiumStatusCard(state: state, isDark: isDark),
           const SizedBox(height: 16),
+          if (state.isAuthenticated) AiPrivacySettings(state: state),
 
           // Language
           _settingsCard(
@@ -78,9 +80,13 @@ class SettingsScreen extends StatelessWidget {
             title: t.theme,
             child: Row(
               children: [
-                Expanded(child: _themeOption(context, t.light, 'light', state, isDark)),
+                Expanded(
+                  child: _themeOption(context, t.light, 'light', state, isDark),
+                ),
                 const SizedBox(width: 8),
-                Expanded(child: _themeOption(context, t.dark, 'dark', state, isDark)),
+                Expanded(
+                  child: _themeOption(context, t.dark, 'dark', state, isDark),
+                ),
               ],
             ),
           ),
@@ -110,11 +116,16 @@ class SettingsScreen extends StatelessWidget {
                   isDark: isDark,
                   onTap: () => guardAuth(context, () {
                     Navigator.of(context).push(
-                      MaterialPageRoute<void>(builder: (_) => const WeeklySummaryScreen()),
+                      MaterialPageRoute<void>(
+                        builder: (_) => const WeeklySummaryScreen(),
+                      ),
                     );
                   }),
                 ),
-                Divider(height: 1, color: isDark ? AppTheme.navy700 : AppTheme.slate200),
+                Divider(
+                  height: 1,
+                  color: isDark ? AppTheme.navy700 : AppTheme.slate200,
+                ),
                 _settingsNavTile(
                   context: context,
                   icon: Icons.shopping_cart_outlined,
@@ -122,7 +133,9 @@ class SettingsScreen extends StatelessWidget {
                   isDark: isDark,
                   onTap: () => guardAuth(context, () {
                     Navigator.of(context).push(
-                      MaterialPageRoute<void>(builder: (_) => const ShoppingListScreen()),
+                      MaterialPageRoute<void>(
+                        builder: (_) => const ShoppingListScreen(),
+                      ),
                     );
                   }),
                 ),
@@ -160,24 +173,55 @@ class SettingsScreen extends StatelessWidget {
             iconColor: AppTheme.indigoLight,
             title: t.howToUse,
             child: Column(
-              children: t.instructionsSteps.asMap().entries.map((entry) => Padding(
-                padding: const EdgeInsets.only(bottom: 16),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      width: 24, height: 24,
-                      decoration: BoxDecoration(
-                        color: isDark ? AppTheme.indigo.withValues(alpha: 0.2) : AppTheme.lightSurfaceTint,
-                        shape: BoxShape.circle,
+              children: t.instructionsSteps
+                  .asMap()
+                  .entries
+                  .map(
+                    (entry) => Padding(
+                      padding: const EdgeInsets.only(bottom: 16),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            width: 24,
+                            height: 24,
+                            decoration: BoxDecoration(
+                              color: isDark
+                                  ? AppTheme.indigo.withValues(alpha: 0.2)
+                                  : AppTheme.lightSurfaceTint,
+                              shape: BoxShape.circle,
+                            ),
+                            child: Center(
+                              child: Text(
+                                '${entry.key + 1}',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w700,
+                                  color: isDark
+                                      ? AppTheme.indigoLight
+                                      : AppTheme.indigo,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              entry.value,
+                              style: TextStyle(
+                                fontSize: 13,
+                                height: 1.5,
+                                color: isDark
+                                    ? const Color(0xFF94A3B8)
+                                    : const Color(0xFF64748B),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                      child: Center(child: Text('${entry.key + 1}', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: isDark ? AppTheme.indigoLight : AppTheme.indigo))),
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(child: Text(entry.value, style: TextStyle(fontSize: 13, height: 1.5, color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B)))),
-                  ],
-                ),
-              )).toList(),
+                  )
+                  .toList(),
             ),
           ),
           const SizedBox(height: 16),
@@ -196,39 +240,63 @@ class SettingsScreen extends StatelessWidget {
                   title: t.privacyPolicy,
                   isDark: isDark,
                   onTap: () async {
-                    final uri = Uri.parse('https://nutrify-api-lovat.vercel.app/privacy');
+                    final uri = Uri.parse(
+                      'https://nutrify-api-lovat.vercel.app/privacy',
+                    );
                     try {
-                      await launchUrl(uri, mode: LaunchMode.externalApplication);
+                      await launchUrl(
+                        uri,
+                        mode: LaunchMode.externalApplication,
+                      );
                     } catch (_) {}
                   },
                 ),
-                Divider(height: 1, color: isDark ? AppTheme.navy700 : AppTheme.slate200),
+                Divider(
+                  height: 1,
+                  color: isDark ? AppTheme.navy700 : AppTheme.slate200,
+                ),
                 _settingsNavTile(
                   context: context,
                   icon: Icons.description_outlined,
                   title: t.termsOfUseEula,
                   isDark: isDark,
                   onTap: () async {
-                    final uri = Uri.parse('https://nutrify-api-lovat.vercel.app/terms');
+                    final uri = Uri.parse(
+                      'https://nutrify-api-lovat.vercel.app/terms',
+                    );
                     try {
-                      await launchUrl(uri, mode: LaunchMode.externalApplication);
+                      await launchUrl(
+                        uri,
+                        mode: LaunchMode.externalApplication,
+                      );
                     } catch (_) {}
                   },
                 ),
-                Divider(height: 1, color: isDark ? AppTheme.navy700 : AppTheme.slate200),
+                Divider(
+                  height: 1,
+                  color: isDark ? AppTheme.navy700 : AppTheme.slate200,
+                ),
                 _settingsNavTile(
                   context: context,
                   icon: Icons.person_remove_outlined,
                   title: t.accountDeletionWeb,
                   isDark: isDark,
                   onTap: () async {
-                    final uri = Uri.parse('https://nutrify-api-lovat.vercel.app/delete-account');
+                    final uri = Uri.parse(
+                      'https://nutrify-api-lovat.vercel.app/delete-account',
+                    );
                     try {
-                      await launchUrl(uri, mode: LaunchMode.externalApplication);
+                      await launchUrl(
+                        uri,
+                        mode: LaunchMode.externalApplication,
+                      );
                     } catch (_) {}
                   },
                 ),
-                Divider(height: 1, color: isDark ? AppTheme.navy700 : AppTheme.slate200),
+                Divider(
+                  height: 1,
+                  color: isDark ? AppTheme.navy700 : AppTheme.slate200,
+                ),
                 _settingsNavTile(
                   context: context,
                   icon: Icons.science_outlined,
@@ -244,9 +312,17 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  Widget _settingsCard({required bool isDark, required IconData icon, required Color iconColor, required String title, required Widget child}) {
+  Widget _settingsCard({
+    required bool isDark,
+    required IconData icon,
+    required Color iconColor,
+    required String title,
+    required Widget child,
+  }) {
     return Material(
-      color: isDark ? AppTheme.navy800.withValues(alpha: 0.75) : AppTheme.lightSurface.withValues(alpha: 0.92),
+      color: isDark
+          ? AppTheme.navy800.withValues(alpha: 0.75)
+          : AppTheme.lightSurface.withValues(alpha: 0.92),
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(28),
@@ -265,7 +341,13 @@ class SettingsScreen extends StatelessWidget {
               children: [
                 Icon(icon, size: 20, color: iconColor),
                 const SizedBox(width: 8),
-                Text(title, style: TextStyle(fontWeight: FontWeight.w700, color: isDark ? Colors.white : AppTheme.slate900)),
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontWeight: FontWeight.w700,
+                    color: isDark ? Colors.white : AppTheme.slate900,
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: 16),
@@ -292,7 +374,10 @@ class SettingsScreen extends StatelessWidget {
           padding: const EdgeInsets.symmetric(vertical: 10),
           child: Row(
             children: [
-              Icon(icon, color: isDark ? AppTheme.indigoLight : AppTheme.indigo),
+              Icon(
+                icon,
+                color: isDark ? AppTheme.indigoLight : AppTheme.indigo,
+              ),
               const SizedBox(width: 16),
               Expanded(
                 child: Text(
@@ -314,7 +399,13 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  Widget _langOption(BuildContext context, String label, String code, AppState state, bool isDark) {
+  Widget _langOption(
+    BuildContext context,
+    String label,
+    String code,
+    AppState state,
+    bool isDark,
+  ) {
     final isActive = state.lang == code;
     return GestureDetector(
       onTap: () => state.setLang(code),
@@ -323,17 +414,46 @@ class SettingsScreen extends StatelessWidget {
         width: double.infinity,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         decoration: BoxDecoration(
-          color: isActive ? AppTheme.indigo : (isDark ? const Color(0xFF1E293B).withValues(alpha: 0.5) : Colors.white.withValues(alpha: 0.5)),
+          color: isActive
+              ? AppTheme.indigo
+              : (isDark
+                    ? const Color(0xFF1E293B).withValues(alpha: 0.5)
+                    : Colors.white.withValues(alpha: 0.5)),
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: isActive ? AppTheme.indigo : (isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0))),
-          boxShadow: isActive ? [BoxShadow(color: AppTheme.indigo.withValues(alpha: 0.2), blurRadius: 12)] : null,
+          border: Border.all(
+            color: isActive
+                ? AppTheme.indigo
+                : (isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
+          ),
+          boxShadow: isActive
+              ? [
+                  BoxShadow(
+                    color: AppTheme.indigo.withValues(alpha: 0.2),
+                    blurRadius: 12,
+                  ),
+                ]
+              : null,
         ),
-        child: Text(label, style: TextStyle(fontWeight: FontWeight.w700, color: isActive ? Colors.white : (isDark ? const Color(0xFFCBD5E1) : const Color(0xFF475569)))),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontWeight: FontWeight.w700,
+            color: isActive
+                ? Colors.white
+                : (isDark ? const Color(0xFFCBD5E1) : const Color(0xFF475569)),
+          ),
+        ),
       ),
     );
   }
 
-  Widget _themeOption(BuildContext context, String label, String code, AppState state, bool isDark) {
+  Widget _themeOption(
+    BuildContext context,
+    String label,
+    String code,
+    AppState state,
+    bool isDark,
+  ) {
     final isActive = state.themeMode == code;
     return GestureDetector(
       onTap: () => state.setTheme(code),
@@ -341,12 +461,39 @@ class SettingsScreen extends StatelessWidget {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(vertical: 14),
         decoration: BoxDecoration(
-          color: isActive ? AppTheme.indigo : (isDark ? const Color(0xFF1E293B).withValues(alpha: 0.5) : Colors.white.withValues(alpha: 0.5)),
+          color: isActive
+              ? AppTheme.indigo
+              : (isDark
+                    ? const Color(0xFF1E293B).withValues(alpha: 0.5)
+                    : Colors.white.withValues(alpha: 0.5)),
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: isActive ? AppTheme.indigo : (isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0))),
-          boxShadow: isActive ? [BoxShadow(color: AppTheme.indigo.withValues(alpha: 0.2), blurRadius: 12)] : null,
+          border: Border.all(
+            color: isActive
+                ? AppTheme.indigo
+                : (isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
+          ),
+          boxShadow: isActive
+              ? [
+                  BoxShadow(
+                    color: AppTheme.indigo.withValues(alpha: 0.2),
+                    blurRadius: 12,
+                  ),
+                ]
+              : null,
         ),
-        child: Center(child: Text(label, style: TextStyle(fontWeight: FontWeight.w700, color: isActive ? Colors.white : (isDark ? const Color(0xFFCBD5E1) : const Color(0xFF475569))))),
+        child: Center(
+          child: Text(
+            label,
+            style: TextStyle(
+              fontWeight: FontWeight.w700,
+              color: isActive
+                  ? Colors.white
+                  : (isDark
+                        ? const Color(0xFFCBD5E1)
+                        : const Color(0xFF475569)),
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -371,8 +518,8 @@ class _PremiumStatusCard extends StatelessWidget {
     final title = premium ? t.premiumActive : t.premiumTitle;
     final subtitle = premium
         ? (until != null
-            ? '${t.premiumActiveUntil.replaceAll('{date}', _formatUntil(until))}${daysLeft > 0 ? ' ($daysLeft days left)' : ''}'
-            : t.premium)
+              ? '${t.premiumActiveUntil.replaceAll('{date}', _formatUntil(until))}${daysLeft > 0 ? ' ($daysLeft days left)' : ''}'
+              : t.premium)
         : t.premiumSubtitle;
     final cta = premium ? t.premiumManage : t.premiumUnlockCta;
 
@@ -418,8 +565,9 @@ class _PremiumStatusCard extends StatelessWidget {
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color:
-                          AppTheme.indigo.withValues(alpha: isDark ? 0.45 : 0.3),
+                      color: AppTheme.indigo.withValues(
+                        alpha: isDark ? 0.45 : 0.3,
+                      ),
                       blurRadius: 16,
                       offset: const Offset(0, 6),
                     ),
@@ -488,21 +636,28 @@ class _PremiumStatusCard extends StatelessWidget {
                               if (context.mounted) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
-                                    content: Text(success
-                                        ? 'Premium restored successfully!'
-                                        : 'No active premium subscription found.'),
+                                    content: Text(
+                                      success
+                                          ? 'Premium restored successfully!'
+                                          : 'No active premium subscription found.',
+                                    ),
                                   ),
                                 );
                               }
                             },
                             child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 6,
+                                vertical: 4,
+                              ),
                               child: Text(
                                 t.premiumRestore,
                                 style: TextStyle(
                                   fontSize: 11,
                                   fontWeight: FontWeight.w700,
-                                  color: isDark ? AppTheme.indigoLight : AppTheme.indigo,
+                                  color: isDark
+                                      ? AppTheme.indigoLight
+                                      : AppTheme.indigo,
                                   decoration: TextDecoration.underline,
                                 ),
                               ),
@@ -548,7 +703,12 @@ class _MacrosCard extends StatelessWidget {
         const SizedBox(height: 14),
         Row(
           children: [
-            _macroPill(t.calories, '${g?.calories ?? 0}', t.kcal, AppTheme.indigo),
+            _macroPill(
+              t.calories,
+              '${g?.calories ?? 0}',
+              t.kcal,
+              AppTheme.indigo,
+            ),
             const SizedBox(width: 8),
             _macroPill(t.protein, '${g?.protein ?? 0}', t.grams, AppTheme.rose),
           ],
@@ -570,7 +730,9 @@ class _MacrosCard extends StatelessWidget {
             label: Text(t.editMacros),
             style: ElevatedButton.styleFrom(
               padding: const EdgeInsets.symmetric(vertical: 14),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
             ),
           ),
         ),
@@ -604,7 +766,12 @@ class _MacrosCard extends StatelessWidget {
               label.toUpperCase(),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: color, letterSpacing: 0.5),
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.w800,
+                color: color,
+                letterSpacing: 0.5,
+              ),
             ),
             const SizedBox(height: 6),
             Row(
@@ -618,14 +785,22 @@ class _MacrosCard extends StatelessWidget {
                     child: Text(
                       value,
                       maxLines: 1,
-                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: isDark ? Colors.white : const Color(0xFF1E293B)),
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w900,
+                        color: isDark ? Colors.white : const Color(0xFF1E293B),
+                      ),
                     ),
                   ),
                 ),
                 const SizedBox(width: 4),
                 Text(
                   unit,
-                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: color.withValues(alpha: 0.85)),
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: color.withValues(alpha: 0.85),
+                  ),
                 ),
               ],
             ),
@@ -700,7 +875,11 @@ class _MacrosEditorSheetState extends State<_MacrosEditorSheet> {
   }
 
   void _applyBalanced(NutritionalGoals goals, {required MacroEditField skip}) {
-    void setUnlessEditing(TextEditingController c, int value, MacroEditField field) {
+    void setUnlessEditing(
+      TextEditingController c,
+      int value,
+      MacroEditField field,
+    ) {
       if (skip == field) return;
       final text = '$value';
       if (c.text != text) c.text = text;
@@ -747,9 +926,9 @@ class _MacrosEditorSheetState extends State<_MacrosEditorSheet> {
     if (!mounted) return;
     final t = widget.state.t;
     Navigator.pop(context);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(t.macrosUpdated)),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(t.macrosUpdated)));
   }
 
   @override
@@ -758,7 +937,9 @@ class _MacrosEditorSheetState extends State<_MacrosEditorSheet> {
     final isDark = widget.isDark;
 
     return Padding(
-      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom,
+      ),
       child: Container(
         decoration: BoxDecoration(
           color: isDark ? const Color(0xFF0F172A) : Colors.white,
@@ -775,7 +956,9 @@ class _MacrosEditorSheetState extends State<_MacrosEditorSheet> {
                   width: 48,
                   height: 5,
                   decoration: BoxDecoration(
-                    color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+                    color: isDark
+                        ? const Color(0xFF334155)
+                        : const Color(0xFFE2E8F0),
                     borderRadius: BorderRadius.circular(4),
                   ),
                 ),
@@ -795,7 +978,9 @@ class _MacrosEditorSheetState extends State<_MacrosEditorSheet> {
                 style: TextStyle(
                   fontSize: 13,
                   height: 1.4,
-                  color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                  color: isDark
+                      ? const Color(0xFF94A3B8)
+                      : const Color(0xFF64748B),
                 ),
               ),
               const SizedBox(height: 20),
@@ -809,7 +994,8 @@ class _MacrosEditorSheetState extends State<_MacrosEditorSheet> {
               const SizedBox(height: 10),
               Builder(
                 builder: (_) {
-                  final p = _parse(_proCtrl) ?? widget.state.goals?.protein ?? 0;
+                  final p =
+                      _parse(_proCtrl) ?? widget.state.goals?.protein ?? 0;
                   final c = _parse(_carbCtrl) ?? widget.state.goals?.carbs ?? 0;
                   final f = _parse(_fatCtrl) ?? widget.state.goals?.fat ?? 0;
                   final fromMacros = caloriesFromMacros(p, c, f);
@@ -818,7 +1004,9 @@ class _MacrosEditorSheetState extends State<_MacrosEditorSheet> {
                     style: TextStyle(
                       fontSize: 11.5,
                       height: 1.35,
-                      color: isDark ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
+                      color: isDark
+                          ? const Color(0xFF64748B)
+                          : const Color(0xFF94A3B8),
                     ),
                   );
                 },
@@ -831,7 +1019,9 @@ class _MacrosEditorSheetState extends State<_MacrosEditorSheet> {
                       onPressed: _saving ? null : () => Navigator.pop(context),
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
                       ),
                       child: Text(t.cancel),
                     ),
@@ -843,13 +1033,18 @@ class _MacrosEditorSheetState extends State<_MacrosEditorSheet> {
                       onPressed: _saving ? null : _save,
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
                       ),
                       child: _saving
                           ? const SizedBox(
                               width: 18,
                               height: 18,
-                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
                             )
                           : Text(t.save),
                     ),
@@ -863,11 +1058,19 @@ class _MacrosEditorSheetState extends State<_MacrosEditorSheet> {
     );
   }
 
-  Widget _field(String label, String unit, TextEditingController ctrl, Color color, bool isDark) {
+  Widget _field(
+    String label,
+    String unit,
+    TextEditingController ctrl,
+    Color color,
+    bool isDark,
+  ) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E293B).withValues(alpha: 0.4) : const Color(0xFFF8FAFC),
+        color: isDark
+            ? const Color(0xFF1E293B).withValues(alpha: 0.4)
+            : const Color(0xFFF8FAFC),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
@@ -907,16 +1110,27 @@ class _MacrosEditorSheetState extends State<_MacrosEditorSheet> {
               ),
               decoration: InputDecoration(
                 isDense: true,
-                contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
+                contentPadding: const EdgeInsets.symmetric(
+                  vertical: 10,
+                  horizontal: 8,
+                ),
                 filled: true,
                 fillColor: isDark ? const Color(0xFF0F172A) : Colors.white,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
+                  borderSide: BorderSide(
+                    color: isDark
+                        ? const Color(0xFF334155)
+                        : const Color(0xFFE2E8F0),
+                  ),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
+                  borderSide: BorderSide(
+                    color: isDark
+                        ? const Color(0xFF334155)
+                        : const Color(0xFFE2E8F0),
+                  ),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -933,7 +1147,9 @@ class _MacrosEditorSheetState extends State<_MacrosEditorSheet> {
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w700,
-                color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                color: isDark
+                    ? const Color(0xFF94A3B8)
+                    : const Color(0xFF64748B),
               ),
             ),
           ),
@@ -958,12 +1174,22 @@ class _NotificationsWebInfo extends StatelessWidget {
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(Icons.phone_android_outlined, size: 22, color: isDark ? AppTheme.indigoLight : AppTheme.indigo),
+            Icon(
+              Icons.phone_android_outlined,
+              size: 22,
+              color: isDark ? AppTheme.indigoLight : AppTheme.indigo,
+            ),
             const SizedBox(width: 12),
             Expanded(
               child: Text(
                 t.notificationsWebInfo,
-                style: TextStyle(fontSize: 14, height: 1.45, color: isDark ? const Color(0xFFCBD5E1) : const Color(0xFF475569)),
+                style: TextStyle(
+                  fontSize: 14,
+                  height: 1.45,
+                  color: isDark
+                      ? const Color(0xFFCBD5E1)
+                      : const Color(0xFF475569),
+                ),
               ),
             ),
           ],
@@ -991,58 +1217,69 @@ class _MealReminderControls extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-          _reminderRow(context, 'breakfast', t.breakfastReminder),
-          const SizedBox(height: 10),
-          _reminderRow(context, 'lunch', t.lunchReminder),
-          const SizedBox(height: 10),
-          _reminderRow(context, 'dinner', t.dinnerReminder),
-          const SizedBox(height: 10),
-          _reminderRow(context, 'snacks', t.snacksReminder),
-          const Divider(height: 24),
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  t.weeklyDigestNotify,
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: isDark ? const Color(0xFFCBD5E1) : const Color(0xFF475569),
-                  ),
+        _reminderRow(context, 'breakfast', t.breakfastReminder),
+        const SizedBox(height: 10),
+        _reminderRow(context, 'lunch', t.lunchReminder),
+        const SizedBox(height: 10),
+        _reminderRow(context, 'dinner', t.dinnerReminder),
+        const SizedBox(height: 10),
+        _reminderRow(context, 'snacks', t.snacksReminder),
+        const Divider(height: 24),
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                t.weeklyDigestNotify,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: isDark
+                      ? const Color(0xFFCBD5E1)
+                      : const Color(0xFF475569),
                 ),
               ),
-              Switch(
-                value: state.weeklyDigestEnabled,
-                onChanged: (v) => state.setWeeklyDigestEnabled(v),
-                activeTrackColor: AppTheme.indigo,
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          SizedBox(
-            width: double.infinity,
-            child: OutlinedButton.icon(
-              onPressed: () => NotificationService.instance.showTestNotification(),
-              icon: const Icon(Icons.notifications_active_outlined, size: 18),
-              label: Text(t.testNotification, style: const TextStyle(fontWeight: FontWeight.w700)),
+            ),
+            Switch(
+              value: state.weeklyDigestEnabled,
+              onChanged: (v) => state.setWeeklyDigestEnabled(v),
+              activeTrackColor: AppTheme.indigo,
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        SizedBox(
+          width: double.infinity,
+          child: OutlinedButton.icon(
+            onPressed: () =>
+                NotificationService.instance.showTestNotification(),
+            icon: const Icon(Icons.notifications_active_outlined, size: 18),
+            label: Text(
+              t.testNotification,
+              style: const TextStyle(fontWeight: FontWeight.w700),
             ),
           ),
-        ],
+        ),
+      ],
     );
   }
 
   Widget _reminderRow(BuildContext context, String mealId, String label) {
     final enabled = state.getReminderEnabled(mealId);
     final time = state.getReminderTime(mealId);
-    final timeStr = '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
+    final timeStr =
+        '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
 
     return Row(
       children: [
         Expanded(
-          child: Text(label, style: TextStyle(
-            fontSize: 13, fontWeight: FontWeight.w600,
-            color: isDark ? const Color(0xFFCBD5E1) : const Color(0xFF475569),
-          )),
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: isDark ? const Color(0xFFCBD5E1) : const Color(0xFF475569),
+            ),
+          ),
         ),
         GestureDetector(
           onTap: () async {
@@ -1057,14 +1294,28 @@ class _MealReminderControls extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF1E293B).withValues(alpha: 0.5) : const Color(0xFFF1F5F9),
+              color: isDark
+                  ? const Color(0xFF1E293B).withValues(alpha: 0.5)
+                  : const Color(0xFFF1F5F9),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
+              border: Border.all(
+                color: isDark
+                    ? const Color(0xFF334155)
+                    : const Color(0xFFE2E8F0),
+              ),
             ),
-            child: Text(timeStr, style: TextStyle(
-              fontSize: 13, fontWeight: FontWeight.w700,
-              color: enabled ? AppTheme.indigo : (isDark ? const Color(0xFF64748B) : const Color(0xFF94A3B8)),
-            )),
+            child: Text(
+              timeStr,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+                color: enabled
+                    ? AppTheme.indigo
+                    : (isDark
+                          ? const Color(0xFF64748B)
+                          : const Color(0xFF94A3B8)),
+              ),
+            ),
           ),
         ),
         const SizedBox(width: 8),
@@ -1085,7 +1336,10 @@ class _SupplementReminderControls extends StatelessWidget {
   final AppState state;
   final bool isDark;
 
-  const _SupplementReminderControls({required this.state, required this.isDark});
+  const _SupplementReminderControls({
+    required this.state,
+    required this.isDark,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -1116,7 +1370,8 @@ class _SupplementReminderControls extends StatelessWidget {
     final enabled = v.reminderEnabled;
     final hour = v.reminderHour ?? 8;
     final minute = v.reminderMinute ?? 0;
-    final timeStr = '${hour.toString().padLeft(2, '0')}:${minute.toString().padLeft(2, '0')}';
+    final timeStr =
+        '${hour.toString().padLeft(2, '0')}:${minute.toString().padLeft(2, '0')}';
 
     return Row(
       children: [
@@ -1143,16 +1398,26 @@ class _SupplementReminderControls extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF1E293B).withValues(alpha: 0.5) : const Color(0xFFF1F5F9),
+              color: isDark
+                  ? const Color(0xFF1E293B).withValues(alpha: 0.5)
+                  : const Color(0xFFF1F5F9),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
+              border: Border.all(
+                color: isDark
+                    ? const Color(0xFF334155)
+                    : const Color(0xFFE2E8F0),
+              ),
             ),
             child: Text(
               timeStr,
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w700,
-                color: enabled ? AppTheme.indigo : (isDark ? const Color(0xFF64748B) : const Color(0xFF94A3B8)),
+                color: enabled
+                    ? AppTheme.indigo
+                    : (isDark
+                          ? const Color(0xFF64748B)
+                          : const Color(0xFF94A3B8)),
               ),
             ),
           ),
@@ -1209,7 +1474,10 @@ class _GuestSignInCard extends StatelessWidget {
           ),
           child: Row(
             children: [
-              Icon(Icons.login_rounded, color: isDark ? AppTheme.indigoLight : AppTheme.indigo),
+              Icon(
+                Icons.login_rounded,
+                color: isDark ? AppTheme.indigoLight : AppTheme.indigo,
+              ),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
@@ -1228,13 +1496,20 @@ class _GuestSignInCard extends StatelessWidget {
                       t.guestModeLimited,
                       style: TextStyle(
                         fontSize: 12,
-                        color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                        color: isDark
+                            ? const Color(0xFF94A3B8)
+                            : const Color(0xFF64748B),
                       ),
                     ),
                   ],
                 ),
               ),
-              Icon(Icons.chevron_right, color: isDark ? const Color(0xFF64748B) : const Color(0xFF94A3B8)),
+              Icon(
+                Icons.chevron_right,
+                color: isDark
+                    ? const Color(0xFF64748B)
+                    : const Color(0xFF94A3B8),
+              ),
             ],
           ),
         ),
@@ -1242,7 +1517,6 @@ class _GuestSignInCard extends StatelessWidget {
     );
   }
 }
-
 
 class _AccountCard extends StatefulWidget {
   final AppState state;
@@ -1277,7 +1551,11 @@ class _AccountCardState extends State<_AccountCard> {
                 color: AppTheme.rose.withValues(alpha: 0.15),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.warning_amber_rounded, color: AppTheme.rose, size: 24),
+              child: const Icon(
+                Icons.warning_amber_rounded,
+                color: AppTheme.rose,
+                size: 24,
+              ),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -1297,7 +1575,9 @@ class _AccountCardState extends State<_AccountCard> {
           style: TextStyle(
             fontSize: 14,
             height: 1.5,
-            color: widget.isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+            color: widget.isDark
+                ? const Color(0xFF94A3B8)
+                : const Color(0xFF64748B),
           ),
         ),
         actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
@@ -1308,7 +1588,9 @@ class _AccountCardState extends State<_AccountCard> {
               t.cancel,
               style: TextStyle(
                 fontWeight: FontWeight.w700,
-                color: widget.isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                color: widget.isDark
+                    ? const Color(0xFF94A3B8)
+                    : const Color(0xFF64748B),
               ),
             ),
           ),
@@ -1316,7 +1598,9 @@ class _AccountCardState extends State<_AccountCard> {
             style: FilledButton.styleFrom(
               backgroundColor: AppTheme.rose,
               foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             ),
             onPressed: () => Navigator.of(dialogCtx).pop(true),
@@ -1343,7 +1627,9 @@ class _AccountCardState extends State<_AccountCard> {
             ),
             backgroundColor: success ? AppTheme.emerald : AppTheme.rose,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
           ),
         );
       } finally {
@@ -1364,7 +1650,9 @@ class _AccountCardState extends State<_AccountCard> {
         : 'BNYAD Member';
 
     return Material(
-      color: isDark ? AppTheme.navy800.withValues(alpha: 0.75) : AppTheme.lightSurface.withValues(alpha: 0.92),
+      color: isDark
+          ? AppTheme.navy800.withValues(alpha: 0.75)
+          : AppTheme.lightSurface.withValues(alpha: 0.92),
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(28),
@@ -1385,11 +1673,17 @@ class _AccountCardState extends State<_AccountCard> {
                   width: 44,
                   height: 44,
                   decoration: BoxDecoration(
-                    color: AppTheme.indigo.withValues(alpha: isDark ? 0.25 : 0.12),
+                    color: AppTheme.indigo.withValues(
+                      alpha: isDark ? 0.25 : 0.12,
+                    ),
                     shape: BoxShape.circle,
                   ),
                   child: const Center(
-                    child: Icon(Icons.person_rounded, color: AppTheme.indigo, size: 24),
+                    child: Icon(
+                      Icons.person_rounded,
+                      color: AppTheme.indigo,
+                      size: 24,
+                    ),
                   ),
                 ),
                 const SizedBox(width: 14),
@@ -1402,7 +1696,9 @@ class _AccountCardState extends State<_AccountCard> {
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
-                          color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                          color: isDark
+                              ? const Color(0xFF94A3B8)
+                              : const Color(0xFF64748B),
                         ),
                       ),
                       const SizedBox(height: 2),
@@ -1420,21 +1716,38 @@ class _AccountCardState extends State<_AccountCard> {
                 OutlinedButton.icon(
                   onPressed: () => widget.state.logout(),
                   style: OutlinedButton.styleFrom(
-                    foregroundColor: isDark ? const Color(0xFFCBD5E1) : const Color(0xFF475569),
-                    side: BorderSide(color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    foregroundColor: isDark
+                        ? const Color(0xFFCBD5E1)
+                        : const Color(0xFF475569),
+                    side: BorderSide(
+                      color: isDark
+                          ? const Color(0xFF334155)
+                          : const Color(0xFFE2E8F0),
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
                   ),
                   icon: const Icon(Icons.logout_rounded, size: 16),
                   label: Text(
                     t.logout,
-                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ),
               ],
             ),
             const SizedBox(height: 16),
-            Divider(height: 1, color: isDark ? AppTheme.navy700 : AppTheme.slate200),
+            Divider(
+              height: 1,
+              color: isDark ? AppTheme.navy700 : AppTheme.slate200,
+            ),
             const SizedBox(height: 14),
             SizedBox(
               width: double.infinity,
@@ -1448,12 +1761,19 @@ class _AccountCardState extends State<_AccountCard> {
                             const SizedBox(
                               width: 16,
                               height: 16,
-                              child: CircularProgressIndicator(strokeWidth: 2, color: AppTheme.rose),
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: AppTheme.rose,
+                              ),
                             ),
                             const SizedBox(width: 10),
                             Text(
                               t.deletingAccount,
-                              style: const TextStyle(color: AppTheme.rose, fontWeight: FontWeight.w700, fontSize: 13),
+                              style: const TextStyle(
+                                color: AppTheme.rose,
+                                fontWeight: FontWeight.w700,
+                                fontSize: 13,
+                              ),
                             ),
                           ],
                         ),
@@ -1463,15 +1783,31 @@ class _AccountCardState extends State<_AccountCard> {
                       onPressed: () => _confirmDeleteAccount(context),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: AppTheme.rose,
-                        side: BorderSide(color: AppTheme.rose.withValues(alpha: isDark ? 0.5 : 0.4)),
-                        backgroundColor: AppTheme.rose.withValues(alpha: isDark ? 0.08 : 0.04),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                        side: BorderSide(
+                          color: AppTheme.rose.withValues(
+                            alpha: isDark ? 0.5 : 0.4,
+                          ),
+                        ),
+                        backgroundColor: AppTheme.rose.withValues(
+                          alpha: isDark ? 0.08 : 0.04,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
                         padding: const EdgeInsets.symmetric(vertical: 12),
                       ),
-                      icon: const Icon(Icons.delete_outline_rounded, size: 18, color: AppTheme.rose),
+                      icon: const Icon(
+                        Icons.delete_outline_rounded,
+                        size: 18,
+                        color: AppTheme.rose,
+                      ),
                       label: Text(
                         t.deleteAccount,
-                        style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13, color: AppTheme.rose),
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w800,
+                          fontSize: 13,
+                          color: AppTheme.rose,
+                        ),
                       ),
                     ),
             ),

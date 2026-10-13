@@ -1,5 +1,7 @@
 # BNYAD audit and implementation — 13 October 2026
 
+Historical stability audit: the subsequent AI repair supersedes the direct-client Gemini findings below. See [AI_RELEASE_HANDOFF.md](AI_RELEASE_HANDOFF.md) for current architecture, tests, configuration and remaining live-release gates.
+
 ## Repository and production identification
 
 Both official repos began with identical backend-only history at `873d26e93b62044bfbc3cb37ddce61210bd17338`. The real Flutter app was found in nutrify at `92b3b6b9ac17358155c5e76c8eed6f851464ab17` and imported into bnyad with owner approval. Existing mobile identity, screens, assets, fonts, food database and architecture are retained; credential-bearing configuration was excluded. Original repository histories/main branches are preserved. Backend changes are mirrored in both official delivery repositories; deploy only bnyad-backend/vercel-api.

@@ -7,10 +7,7 @@ import 'package:nutrify/models/user_profile.dart';
 import 'package:nutrify/models/log_entry.dart';
 import 'package:nutrify/models/meal.dart';
 
-/// REST client for the Laravel backend.
-///
-/// Replaces the old [FirebaseService] with HTTP calls against the
-/// Sanctum-authenticated Laravel API.
+/// REST client for the active Next.js backend and compatible bearer-token API.
 class ApiService {
   final String baseUrl;
   String? _token;
@@ -19,6 +16,90 @@ class ApiService {
   final FlutterSecureStorage _secureStorage;
   late final _SafeHttp _http;
   VoidCallback? onSessionInvalidated;
+  static const aiConsentVersion = 'google-ai-2026-10-13-v1';
+  String aiErrorCode = 'failed';
+
+  Future<bool?> getAiConsent() async {
+    final owner = _token;
+    if (!hasToken) return false;
+    try {
+      final response = await _http.get(
+        Uri.parse('$baseUrl/ai/consent'),
+        headers: _headers,
+      );
+      if (_token != owner || response.statusCode != 200) return null;
+      final body = jsonDecode(response.body) as Map<String, dynamic>;
+      return body['enabled'] == true && body['version'] == aiConsentVersion;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<bool> setAiConsent(bool enabled) async {
+    final owner = _token;
+    if (!hasToken) return false;
+    try {
+      final response = await _http.put(
+        Uri.parse('$baseUrl/ai/consent'),
+        headers: _headers,
+        body: jsonEncode({'enabled': enabled, 'version': aiConsentVersion}),
+      );
+      return _token == owner && response.statusCode == 200;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  Future<Map<String, dynamic>?> generateAi(
+    String operation,
+    Map<String, dynamic> input,
+  ) async {
+    final owner = _token;
+    aiErrorCode = 'failed';
+    if (!hasToken) {
+      aiErrorCode = 'signIn';
+      return null;
+    }
+    if (await getAiConsent() != true || owner != _token) {
+      aiErrorCode = 'consentRequired';
+      return null;
+    }
+    try {
+      final response = await _http.post(
+        Uri.parse('$baseUrl/ai/generate'),
+        headers: _headers,
+        body: jsonEncode({'operation': operation, 'input': input}),
+      );
+      if (_token != owner) return null;
+      final body = jsonDecode(response.body) as Map<String, dynamic>;
+      if (response.statusCode == 200 && body['data'] is Map<String, dynamic>) {
+        final data = body['data'] as Map<String, dynamic>;
+        if (operation == 'shopping') {
+          // Keep trilingual maps intact; the view chooses the current locale.
+          return data;
+        }
+        return data;
+      }
+      aiErrorCode = switch (response.statusCode) {
+        401 => 'signIn',
+        403 => 'notAuthorized',
+        429 => switch (body['code']) {
+          'ai_rate_limit' => 'rateLimit',
+          'ai_daily_limit' => 'dailyLimit',
+          'ai_budget_limit' => 'budgetLimit',
+          _ => 'quota',
+        },
+        413 => 'tooLarge',
+        422 => 'invalidResult',
+        502 => 'invalidResult',
+        503 => 'unavailable',
+        _ => 'failed',
+      };
+    } catch (_) {
+      aiErrorCode = 'unavailable';
+    }
+    return null;
+  }
 
   ApiService({
     required this.baseUrl,
@@ -771,7 +852,9 @@ class _SafeHttp {
     Uri url,
     Map<String, String>? headers,
   ) async {
-    final response = await pending.timeout(const Duration(seconds: 12));
+    final response = await pending.timeout(
+      Duration(seconds: url.path.endsWith('/ai/generate') ? 55 : 12),
+    );
     // Credential errors during sign-in do not revoke an unrelated session.
     if (response.statusCode == 401 &&
         !RegExp(

@@ -1,5 +1,7 @@
 # BNYAD source delivery — 13 October 2026
 
+**AI integration update:** Read [AI_RELEASE_HANDOFF.md](AI_RELEASE_HANDOFF.md) first. It supersedes the legacy direct-AI configuration below: Gemini access is server-only, disabled until approved configuration, and uses an additional manual migration.
+
 This branch is source delivery only. No production database migration, production deployment, App Store submission, or Google Play submission was performed.
 
 ## Repositories and provenance
@@ -71,7 +73,7 @@ Use the tested Flutter 3.47.7 / Dart 3.13.5 toolchain or validate the release de
 
 - `API_BASE_URL`: defaults to the existing documented production API; use a staging URL for QA.
 - `RC_ANDROID_PUBLIC_KEY` and `RC_IOS_PUBLIC_KEY`: RevenueCat PUBLIC mobile SDK keys, supplied privately by the release developer.
-- `GEMINI_API_KEY`: legacy direct-AI integration is retained, with no value committed. A key passed with dart-define is embedded in a mobile binary; do not mistake this for secure secret storage. Moving AI calls behind an authenticated backend proxy remains required to avoid distributing a server credential. AI provider credentials were not available for end-to-end validation.
+- `GEMINI_API_KEY`: backend hosting environment ONLY. Never supply it to a Flutter build. See AI_RELEASE_HANDOFF.md for disabled-by-default proxy configuration and manual migration.
 
 A private ignored `release-config.json` can be used with `--dart-define-from-file`; never commit it. Archived upstream source contained credential defaults; rotate any credentials previously exposed in that repository through the responsible provider, coordinating with the existing installed apps.
 
