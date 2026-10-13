@@ -15,3 +15,19 @@ service_account.json
 # Environment variables
 .env
 .env.*
+# Flutter output and local release configuration
+.dart_tool/
+.flutter-plugins*
+.packages
+build/
+.pub-cache/
+android/local.properties
+android/key.properties
+**/*.jks
+**/*.keystore
+**/*.p12
+**/*.mobileprovision
+android/app/google-services.json
+ios/Runner/GoogleService-Info.plist
+lib/firebase_options.dart
+release-config.json

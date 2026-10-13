@@ -2,6 +2,14 @@ generator client {
   provider = "prisma-client-js"
 }
 
+model AuthRateLimit {
+  key    String @id
+  bucket Int
+  count  Int    @default(0)
+
+  @@map("auth_rate_limits")
+}
+
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")

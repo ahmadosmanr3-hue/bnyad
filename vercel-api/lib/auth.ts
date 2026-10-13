@@ -2,11 +2,13 @@ import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 import type { User, UserProfile, Subscription } from '@prisma/client';
 import { prisma } from './db';
+import { tokenDigest } from './security';
+import { validateProfile, dateValue } from './validation';
 
 export const DEMO_OTP = '123456';
 
 export function isProduction() {
-  return process.env.APP_ENV === 'production';
+  return process.env.NODE_ENV === 'production' || process.env.APP_ENV === 'production';
 }
 
 export async function hashPassword(password: string) {
@@ -31,7 +33,7 @@ export function newToken() {
 
 export async function createSession(userId: number) {
   const token = newToken();
-  await prisma.apiToken.create({ data: { userId, token } });
+  await prisma.apiToken.create({ data: { userId, token: tokenDigest(token) } });
   return token;
 }
 
@@ -39,10 +41,21 @@ export async function userFromAuthHeader(authHeader: string | null) {
   if (!authHeader?.startsWith('Bearer ')) return null;
   const token = authHeader.slice(7).trim();
   if (!token) return null;
-  const row = await prisma.apiToken.findUnique({
-    where: { token },
+  if (!/^[a-f0-9]{80}$/.test(token)) return null;
+  // Reject stored digests as bearer credentials. Keep existing issued tokens
+  // working and migrate them to hashes atomically on their next valid use.
+  const digest = tokenDigest(token);
+  let row = await prisma.apiToken.findUnique({
+    where: { token: digest },
     include: { user: { include: { profile: true, subscriptions: true } } },
   });
+  if (!row) {
+    row = await prisma.apiToken.findUnique({
+      where: { token },
+      include: { user: { include: { profile: true, subscriptions: true } } },
+    });
+    if (row) await prisma.apiToken.updateMany({ where: { id: row.id, token }, data: { token: digest } });
+  }
   return row?.user ?? null;
 }
 
@@ -88,7 +101,8 @@ export function profileToJson(p: UserProfile) {
 export function userToJson(user: User & { profile: UserProfile | null; subscriptions?: Subscription[] | null }) {
   const now = new Date();
   const activeSub = user.subscriptions
-    ? user.subscriptions.find((sub) => sub.active && new Date(sub.expiresAt) > now)
+    ? user.subscriptions.filter((sub) => sub.active && new Date(sub.expiresAt) > now)
+        .sort((a, b) => b.expiresAt.getTime() - a.expiresAt.getTime())[0]
     : null;
 
   return {
@@ -136,7 +150,7 @@ export function mapProfileUpdate(body: Record<string, unknown>) {
     const mapped = profileFieldMap[key] ?? key;
     data[mapped] = value;
   }
-  return data;
+  return validateProfile(data);
 }
 
 export function todayDate() {
@@ -144,6 +158,5 @@ export function todayDate() {
 }
 
 export function parseDate(value: string | null | undefined) {
-  const d = value ?? todayDate();
-  return new Date(`${d}T12:00:00.000Z`);
+  return dateValue(value, todayDate());
 }

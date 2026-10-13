@@ -1,0 +1,49 @@
+name: nutrify
+description: "BNYAD — AI-powered nutrition tracking app with trilingual support"
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.9.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+  http: ^1.2.2
+  image_picker: ^1.1.2
+  provider: ^6.1.2
+  shared_preferences: ^2.3.4
+  flutter_local_notifications: ^18.0.1
+  timezone: ^0.10.0
+  flutter_timezone: ^4.1.0
+  connectivity_plus: ^6.1.4
+  mobile_scanner: ^6.0.2
+  permission_handler: ^11.4.0
+  firebase_core: ^3.8.1
+  firebase_messaging: ^15.1.6
+  purchases_flutter: ^10.3.0
+  flutter_secure_storage: ^10.3.1
+  url_launcher: ^6.3.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/bnyad_logo.png
+    - assets/images/bnyad_icon.png
+    - fonts/
+  fonts:
+    - family: NotoSans
+      fonts:
+        - asset: fonts/NotoSans-Regular.ttf
+    - family: NotoSansArabic
+      fonts:
+        - asset: fonts/NotoSansArabic-Regular.ttf
+    - family: NotoSansSymbols
+      fonts:
+        - asset: fonts/NotoSansSymbols-Regular.ttf

@@ -90,7 +90,7 @@ export default function AdminPage() {
   const [tab, setTab] = useState<Tab>('Dashboard');
 
   useEffect(() => {
-    setSecret(localStorage.getItem('bnyad_admin_secret'));
+    localStorage.removeItem('bnyad_admin_secret');
   }, []);
 
   const logout = () => {
@@ -185,7 +185,7 @@ function Login({ onLogin }: { onLogin: (secret: string) => void }) {
         setErr(j.message || 'Login failed.');
         return;
       }
-      localStorage.setItem('bnyad_admin_secret', value);
+      // Shared credential stays in memory only.
       onLogin(value);
     } catch {
       setErr('Network error.');

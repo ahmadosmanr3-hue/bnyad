@@ -1,4 +1,7 @@
+import { safeRoute } from '@/lib/http';
 import { prisma } from '@/lib/db';
+import { numberValue, textValue } from '@/lib/validation';
+import { RequestError } from '@/lib/http';
 import { userFromAuthHeader } from '@/lib/auth';
 import { error, json, options, readJson } from '@/lib/http';
 
@@ -33,7 +36,7 @@ function itemToMeal(item: {
   };
 }
 
-export async function GET(req: Request) {
+async function handleGET(req: Request) {
   const user = await userFromAuthHeader(req.headers.get('authorization'));
   if (!user) return error('Unauthenticated.', 401);
 
@@ -58,41 +61,36 @@ export async function GET(req: Request) {
   });
 }
 
-export async function PUT(req: Request) {
+async function handlePUT(req: Request) {
   const user = await userFromAuthHeader(req.headers.get('authorization'));
   if (!user) return error('Unauthenticated.', 401);
 
   const body = await readJson<{ plan?: Record<string, Record<string, unknown>> }>(req);
   const planBody = body.plan ?? {};
-
-  const plan = await prisma.mealPlan.upsert({
-    where: { userId: user.id },
-    create: { userId: user.id, generatedAt: new Date() },
-    update: { generatedAt: new Date() },
-  });
-
-  await prisma.mealPlanItem.deleteMany({ where: { mealPlanId: plan.id } });
-
-  for (const [slot, meal] of Object.entries(planBody)) {
-    await prisma.mealPlanItem.create({
-      data: {
-        mealPlanId: plan.id,
+  if (typeof planBody !== 'object' || Array.isArray(planBody) || Object.keys(planBody).length > 10) {
+    throw new RequestError('Invalid meal plan.');
+  }
+  const items = Object.entries(planBody).map(([slot, meal]) => {
+      if (!meal || typeof meal !== 'object' || Array.isArray(meal)) throw new RequestError('Invalid meal.');
+      return {
         slot,
-        name: String(meal.name ?? ''),
+        name: textValue(meal.name ?? '', 'meal name', 200),
         names: (meal.names as object) ?? undefined,
         ingredients: (meal.ingredients as object) ?? undefined,
         instructions: (meal.instructions as object) ?? undefined,
-        calories: Number(meal.calories ?? 0),
-        protein: Number(meal.protein ?? 0),
-        carbs: Number(meal.carbs ?? 0),
-        fat: Number(meal.fat ?? 0),
+        calories: numberValue(meal.calories ?? 0, 'calories', 0, 100000, true),
+        protein: numberValue(meal.protein ?? 0, 'protein', 0, 100000, true),
+        carbs: numberValue(meal.carbs ?? 0, 'carbs', 0, 100000, true),
+        fat: numberValue(meal.fat ?? 0, 'fat', 0, 100000, true),
         micros: (meal.micros as object) ?? undefined,
-      },
-    });
-  }
-
-  const saved = await prisma.mealPlan.findUnique({
-    where: { id: plan.id },
+      };
+  });
+  // Replace atomically. An invalid item or interrupted request cannot erase
+  // the previous plan. Nested writes roll back together.
+  const saved = await prisma.mealPlan.upsert({
+    where: { userId: user.id },
+    create: { userId: user.id, generatedAt: new Date(), items: { create: items } },
+    update: { generatedAt: new Date(), items: { deleteMany: {}, create: items } },
     include: { items: true },
   });
 
@@ -110,10 +108,14 @@ export async function PUT(req: Request) {
   });
 }
 
-export async function DELETE(req: Request) {
+async function handleDELETE(req: Request) {
   const user = await userFromAuthHeader(req.headers.get('authorization'));
   if (!user) return error('Unauthenticated.', 401);
 
   await prisma.mealPlan.deleteMany({ where: { userId: user.id } });
   return json({ message: 'Meal plan cleared.' });
 }
+
+export const GET = safeRoute(handleGET);
+export const PUT = safeRoute(handlePUT);
+export const DELETE = safeRoute(handleDELETE);

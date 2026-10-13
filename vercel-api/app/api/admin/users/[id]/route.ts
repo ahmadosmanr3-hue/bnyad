@@ -1,3 +1,4 @@
+import { safeRoute } from '@/lib/http';
 import { prisma } from '@/lib/db';
 import { daysLeft, isAdminAuthed } from '@/lib/admin';
 import { mapProfileUpdate, profileToJson, hashPassword } from '@/lib/auth';
@@ -18,7 +19,7 @@ async function getUserId(params: Params['params']) {
 }
 
 /** Full detail for one user (login info + profile + subscriptions). */
-export async function GET(req: Request, { params }: Params) {
+async function handleGET(req: Request, { params }: Params) {
   if (!isAdminAuthed(req)) return error('Unauthorized.', 401);
 
   const userId = await getUserId(params);
@@ -60,7 +61,7 @@ export async function GET(req: Request, { params }: Params) {
  * and/or any profile fields (display_name, daily_calories, daily_protein,
  * daily_carbs, daily_fat, goal, weight, height, age, gender, ...).
  */
-export async function PATCH(req: Request, { params }: Params) {
+async function handlePATCH(req: Request, { params }: Params) {
   if (!isAdminAuthed(req)) return error('Unauthorized.', 401);
 
   const userId = await getUserId(params);
@@ -140,7 +141,7 @@ export async function PATCH(req: Request, { params }: Params) {
 }
 
 /** Permanently deletes a user and all their data. */
-export async function DELETE(req: Request, { params }: Params) {
+async function handleDELETE(req: Request, { params }: Params) {
   if (!isAdminAuthed(req)) return error('Unauthorized.', 401);
 
   const userId = await getUserId(params);
@@ -154,3 +155,7 @@ export async function DELETE(req: Request, { params }: Params) {
 
   return json({ ok: true });
 }
+
+export const GET = safeRoute(handleGET);
+export const PATCH = safeRoute(handlePATCH);
+export const DELETE = safeRoute(handleDELETE);

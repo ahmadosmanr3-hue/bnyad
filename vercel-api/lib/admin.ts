@@ -1,4 +1,5 @@
 import type { Subscription } from '@prisma/client';
+import { constantTimeEqual } from './security';
 
 /**
  * Stock/revenue split between the two owners of the app.
@@ -17,7 +18,7 @@ export function isAdminAuthed(req: Request): boolean {
     req.headers.get('x-admin-secret') ??
     req.headers.get('authorization')?.replace(/^Bearer\s+/i, '') ??
     null;
-  return !!header && header === secret;
+  return !!header && constantTimeEqual(header, secret);
 }
 
 /** A subscription counts as active if not flagged off and not expired. */

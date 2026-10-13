@@ -1,3 +1,4 @@
 {
+  "git": { "deploymentEnabled": false },
   "buildCommand": "if [ -d vercel-api ]; then (cd vercel-api && npm run vercel-build); else npm run vercel-build; fi"
 }

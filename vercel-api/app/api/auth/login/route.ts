@@ -1,4 +1,6 @@
+import { safeRoute } from '@/lib/http';
 import { prisma } from '@/lib/db';
+import { limitAuth } from '@/lib/security';
 import { createSession, verifyPassword, userToJson } from '@/lib/auth';
 import { error, json, options, readJson } from '@/lib/http';
 
@@ -9,7 +11,7 @@ export function OPTIONS() {
 }
 
 /** Logs a user in with their phone number and password. */
-export async function POST(req: Request) {
+async function handlePOST(req: Request) {
   let body;
   try {
     body = await readJson<{
@@ -23,6 +25,8 @@ export async function POST(req: Request) {
   }
 
   const phone = body.phone?.trim();
+  const limited = await limitAuth(req, phone);
+  if (limited) return limited;
   const password = body.password ?? '';
   const fcmToken = body.fcmToken?.trim() || body.fcm_token?.trim();
 
@@ -58,3 +62,5 @@ export async function POST(req: Request) {
   const token = await createSession(user.id);
   return json({ token, user: userToJson(user) });
 }
+
+export const POST = safeRoute(handlePOST);

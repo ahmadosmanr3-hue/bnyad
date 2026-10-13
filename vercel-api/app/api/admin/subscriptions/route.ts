@@ -1,3 +1,4 @@
+import { safeRoute } from '@/lib/http';
 import { prisma } from '@/lib/db';
 import { daysLeft, isAdminAuthed } from '@/lib/admin';
 import { error, json, options, readJson } from '@/lib/http';
@@ -9,7 +10,7 @@ export function OPTIONS() {
 }
 
 /** Lists all subscriptions, newest first. */
-export async function GET(req: Request) {
+async function handleGET(req: Request) {
   if (!isAdminAuthed(req)) return error('Unauthorized.', 401);
 
   const subs = await prisma.subscription.findMany({
@@ -42,7 +43,7 @@ export async function GET(req: Request) {
  * Records a new subscription (a sale). Body:
  * { userId | phone, days, amount, plan?, currency?, note? }
  */
-export async function POST(req: Request) {
+async function handlePOST(req: Request) {
   if (!isAdminAuthed(req)) return error('Unauthorized.', 401);
 
   const body = await readJson<{
@@ -102,3 +103,6 @@ export async function POST(req: Request) {
 
   return json({ ok: true, subscription: sub }, 201);
 }
+
+export const GET = safeRoute(handleGET);
+export const POST = safeRoute(handlePOST);

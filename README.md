@@ -1,31 +1,27 @@
-# BNYAD — Backend
+# BNYAD — mobile application and backend mirror
 
-Backend-only mirror of the [nutrify](https://github.com/ahmadosmanr3-hue/nutrify) project.
+The existing Flutter application now lives in this repository: `lib/`, `android/`, `ios/`, `assets/`, `fonts/`, `test/`, `web/` and `pubspec.yaml`.
 
-**Flutter app repo:** https://github.com/ahmadosmanr3-hue/nutrify  
-**Last synced:** June 2026
+Mobile source was imported with the owner's approval from `ahmadosmanr3-hue/nutrify` at `92b3b6b9ac17358155c5e76c8eed6f851464ab17`. This is the existing application. Original Git history in this repository is preserved.
 
-## Folders
+Read **[RELEASE_HANDOFF.md](RELEASE_HANDOFF.md)** before building or releasing. See **[AUDIT_REPORT.md](AUDIT_REPORT.md)** for findings, files changed and verification limits.
 
-| Folder | What it is |
-|--------|------------|
-| **`vercel-api/`** | **Production API** — Next.js on Vercel + Neon Postgres + admin panel |
-| **`bnyad-api/`** | Full Laravel 12 API (Railway / Docker) |
-| **`laravel-backend/`** | Drop-in Laravel reference layer |
+## Mobile development
 
-Start with **[BACKEND_README.md](./BACKEND_README.md)**.
+Tested with Flutter 3.47.7 / Dart 3.13.5:
 
-## Production
-
-- API: `https://nutrify-api-lovat.vercel.app/api`
-- Admin: `https://nutrify-api-lovat.vercel.app/admin`
-
-## Clone
-
-```powershell
-git clone https://github.com/ahmadosmanr3-hue/bnyad.git
-cd bnyad\vercel-api
-npm install
+```sh
+flutter pub get
+flutter analyze
+flutter test
 ```
 
-See `vercel-api/VERCEL.md` for deploy steps.
+Build-time configuration uses `API_BASE_URL`, `RC_ANDROID_PUBLIC_KEY` and `RC_IOS_PUBLIC_KEY`. The legacy AI integration and credential limitations are documented in the handoff. Secrets, signing files and native Firebase configuration are not included. Use the published app's existing signing identities and identifiers.
+
+## Backend ownership
+
+`vercel-api/` mirrors the Next.js/Prisma/PostgreSQL backend. The authoritative deployment repository is [bnyad-backend](https://github.com/ahmadosmanr3-hue/bnyad-backend), using `vercel-api` as the deployment root. The documented API/mobile default is `https://nutrify-api-lovat.vercel.app/api`.
+
+`bnyad-api/` is an optional full Laravel deployment. `laravel-backend/` is a reference layer. Production was not migrated to Laravel.
+
+Git-triggered Vercel deployments are disabled in this delivery branch. These changes do not submit a store or production release.

@@ -16,14 +16,14 @@ Backend code for the **Nutrify / BNYAD** Flutter app.
 - **API URL:** `https://nutrify-api-lovat.vercel.app/api`
 - **Admin panel:** `https://nutrify-api-lovat.vercel.app/admin`
 - **Health:** `https://nutrify-api-lovat.vercel.app/api/up`
-- **Demo OTP:** `123456` (while `APP_ENV=development`)
+- **Production OTP:** real delivery required; demo codes are never exposed by production builds.
 
 ### Vercel env vars (production)
 
 | Variable | Purpose |
 |----------|---------|
 | `DATABASE_URL` | Neon Postgres |
-| `APP_ENV` | `development` = demo OTP `123456` |
+| `APP_ENV` | `production`; see `RELEASE_HANDOFF.md` for all required security configuration |
 | `SETUP_SECRET` | One-time food seed (`POST /api/setup`) |
 | `ADMIN_SECRET` | Admin panel password |
 | `FIREBASE_SERVICE_ACCOUNT_JSON` | Push notifications (FCM) |

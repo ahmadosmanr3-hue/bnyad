@@ -1,4 +1,5 @@
-import admin from 'firebase-admin';
+import { cert, getApps, initializeApp, type ServiceAccount } from 'firebase-admin/app';
+import { getMessaging, type Message } from 'firebase-admin/messaging';
 import fs from 'fs';
 import path from 'path';
 
@@ -9,11 +10,11 @@ let initialized = false;
 
 function ensureFirebase() {
   if (initialized) return true;
-  let cred: admin.ServiceAccount | null = null;
+  let cred: ServiceAccount | null = null;
   const raw = process.env.FIREBASE_SERVICE_ACCOUNT_JSON;
   if (raw) {
     try {
-      cred = JSON.parse(raw) as admin.ServiceAccount;
+      cred = JSON.parse(raw) as ServiceAccount;
     } catch (e) {
       console.error('Failed to parse FIREBASE_SERVICE_ACCOUNT_JSON env var:', e);
     }
@@ -27,7 +28,7 @@ function ensureFirebase() {
     for (const p of paths) {
       if (fs.existsSync(p)) {
         try {
-          cred = JSON.parse(fs.readFileSync(p, 'utf8')) as admin.ServiceAccount;
+          cred = JSON.parse(fs.readFileSync(p, 'utf8')) as ServiceAccount;
           console.log(`[Firebase] Loaded credentials from file: ${p}`);
           break;
         } catch (e) {
@@ -43,8 +44,8 @@ function ensureFirebase() {
   }
 
   try {
-    if (!admin.apps.length) {
-      admin.initializeApp({ credential: admin.credential.cert(cred) });
+    if (!getApps().length) {
+      initializeApp({ credential: cert(cred) });
     }
     initialized = true;
     return true;
@@ -70,7 +71,7 @@ export async function sendPush(
   }
 
   try {
-    const message: admin.messaging.Message = {
+    const message: Message = {
       notification: { title, body },
       data: { title, body },
       android: {
@@ -100,8 +101,7 @@ export async function sendPush(
       ...('token' in target ? { token: target.token } : { topic: target.topic }),
     };
 
-    await admin.messaging().send(message);
-    console.log(`[FCM Push Sent] Target: ${targetDesc}, Title: "${title}", Body: "${body}"`);
+    await getMessaging().send(message);
     return { sent: true };
   } catch (e) {
     const msg = e instanceof Error ? e.message : 'FCM send failed';

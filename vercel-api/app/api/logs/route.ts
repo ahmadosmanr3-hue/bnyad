@@ -1,4 +1,6 @@
+import { safeRoute } from '@/lib/http';
 import { prisma } from '@/lib/db';
+import { numberValue, textValue } from '@/lib/validation';
 import { parseDate, todayDate, userFromAuthHeader } from '@/lib/auth';
 import { error, json, options, readJson } from '@/lib/http';
 
@@ -38,7 +40,7 @@ export function OPTIONS() {
   return options();
 }
 
-export async function GET(req: Request) {
+async function handleGET(req: Request) {
   const user = await userFromAuthHeader(req.headers.get('authorization'));
   if (!user) return error('Unauthenticated.', 401);
 
@@ -53,12 +55,12 @@ export async function GET(req: Request) {
   return json({ data: logs.map(logToJson) });
 }
 
-export async function POST(req: Request) {
+async function handlePOST(req: Request) {
   const user = await userFromAuthHeader(req.headers.get('authorization'));
   if (!user) return error('Unauthenticated.', 401);
 
   const body = await readJson<Record<string, unknown>>(req);
-  const name = String(body.name ?? '').trim();
+  const name = textValue(body.name, 'name', 200, true);
   if (!name) return error('Name is required.', 422);
 
   const log = await prisma.dailyLog.create({
@@ -66,11 +68,11 @@ export async function POST(req: Request) {
       userId: user.id,
       externalFoodId: body.external_food_id?.toString() ?? null,
       name,
-      amount: Number(body.amount ?? 0),
-      calories: Number(body.calories ?? 0),
-      protein: Number(body.protein ?? 0),
-      carbs: Number(body.carbs ?? 0),
-      fat: Number(body.fat ?? 0),
+      amount: numberValue(body.amount ?? 0, 'amount', 0, 100000),
+      calories: numberValue(body.calories ?? 0, 'calories', 0, 100000),
+      protein: numberValue(body.protein ?? 0, 'protein', 0, 100000),
+      carbs: numberValue(body.carbs ?? 0, 'carbs', 0, 100000),
+      fat: numberValue(body.fat ?? 0, 'fat', 0, 100000),
       micros: body.micros ?? undefined,
       mealType: body.meal_type?.toString() ?? null,
       loggedAt: parseDate(body.logged_at?.toString()),
@@ -80,3 +82,6 @@ export async function POST(req: Request) {
 
   return json({ data: logToJson(log) }, 201);
 }
+
+export const GET = safeRoute(handleGET);
+export const POST = safeRoute(handlePOST);

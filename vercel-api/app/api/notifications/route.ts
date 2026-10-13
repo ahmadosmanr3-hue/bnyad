@@ -1,3 +1,4 @@
+import { safeRoute } from '@/lib/http';
 import { prisma } from '@/lib/db';
 import { userFromAuthHeader } from '@/lib/auth';
 import { error, json, options } from '@/lib/http';
@@ -12,7 +13,7 @@ export function OPTIONS() {
  * Notifications for the current user: their own + broadcasts.
  * Optional ?since=<ISO date> to fetch only newer ones (for polling).
  */
-export async function GET(req: Request) {
+async function handleGET(req: Request) {
   const user = await userFromAuthHeader(req.headers.get('authorization'));
   if (!user) return error('Unauthenticated.', 401);
 
@@ -38,3 +39,5 @@ export async function GET(req: Request) {
     })),
   });
 }
+
+export const GET = safeRoute(handleGET);

@@ -1,4 +1,6 @@
+import { safeRoute } from '@/lib/http';
 import { prisma } from '@/lib/db';
+import { numberValue } from '@/lib/validation';
 import { parseDate, todayDate, userFromAuthHeader } from '@/lib/auth';
 import { error, json, options, readJson } from '@/lib/http';
 
@@ -8,7 +10,7 @@ export function OPTIONS() {
   return options();
 }
 
-export async function GET(req: Request) {
+async function handleGET(req: Request) {
   const user = await userFromAuthHeader(req.headers.get('authorization'));
   if (!user) return error('Unauthenticated.', 401);
 
@@ -32,13 +34,13 @@ export async function GET(req: Request) {
   });
 }
 
-export async function PUT(req: Request) {
+async function handlePUT(req: Request) {
   const user = await userFromAuthHeader(req.headers.get('authorization'));
   if (!user) return error('Unauthenticated.', 401);
 
   const body = await readJson<{ log_date?: string; glasses?: number }>(req);
   const date = body.log_date ?? todayDate();
-  const glasses = Number(body.glasses ?? 0);
+  const glasses = numberValue(body.glasses ?? 0, 'glasses', 0, 80, true);
 
   const log = await prisma.waterLog.upsert({
     where: {
@@ -56,3 +58,6 @@ export async function PUT(req: Request) {
     },
   });
 }
+
+export const GET = safeRoute(handleGET);
+export const PUT = safeRoute(handlePUT);

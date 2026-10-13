@@ -1,4 +1,6 @@
+import { safeRoute } from '@/lib/http';
 import { prisma } from '@/lib/db';
+import { limitAuth } from '@/lib/security';
 import { DEMO_OTP, verifyOtp, verifyPassword } from '@/lib/auth';
 import { error, json, options, readJson } from '@/lib/http';
 
@@ -13,7 +15,7 @@ export function OPTIONS() {
  * Allows users who may not have the mobile app installed to verify
  * their account via password or SMS OTP and permanently delete it.
  */
-export async function POST(req: Request) {
+async function handlePOST(req: Request) {
   const body = await readJson<{
     phone?: string;
     password?: string;
@@ -21,6 +23,8 @@ export async function POST(req: Request) {
   }>(req);
 
   const phone = body.phone?.trim();
+  const limited = await limitAuth(req, phone);
+  if (limited) return limited;
   if (!phone) {
     return error('Phone number is required.', 422);
   }
@@ -48,12 +52,7 @@ export async function POST(req: Request) {
   // Verification method 2: SMS OTP
   else if (body.otpCode) {
     const code = body.otpCode.trim();
-    const isDemo =
-      process.env.NODE_ENV !== 'production' &&
-      process.env.APP_ENV !== 'production' &&
-      code === DEMO_OTP;
-
-    if (!isDemo) {
+    {
       const otp = await prisma.phoneOtp.findFirst({
         where: { phone, consumedAt: null },
         orderBy: { createdAt: 'desc' },
@@ -66,19 +65,22 @@ export async function POST(req: Request) {
         return error('Too many attempts. Please request a new code.', 429);
       }
 
+      const attempt = await prisma.phoneOtp.updateMany({
+        where: { id: otp.id, consumedAt: null, attempts: { lt: 5 }, expiresAt: { gt: new Date() } },
+        data: { attempts: { increment: 1 } },
+      });
+      if (!attempt.count) return error('Too many attempts. Please request a new code.', 429);
+
       const match = await verifyOtp(code, otp.codeHash);
       if (!match) {
-        await prisma.phoneOtp.update({
-          where: { id: otp.id },
-          data: { attempts: { increment: 1 } },
-        });
         return error('The verification code is incorrect.', 422);
       }
 
-      await prisma.phoneOtp.update({
-        where: { id: otp.id },
+      const claimed = await prisma.phoneOtp.updateMany({
+        where: { id: otp.id, consumedAt: null, expiresAt: { gt: new Date() } },
         data: { consumedAt: new Date() },
       });
+      if (!claimed.count) return error('The verification code was already used.', 422);
     }
   } else {
     return error('Please provide either your password or SMS verification code.', 422);
@@ -94,3 +96,5 @@ export async function POST(req: Request) {
     message: 'Your account and all associated personal data have been permanently deleted.',
   });
 }
+
+export const POST = safeRoute(handlePOST);

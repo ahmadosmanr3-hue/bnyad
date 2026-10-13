@@ -21,19 +21,17 @@ export async function sendSmsOtp(phone: string, code: string): Promise<boolean> 
         provider: 'whatsapp',
         verificationCode: code,
       }),
+      signal: AbortSignal.timeout(10000),
     });
     
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error('OTPIQ SMS Error response:', errorText);
+      console.error('Verification delivery failed:', response.status);
       return false;
     }
     
-    const data = await response.json();
-    console.log('OTPIQ SMS Success response:', data);
     return true;
   } catch (error) {
-    console.error('Failed to send OTPIQ SMS:', error);
+    console.error('Verification delivery failed.');
     return false;
   }
 }

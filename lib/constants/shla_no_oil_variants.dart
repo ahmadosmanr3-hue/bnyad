@@ -1,0 +1,132 @@
+import 'package:nutrify/models/food_item.dart';
+
+/// No-added-oil rows for shla dishes whose default 100g line includes cooking oil (~3 g fat / 27 kcal).
+const String _s100En = '100g';
+const String _s100Ku = '100 گرام';
+const String _s100Ar = '100 غرام';
+
+const List<FoodItem> shlaNoOilVariants = [
+  FoodItem(
+    id: 'shl_fasolia_no_oil_100g',
+    name: 'Bean shla / fasolia (100g, no added oil)',
+    nameAr: 'شوربة فاصوليا بدون زيت',
+    nameKu: 'شلەی فاسۆلیا (100 گرام، بێ ڕۆن)',
+    calories: 123, protein: 7, carbs: 17, fat: 3,
+    category: 'Soup', nutritionReferenceG: 100,
+    servingLabelEn: _s100En, servingLabelKu: _s100Ku, servingLabelAr: _s100Ar,
+  ),
+  FoodItem(
+    id: 'shl_kolk_kurdi_no_oil_100g',
+    name: 'Kurdish zucchini shla (100g, no added oil)',
+    nameAr: 'شوربة كوسا كردية بدون زيت',
+    nameKu: 'شلە کولەکە کوردی (100 گرام، بێ ڕۆن)',
+    calories: 38, protein: 2, carbs: 7, fat: 1,
+    category: 'Soup', nutritionReferenceG: 100,
+    servingLabelEn: _s100En, servingLabelKu: _s100Ku, servingLabelAr: _s100Ar,
+  ),
+  FoodItem(
+    id: 'shl_fish_broth_no_oil_100g',
+    name: 'Fish shla (100g, no added oil)',
+    nameAr: 'شوربة سمك بدون زيت',
+    nameKu: 'شلەی ماسی (100 گرام، بێ ڕۆن)',
+    calories: 24, protein: 4, carbs: 2, fat: 0,
+    category: 'Soup', nutritionReferenceG: 100,
+    servingLabelEn: _s100En, servingLabelKu: _s100Ku, servingLabelAr: _s100Ar,
+  ),
+  FoodItem(
+    id: 'shl_eggplant_no_oil_100g',
+    name: 'Eggplant shla (100g, no added oil)',
+    nameAr: 'شوربة باذنجان بدون زيت',
+    nameKu: 'شلەی بادنجان (100 گرام، بێ ڕۆن)',
+    calories: 73, protein: 1, carbs: 6, fat: 5,
+    category: 'Soup', nutritionReferenceG: 100,
+    servingLabelEn: _s100En, servingLabelKu: _s100Ku, servingLabelAr: _s100Ar,
+  ),
+  FoodItem(
+    id: 'shl_okra_no_oil_100g',
+    name: 'Okra shla (100g, no added oil)',
+    nameAr: 'شوربة بامية بدون زيت',
+    nameKu: 'شلەی بامیە (100 گرام، بێ ڕۆن)',
+    calories: 33, protein: 1, carbs: 7, fat: 0,
+    category: 'Soup', nutritionReferenceG: 100,
+    servingLabelEn: _s100En, servingLabelKu: _s100Ku, servingLabelAr: _s100Ar,
+  ),
+  FoodItem(
+    id: 'shl_rice_yogurt_no_oil_100g',
+    name: 'Rice & yogurt shla (100g, no added oil)',
+    nameAr: 'شوربة أرز ولبن بدون زيت',
+    nameKu: 'شلەی برنج و ماست (100 گرام، بێ ڕۆن)',
+    calories: 40, protein: 3, carbs: 7, fat: 0,
+    category: 'Soup', nutritionReferenceG: 100,
+    servingLabelEn: _s100En, servingLabelKu: _s100Ku, servingLabelAr: _s100Ar,
+  ),
+  FoodItem(
+    id: 'shl_savar_chicken_no_oil_100g',
+    name: 'Savar shla with chicken (100g, no added oil)',
+    nameAr: 'شوربة ساور بدجاج بدون زيت',
+    nameKu: 'شلەی ساوەر بە مریشک (100 گرام، بێ ڕۆن)',
+    calories: 85, protein: 10, carbs: 11, fat: 0,
+    category: 'Soup', nutritionReferenceG: 100,
+    servingLabelEn: _s100En, servingLabelKu: _s100Ku, servingLabelAr: _s100Ar,
+  ),
+  FoodItem(
+    id: 'shl_okra_meat_no_oil_100g',
+    name: 'Okra shla with meat (100g, no added oil)',
+    nameAr: 'شوربة بامية باللحم بدون زيت',
+    nameKu: 'شلەی بامیە بە گۆشت (100 گرام، بێ ڕۆن)',
+    calories: 87, protein: 7, carbs: 8, fat: 3,
+    category: 'Soup', nutritionReferenceG: 100,
+    servingLabelEn: _s100En, servingLabelKu: _s100Ku, servingLabelAr: _s100Ar,
+  ),
+  FoodItem(
+    id: 'shl_chicken_broccoli_no_oil_100g',
+    name: 'Chicken & broccoli shla (100g, no added oil)',
+    nameAr: 'شوربة دجاج وبروكلي بدون زيت',
+    nameKu: 'شلەی مریشک بە بڕۆکلی (100 گرام، بێ ڕۆن)',
+    calories: 37, protein: 4, carbs: 5, fat: 0,
+    category: 'Soup', nutritionReferenceG: 100,
+    servingLabelEn: _s100En, servingLabelKu: _s100Ku, servingLabelAr: _s100Ar,
+  ),
+  FoodItem(
+    id: 'shl_kufta_meat_no_oil_100g',
+    name: 'Kufta meat soup (100g, no added oil)',
+    nameAr: 'شوربة كفتة بلحم بدون زيت',
+    nameKu: 'شلەی کفتە بە گۆشت (100 گرام، بێ ڕۆن)',
+    calories: 188, protein: 15, carbs: 14, fat: 8,
+    category: 'Soup', nutritionReferenceG: 100,
+    servingLabelEn: _s100En, servingLabelKu: _s100Ku, servingLabelAr: _s100Ar,
+  ),
+  FoodItem(
+    id: 'shl_paqla_no_oil_100g',
+    name: 'Chickpea shla (100g, no added oil)',
+    nameAr: 'شوربة حمص بدون زيت',
+    nameKu: 'شلەی نۆک (100 گرام، بێ ڕۆن)',
+    calories: 67, protein: 6, carbs: 13, fat: 0,
+    category: 'Soup', nutritionReferenceG: 100,
+    servingLabelEn: _s100En, servingLabelKu: _s100Ku, servingLabelAr: _s100Ar,
+  ),
+  FoodItem(
+    id: 'kuu_tarkhina_no_oil_100g',
+    name: 'Tarkhina (100g, no added oil)',
+    nameAr: 'ترخينة بدون زيت',
+    nameKu: 'تڕخێنە (100 گرام، بێ ڕۆن)',
+    calories: 90, protein: 5, carbs: 15, fat: 0,
+    category: 'Soup', nutritionReferenceG: 100,
+    servingLabelEn: _s100En, servingLabelKu: _s100Ku, servingLabelAr: _s100Ar,
+  ),
+];
+
+/// Maps default (with-oil) shla 100g id → no-oil 100g id for prep picker groups.
+const Map<String, String> shlaNoOilPairIds = {
+  'shl_fasolia_100g': 'shl_fasolia_no_oil_100g',
+  'shl_kolk_kurdi_100g': 'shl_kolk_kurdi_no_oil_100g',
+  'shl_fish_broth_100g': 'shl_fish_broth_no_oil_100g',
+  'shl_eggplant_100g': 'shl_eggplant_no_oil_100g',
+  'shl_okra_100g': 'shl_okra_no_oil_100g',
+  'shl_rice_yogurt_100g': 'shl_rice_yogurt_no_oil_100g',
+  'shl_savar_chicken_100g': 'shl_savar_chicken_no_oil_100g',
+  'shl_okra_meat_100g': 'shl_okra_meat_no_oil_100g',
+  'shl_chicken_broccoli_100g': 'shl_chicken_broccoli_no_oil_100g',
+  'shl_kufta_meat_100g': 'shl_kufta_meat_no_oil_100g',
+  'shl_paqla_100g': 'shl_paqla_no_oil_100g',
+};

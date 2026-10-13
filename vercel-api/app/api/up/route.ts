@@ -1,7 +1,10 @@
+import { safeRoute } from '@/lib/http';
 import { json } from '@/lib/http';
 
 export const runtime = 'nodejs';
 
-export async function GET() {
+async function handleGET() {
   return json({ status: 'ok' });
 }
+
+export const GET = safeRoute(handleGET);

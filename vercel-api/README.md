@@ -18,7 +18,7 @@ Quick redeploy:
 npx.cmd vercel --prod
 ```
 
-> **Note:** The build command (`npm run vercel-build`) automatically handles Prisma client generation and graceful schema synchronization across Vercel deployments.
+> **Delivery safety:** Git deployments are disabled in both Vercel configurations. Builds generate Prisma clients only; they never change database schemas. See `RELEASE_HANDOFF.md` before deploying this branch.
 
 ## Structure
 
@@ -47,7 +47,11 @@ vercel-api/
 | Name | Required | Description |
 |------|----------|-------------|
 | `DATABASE_URL` | Yes | Neon Postgres URL |
-| `APP_ENV` | Yes | `development` = OTP `123456` |
+| `APP_ENV` | Yes | `production`; demo codes are blocked in any production build |
+| `OTPIQ_API_KEY` | For OTP | Server-only WhatsApp verification gateway key |
+| `ALLOW_DEMO_OTP` | No | `true` enables local-only demo codes; ignored in production builds |
+| `REVENUECAT_SECRET_API_KEY` | For store sync | Server REST API secret from the same RevenueCat project as the mobile SDK |
+| `REVENUECAT_ENTITLEMENT_ID` | No | Existing entitlement identifier; default `all_feature` |
 | `SETUP_SECRET` | Yes | Protects `POST /api/setup` |
 | `ADMIN_SECRET` | Yes | Admin panel password |
 | `FIREBASE_SERVICE_ACCOUNT_JSON` | For push | Firebase Admin service account JSON |

@@ -1,0 +1,4 @@
+{
+  "git": { "deploymentEnabled": false },
+  "buildCommand": "npm run vercel-build"
+}

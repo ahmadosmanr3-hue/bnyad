@@ -1,3 +1,4 @@
+import { safeRoute } from '@/lib/http';
 import { prisma } from '@/lib/db';
 import { userFromAuthHeader } from '@/lib/auth';
 import { error, json, options, readJson } from '@/lib/http';
@@ -9,7 +10,7 @@ export function OPTIONS() {
 }
 
 /** Saves the device FCM token so admin push notifications can reach this user. */
-export async function POST(req: Request) {
+async function handlePOST(req: Request) {
   const user = await userFromAuthHeader(req.headers.get('authorization'));
   if (!user) return error('Unauthenticated.', 401);
 
@@ -24,3 +25,5 @@ export async function POST(req: Request) {
 
   return json({ ok: true });
 }
+
+export const POST = safeRoute(handlePOST);

@@ -1,3 +1,4 @@
+import { safeRoute } from '@/lib/http';
 import { prisma } from '@/lib/db';
 import { isAdminAuthed, splitRevenue } from '@/lib/admin';
 import { error, json, options } from '@/lib/http';
@@ -8,7 +9,7 @@ export function OPTIONS() {
   return options();
 }
 
-export async function GET(req: Request) {
+async function handleGET(req: Request) {
   if (!isAdminAuthed(req)) return error('Unauthorized.', 401);
 
   const now = new Date();
@@ -37,3 +38,5 @@ export async function GET(req: Request) {
     },
   });
 }
+
+export const GET = safeRoute(handleGET);

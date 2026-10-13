@@ -5,7 +5,9 @@
   "scripts": {
     "dev": "next dev",
     "build": "prisma generate && next build",
-    "vercel-build": "prisma generate && node -e \"try{require('child_process').execSync('npx prisma db push --skip-generate',{stdio:'inherit'})}catch(e){console.warn('Prisma db push skipped:',e.message)}\" && next build",
+    "vercel-build": "prisma generate && next build",
+    "typecheck": "tsc --noEmit",
+    "test": "tsx --test tests/*.test.ts",
     "postinstall": "prisma generate",
     "db:seed": "tsx prisma/seed.ts",
     "db:push": "prisma db push"
@@ -13,11 +15,15 @@
   "dependencies": {
     "@prisma/client": "^6.9.0",
     "bcryptjs": "^3.0.2",
-    "firebase-admin": "^13.10.0",
-    "next": "^15.3.4",
+    "firebase-admin": "^14.5.0",
+    "next": "^15.5.27",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"
   },
+  "overrides": {
+    "postcss": "^8.5.30"
+  },
+  "engines": { "node": ">=22 <25" },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
     "@types/node": "^22.15.0",

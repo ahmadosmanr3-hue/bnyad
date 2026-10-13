@@ -1,3 +1,6 @@
+import { safeRoute } from '@/lib/http';
+import { verifiedStoreEntitlement } from '@/lib/subscription';
+import { RequestError } from '@/lib/http';
 import { prisma } from '@/lib/db';
 import { userFromAuthHeader } from '@/lib/auth';
 import { daysLeft } from '@/lib/admin';
@@ -10,9 +13,29 @@ export function OPTIONS() {
 }
 
 /** Current user's premium status, used by the app to unlock premium features. */
-export async function GET(req: Request) {
+async function handleGET(req: Request) {
   const user = await userFromAuthHeader(req.headers.get('authorization'));
   if (!user) return error('Unauthenticated.', 401);
+
+  const store = user.subscriptions.find((s) => s.plan === 'store_verified' && s.active);
+  if (store && process.env.REVENUECAT_SECRET_API_KEY) {
+    try {
+      const verified = await verifiedStoreEntitlement(user.id);
+      await prisma.subscription.updateMany({
+        where: { userId: user.id, plan: 'store_verified' },
+        data: { expiresAt: verified.expiresAt, active: true },
+      });
+    } catch (e) {
+      if (e instanceof RequestError && e.status === 403) {
+        await prisma.subscription.updateMany({
+          where: { userId: user.id, plan: 'store_verified', active: true },
+          data: { active: false },
+        });
+      }
+      // Upstream outages preserve previous verified status until its known
+      // expiry. An actual revoked/expired entitlement affects store rows only.
+    }
+  }
 
   const now = new Date();
   const sub = await prisma.subscription.findFirst({
@@ -29,48 +52,22 @@ export async function GET(req: Request) {
 }
 
 /** Saves/synchronizes a user subscription on the server. */
-export async function POST(req: Request) {
+async function handlePOST(req: Request) {
   const user = await userFromAuthHeader(req.headers.get('authorization'));
   if (!user) return error('Unauthenticated.', 401);
-
-  let body;
-  try {
-    body = await readJson<{
-      plan?: string;
-      expiresAt?: string;
-      amount?: number;
-      currency?: string;
-    }>(req);
-  } catch {
-    return error('Invalid JSON body.', 400);
-  }
-
-  const plan = body.plan?.trim() || 'custom';
-  const amount = Number(body.amount ?? 0);
-  const currency = body.currency?.trim() || 'USD';
-
-  if (!body.expiresAt) {
-    return error('expiresAt is required.', 422);
-  }
-  const expiresAt = new Date(body.expiresAt);
-  if (isNaN(expiresAt.getTime())) {
-    return error('Invalid expiresAt date format.', 422);
-  }
-
-  const sub = await prisma.subscription.create({
-    data: {
-      userId: user.id,
-      plan,
-      amount,
-      currency,
-      expiresAt,
-      active: true,
-    },
+  const verified = await verifiedStoreEntitlement(user.id);
+  const sub = await prisma.$transaction(async (tx) => {
+    await tx.$queryRaw`SELECT id FROM users WHERE id = ${user.id} FOR UPDATE`;
+    const current = await tx.subscription.findFirst({
+      where: { userId: user.id, plan: 'store_verified' }, orderBy: { id: 'desc' },
+    });
+    const data = { expiresAt: verified.expiresAt, active: true, note: verified.product };
+    return current
+      ? tx.subscription.update({ where: { id: current.id }, data })
+      : tx.subscription.create({ data: { userId: user.id, plan: 'store_verified', amount: 0, ...data } });
   });
-
-  console.log(
-    `[Subscription purchased] User ID: ${user.id}, Name: "${user.name}", Plan: "${plan}", Amount: ${amount} ${currency}, Expires: ${expiresAt.toISOString()}`
-  );
-
   return json({ ok: true, subscription: sub }, 201);
 }
+
+export const GET = safeRoute(handleGET);
+export const POST = safeRoute(handlePOST);

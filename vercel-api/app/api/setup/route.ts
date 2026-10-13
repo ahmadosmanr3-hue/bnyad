@@ -1,3 +1,4 @@
+import { safeRoute } from '@/lib/http';
 import { seedFoods } from '@/lib/seedFoods';
 import { error, json, options } from '@/lib/http';
 
@@ -9,7 +10,7 @@ export function OPTIONS() {
 }
 
 /** One-time food seed. Header: X-Setup-Secret: YOUR_SETUP_SECRET */
-export async function POST(req: Request) {
+async function handlePOST(req: Request) {
   const secret = process.env.SETUP_SECRET;
   if (!secret) {
     return error('SETUP_SECRET env var is not configured.', 503);
@@ -26,3 +27,5 @@ export async function POST(req: Request) {
     return error(msg, 500);
   }
 }
+
+export const POST = safeRoute(handlePOST);

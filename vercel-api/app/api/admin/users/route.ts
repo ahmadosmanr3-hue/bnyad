@@ -1,3 +1,4 @@
+import { safeRoute } from '@/lib/http';
 import { prisma } from '@/lib/db';
 import { daysLeft, isAdminAuthed } from '@/lib/admin';
 import { error, json, options, readJson } from '@/lib/http';
@@ -10,7 +11,7 @@ export function OPTIONS() {
 }
 
 /** Lists users with login info + current subscription status. Supports ?q=search. */
-export async function GET(req: Request) {
+async function handleGET(req: Request) {
   if (!isAdminAuthed(req)) return error('Unauthorized.', 401);
 
   const url = new URL(req.url);
@@ -61,7 +62,7 @@ export async function GET(req: Request) {
 }
 
 /** Creates a new user. */
-export async function POST(req: Request) {
+async function handlePOST(req: Request) {
   if (!isAdminAuthed(req)) return error('Unauthorized.', 401);
 
   let body;
@@ -123,3 +124,6 @@ export async function POST(req: Request) {
 
   return json({ ok: true, data: userToJson(newUser) });
 }
+
+export const GET = safeRoute(handleGET);
+export const POST = safeRoute(handlePOST);

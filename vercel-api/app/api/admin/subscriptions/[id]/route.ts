@@ -1,3 +1,4 @@
+import { safeRoute } from '@/lib/http';
 import { prisma } from '@/lib/db';
 import { isAdminAuthed } from '@/lib/admin';
 import { error, json, options } from '@/lib/http';
@@ -11,7 +12,7 @@ export function OPTIONS() {
 type Params = { params: Promise<{ id: string }> };
 
 /** Cancels a subscription (sets active = false). */
-export async function DELETE(req: Request, { params }: Params) {
+async function handleDELETE(req: Request, { params }: Params) {
   if (!isAdminAuthed(req)) return error('Unauthorized.', 401);
 
   const { id } = await params;
@@ -24,3 +25,5 @@ export async function DELETE(req: Request, { params }: Params) {
   await prisma.subscription.update({ where: { id: subId }, data: { active: false } });
   return json({ ok: true });
 }
+
+export const DELETE = safeRoute(handleDELETE);

@@ -1,3 +1,4 @@
+import { safeRoute } from '@/lib/http';
 import { prisma } from '@/lib/db';
 import { isAdminAuthed } from '@/lib/admin';
 import { error, json, options } from '@/lib/http';
@@ -16,7 +17,7 @@ type Params = { params: Promise<{ id: string }> };
  * the profile back to defaults (keeps the display name + language).
  * Login credentials and subscriptions are kept.
  */
-export async function POST(req: Request, { params }: Params) {
+async function handlePOST(req: Request, { params }: Params) {
   if (!isAdminAuthed(req)) return error('Unauthorized.', 401);
 
   const { id } = await params;
@@ -83,3 +84,5 @@ export async function POST(req: Request, { params }: Params) {
 
   return json({ ok: true });
 }
+
+export const POST = safeRoute(handlePOST);

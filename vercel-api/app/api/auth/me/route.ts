@@ -1,3 +1,4 @@
+import { safeRoute } from '@/lib/http';
 import { prisma } from '@/lib/db';
 import { userFromAuthHeader, userToJson } from '@/lib/auth';
 import { error, json, options } from '@/lib/http';
@@ -8,13 +9,13 @@ export function OPTIONS() {
   return options();
 }
 
-export async function GET(req: Request) {
+async function handleGET(req: Request) {
   const user = await userFromAuthHeader(req.headers.get('authorization'));
   if (!user) return error('Unauthenticated.', 401);
   return json({ data: userToJson(user) });
 }
 
-export async function DELETE(req: Request) {
+async function handleDELETE(req: Request) {
   const user = await userFromAuthHeader(req.headers.get('authorization'));
   if (!user) return error('Unauthenticated.', 401);
 
@@ -25,4 +26,8 @@ export async function DELETE(req: Request) {
     message: 'Account and associated data deleted successfully.',
   });
 }
+
+
+export const GET = safeRoute(handleGET);
+export const DELETE = safeRoute(handleDELETE);
 

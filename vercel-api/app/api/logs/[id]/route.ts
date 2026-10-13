@@ -1,3 +1,4 @@
+import { safeRoute } from '@/lib/http';
 import { prisma } from '@/lib/db';
 import { userFromAuthHeader } from '@/lib/auth';
 import { error, json, options } from '@/lib/http';
@@ -8,7 +9,7 @@ export function OPTIONS() {
   return options();
 }
 
-export async function DELETE(
+async function handleDELETE(
   req: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
@@ -23,3 +24,5 @@ export async function DELETE(
   await prisma.dailyLog.delete({ where: { id: logId } });
   return json({ message: 'Deleted.' });
 }
+
+export const DELETE = safeRoute(handleDELETE);

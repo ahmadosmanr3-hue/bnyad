@@ -1,4 +1,6 @@
+import { safeRoute } from '@/lib/http';
 import { prisma } from '@/lib/db';
+import { numberValue } from '@/lib/validation';
 import { parseDate, todayDate, userFromAuthHeader } from '@/lib/auth';
 import { error, json, options, readJson } from '@/lib/http';
 
@@ -8,12 +10,12 @@ export function OPTIONS() {
   return options();
 }
 
-export async function POST(req: Request) {
+async function handlePOST(req: Request) {
   const user = await userFromAuthHeader(req.headers.get('authorization'));
   if (!user) return error('Unauthenticated.', 401);
 
   const body = await readJson<{ weight?: number; log_date?: string }>(req);
-  const weight = Number(body.weight);
+  const weight = numberValue(body.weight, 'weight', 1, 600);
   if (!weight || weight <= 0) return error('Weight is required.', 422);
 
   const logDate = parseDate(body.log_date ?? todayDate());
@@ -31,3 +33,5 @@ export async function POST(req: Request) {
     },
   });
 }
+
+export const POST = safeRoute(handlePOST);

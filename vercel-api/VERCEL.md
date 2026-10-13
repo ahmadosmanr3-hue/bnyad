@@ -1,5 +1,7 @@
 # Deploy BNYAD API on Vercel
 
+> This is an older deployment guide. Follow `../RELEASE_HANDOFF.md` for the current security migration, server verification configuration, and release ordering. Production deployment requires the release developer's explicit action. Git deployments are disabled in this branch.
+
 Laravel **cannot** run on Vercel. This folder is a **Node.js serverless API** that matches the same endpoints your Flutter app already uses.
 
 ---
@@ -26,7 +28,9 @@ Laravel **cannot** run on Vercel. This folder is a **Node.js serverless API** th
 | Name | Value |
 |------|--------|
 | `DATABASE_URL` | Neon connection string |
-| `APP_ENV` | `development` *(demo OTP `123456`)* |
+| `APP_ENV` | `production` |
+| `OTPIQ_API_KEY` | server-only real verification gateway credential |
+| `REVENUECAT_SECRET_API_KEY` | server-only RevenueCat REST API credential |
 | `SETUP_SECRET` | any long random string you make up |
 | `ADMIN_SECRET` | password for the admin panel (make up a strong one) |
 | `FIREBASE_SERVICE_ACCOUNT_JSON` | Firebase Admin JSON — required for push when app is closed (see `docs/FIREBASE_SETUP.md`) |
@@ -77,7 +81,7 @@ cd c:\Users\damon\Desktop\nutrify
 flutter build apk --release
 ```
 
-Login: OTP **`123456`**
+Production login uses a real delivered verification code. Local demo codes require `ALLOW_DEMO_OTP=true` and are unavailable in a production build.
 
 ---
 
@@ -120,6 +124,5 @@ user pays you (cash / transfer / etc.). The app reads its status from
 
 - **Vercel free tier** — no sleep like Render; good for API
 - **Neon free tier** — 512MB Postgres, enough for this app
-- Set `APP_ENV=production` when you wire real SMS (OTP won't be `123456`)
-- After deploy, `prisma db push` (in the build) creates the new `subscriptions`
-  and `notifications` tables automatically.
+- Set `APP_ENV=production` and configure `OTPIQ_API_KEY` before production use.
+- Schema updates are manual. Builds never run `prisma db push`. See `RELEASE_HANDOFF.md` for the additive rate-limit table migration.

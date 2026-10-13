@@ -1,3 +1,4 @@
+import { safeRoute } from '@/lib/http';
 import { prisma } from '@/lib/db';
 import { mapProfileUpdate, profileToJson, userFromAuthHeader } from '@/lib/auth';
 import { error, json, options, readJson } from '@/lib/http';
@@ -8,7 +9,7 @@ export function OPTIONS() {
   return options();
 }
 
-export async function GET(req: Request) {
+async function handleGET(req: Request) {
   const user = await userFromAuthHeader(req.headers.get('authorization'));
   if (!user) return error('Unauthenticated.', 401);
 
@@ -20,7 +21,7 @@ export async function GET(req: Request) {
   return json({ data: profileToJson(profile) });
 }
 
-export async function PUT(req: Request) {
+async function handlePUT(req: Request) {
   const user = await userFromAuthHeader(req.headers.get('authorization'));
   if (!user) return error('Unauthenticated.', 401);
 
@@ -36,11 +37,11 @@ export async function PUT(req: Request) {
   return json({ data: profileToJson(profile) });
 }
 
-export async function PATCH(req: Request) {
+async function handlePATCH(req: Request) {
   return PUT(req);
 }
 
-export async function DELETE(req: Request) {
+async function handleDELETE(req: Request) {
   const user = await userFromAuthHeader(req.headers.get('authorization'));
   if (!user) return error('Unauthenticated.', 401);
 
@@ -51,4 +52,10 @@ export async function DELETE(req: Request) {
     message: 'Profile and account deleted successfully.',
   });
 }
+
+
+export const GET = safeRoute(handleGET);
+export const PUT = safeRoute(handlePUT);
+export const PATCH = safeRoute(handlePATCH);
+export const DELETE = safeRoute(handleDELETE);
 
