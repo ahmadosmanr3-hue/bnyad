@@ -5,13 +5,17 @@ Start from branch `codex/bnyad-stability-2026-10-13`. The `dev` scheme uses
 scheme, bundle identifier, team and push entitlements are retained. Never install
 the Runner/production bundle as a development test.
 
-The development entry point is `lib/main_development.dart`. It deliberately uses
-the reserved `.invalid` domain, disables AI before any AI request, and skips Dart
-push, notifications and RevenueCat initialization. Native Firebase/push is also
-disabled for dev builds. No staging backend was provided. Login, signup and
-remote features are therefore unavailable; this build is for startup and local
-UI smoke tests, not end-to-end backend testing. Use only fictional test details.
-Do not change the development URL to production to work around unavailable login.
+The development entry point is `lib/main_development.dart`. Configure an approved
+isolated staging URL using STAGING_API_BASE_URL and STAGING_ENVIRONMENT_ID as
+described in STAGING_SETUP.md. The old hard-coded `.invalid` placeholder is removed.
+There is NO production fallback: missing configuration shows a staging setup
+screen, and a readiness handshake must pass before the application starts or
+credentials can be sent. The known production host and local/insecure URLs are
+blocked. Use only fictional test accounts/profile data.
+
+AI is disabled before any AI request; Dart notifications, push and RevenueCat
+initialization are skipped, as is native Firebase/push. Live testing must wait
+until the isolated backend/database and required approvals are ready.
 
 ## Prerequisites
 
@@ -35,7 +39,9 @@ pod install
 cd ..
 flutter analyze
 flutter test
-flutter build ios --profile --no-codesign --flavor dev -t lib/main_development.dart
+flutter build ios --profile --no-codesign --flavor dev -t lib/main_development.dart \
+  --dart-define=STAGING_API_BASE_URL=https://ACTUAL_STAGING_HOST/api \
+  --dart-define=STAGING_ENVIRONMENT_ID=bnyad-staging-2026-10-14
 
 # Set these to the team and connected phone you verified locally.
 export BNYAD_DEV_TEAM='YOUR_TEAM_ID'

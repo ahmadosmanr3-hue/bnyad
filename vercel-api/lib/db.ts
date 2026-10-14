@@ -1,4 +1,9 @@
 import { PrismaClient } from '@prisma/client';
+import { assertStagingDatabase } from './staging';
+
+// Runs before a staging Prisma client can issue any query, including auth writes.
+// Production behavior/configuration is unchanged.
+assertStagingDatabase();
 
 const globalForPrisma = globalThis as unknown as { prisma: PrismaClient };
 
