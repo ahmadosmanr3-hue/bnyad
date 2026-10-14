@@ -38,6 +38,13 @@ class BarcodeLookupResult {
 
 /// Looks up packaged foods by barcode using multiple free databases + local food DB.
 class FoodBarcodeService {
+  /// Optional transport injection for isolated previews/tests. Normal builds
+  /// keep the existing HTTP transport; demo builds supply an in-memory client.
+  static http.Client? clientOverride;
+
+  Future<http.Response> _get(Uri uri) => clientOverride != null
+      ? clientOverride!.get(uri, headers: _httpHeaders)
+      : http.get(uri, headers: _httpHeaders);
   static const _offV2Base = 'https://world.openfoodfacts.org/api/v2/product';
   static const _offV0Base = 'https://world.openfoodfacts.org/api/v0/product';
   static const _offSearchBase = 'https://world.openfoodfacts.org/api/v2/search';
@@ -250,7 +257,7 @@ class FoodBarcodeService {
     try {
       final base = useV0 ? _offV0Base : _offV2Base;
       final uri = Uri.parse('$base/$barcode.json');
-      final response = await http.get(uri, headers: _httpHeaders).timeout(const Duration(seconds: 12));
+      final response = await _get(uri).timeout(const Duration(seconds: 12));
       if (response.statusCode != 200) return null;
 
       final root = jsonDecode(response.body) as Map<String, dynamic>;
@@ -273,7 +280,7 @@ class FoodBarcodeService {
         'page_size': '3',
         'fields': 'code,product_name,product_name_en,product_name_ar,product_name_fr,brands,nutriments,serving_size,serving_quantity,product_quantity',
       });
-      final response = await http.get(uri, headers: _httpHeaders).timeout(const Duration(seconds: 12));
+      final response = await _get(uri).timeout(const Duration(seconds: 12));
       if (response.statusCode != 200) return null;
 
       final root = jsonDecode(response.body) as Map<String, dynamic>;
@@ -298,7 +305,7 @@ class FoodBarcodeService {
         'code': barcode,
         'page_size': '3',
       });
-      final response = await http.get(uri, headers: _httpHeaders).timeout(const Duration(seconds: 12));
+      final response = await _get(uri).timeout(const Duration(seconds: 12));
       if (response.statusCode != 200) return null;
 
       final root = jsonDecode(response.body) as Map<String, dynamic>;
@@ -324,7 +331,7 @@ class FoodBarcodeService {
         'sort_by': 'unique_scans_n',
         'fields': 'code,product_name,product_name_en,product_name_ar,brands,nutriments,serving_size,serving_quantity,product_quantity',
       });
-      final response = await http.get(uri, headers: _httpHeaders).timeout(const Duration(seconds: 12));
+      final response = await _get(uri).timeout(const Duration(seconds: 12));
       if (response.statusCode != 200) return null;
 
       final root = jsonDecode(response.body) as Map<String, dynamic>;
@@ -347,7 +354,7 @@ class FoodBarcodeService {
   Future<({String title, String? brand})?> _lookupUpcItemDb(String barcode) async {
     try {
       final uri = Uri.parse(_upcItemDbBase).replace(queryParameters: {'upc': barcode});
-      final response = await http.get(uri, headers: _httpHeaders).timeout(const Duration(seconds: 10));
+      final response = await _get(uri).timeout(const Duration(seconds: 10));
       if (response.statusCode != 200) return null;
 
       final root = jsonDecode(response.body) as Map<String, dynamic>;

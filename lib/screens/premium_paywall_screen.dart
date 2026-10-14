@@ -36,6 +36,7 @@ class _PremiumPaywallSheetState extends State<_PremiumPaywallSheet> {
   }
 
   Future<void> _loadPrices() async {
+    if (kIsWeb) return; // Browser previews must not contact mobile billing SDKs.
     try {
       final products = await Purchases.getProducts(['BNYAD_M1', 'BNYAD_Y1']);
       if (!mounted) return;

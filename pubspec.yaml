@@ -25,6 +25,8 @@ dependencies:
   purchases_flutter: ^10.3.0
   flutter_secure_storage: ^10.3.1
   url_launcher: ^6.3.1
+  # Lets the isolated browser demo disable external navigation.
+  url_launcher_platform_interface: ^2.3.2
 
 dev_dependencies:
   flutter_test:
