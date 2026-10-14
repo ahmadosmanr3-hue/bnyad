@@ -10,6 +10,7 @@ import 'package:nutrify/models/meal.dart';
 /// REST client for the active Next.js backend and compatible bearer-token API.
 class ApiService {
   final String baseUrl;
+  final bool aiEnabled;
   String? _token;
   int? _userId;
 
@@ -56,6 +57,10 @@ class ApiService {
   ) async {
     final owner = _token;
     aiErrorCode = 'failed';
+    if (!aiEnabled) {
+      aiErrorCode = 'unavailable';
+      return null;
+    }
     if (!hasToken) {
       aiErrorCode = 'signIn';
       return null;
@@ -103,6 +108,7 @@ class ApiService {
 
   ApiService({
     required this.baseUrl,
+    this.aiEnabled = true,
     FlutterSecureStorage? storage,
     http_pkg.Client? client,
   }) : _secureStorage =

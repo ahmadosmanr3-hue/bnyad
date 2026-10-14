@@ -9,9 +9,14 @@ import FirebaseMessaging
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
-    if FirebaseApp.app() == nil {
+    #if !BNYAD_DEVELOPMENT
+    // Firebase's default configure() raises a native exception without this
+    // private release file. Missing optional push must not crash on startup.
+    if FirebaseApp.app() == nil,
+       Bundle.main.path(forResource: "GoogleService-Info", ofType: "plist") != nil {
       FirebaseApp.configure()
     }
+    #endif
 
     GeneratedPluginRegistrant.register(with: self)
 
@@ -19,18 +24,24 @@ import FirebaseMessaging
       UNUserNotificationCenter.current().delegate = self as? UNUserNotificationCenterDelegate
     }
 
-    Messaging.messaging().delegate = self
-    application.registerForRemoteNotifications()
+    #if !BNYAD_DEVELOPMENT
+    if FirebaseApp.app() != nil {
+      Messaging.messaging().delegate = self
+      application.registerForRemoteNotifications()
+    }
+    #endif
 
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
 
   override func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
-    Messaging.messaging().apnsToken = deviceToken
+    if FirebaseApp.app() != nil {
+      Messaging.messaging().apnsToken = deviceToken
+    }
     super.application(application, didRegisterForRemoteNotificationsWithDeviceToken: deviceToken)
   }
 
   func messaging(_ messaging: Messaging, didReceiveRegistrationToken fcmToken: String?) {
-    print("Firebase registration token: \(String(describing: fcmToken))")
+    // Do not write device registration tokens to logs.
   }
 }

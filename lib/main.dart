@@ -27,9 +27,17 @@ import 'package:nutrify/constants/app_branding.dart';
 import 'package:nutrify/widgets/app_logo.dart';
 
 void main() async {
+  await runBnyad();
+}
+
+Future<void> runBnyad({
+  String apiBaseUrl = private_keys.apiBaseUrl,
+  bool aiEnabled = true,
+  bool optionalIntegrations = true,
+}) async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  final apiService = ApiService(baseUrl: private_keys.apiBaseUrl);
+  final apiService = ApiService(baseUrl: apiBaseUrl, aiEnabled: aiEnabled);
 
   final appState = AppState(
     authService: AuthService(api: apiService),
@@ -38,7 +46,9 @@ void main() async {
   runApp(
     ChangeNotifierProvider(create: (_) => appState, child: const BnyadApp()),
   );
-  unawaited(_initializeOptionalServices(appState));
+  if (optionalIntegrations) {
+    unawaited(_initializeOptionalServices(appState));
+  }
 }
 
 Future<void> _initializeOptionalServices(AppState appState) async {

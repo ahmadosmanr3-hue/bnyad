@@ -66,6 +66,21 @@ void main() {
       expect(r.body.contains('dailyCalories'), false);
     },
   );
+  test('development AI is disabled without any network request', () async {
+    var requests = 0;
+    final api = ApiService(
+      baseUrl: 'https://bnyad-development.invalid/api',
+      aiEnabled: false,
+      client: MockClient((r) async {
+        requests++;
+        return http.Response('{}', 200);
+      }),
+    );
+    await api.loadToken();
+    expect(await api.generateAi('food', {'image': 'fixture'}), isNull);
+    expect(api.aiErrorCode, 'unavailable');
+    expect(requests, 0);
+  });
   test('declined or revoked consent prevents an AI POST', () async {
     var posts = 0;
     final api = ApiService(
