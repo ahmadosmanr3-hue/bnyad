@@ -12,6 +12,7 @@ import 'demo/demo_guard.dart';
 import 'demo/demo_shell.dart';
 import 'demo/demo_storage.dart';
 import 'demo/demo_url_launcher.dart';
+import 'demo/demo_steps.dart';
 
 /// Explicit opt-in: production main.dart never imports this entrypoint.
 Future<void> main() async {
@@ -45,6 +46,8 @@ Future<void> main() async {
     authService: AuthService(api: api),
     apiService: api,
     initializeOnCreate: false,
+    stepHealthProvider: DemoStepHealthProvider(),
+    stepSettingsStore: DemoStepSettingsStore(),
   );
   await state.initializeSession();
   runApp(

@@ -65,6 +65,9 @@ android {
 }
 
 dependencies {
+    // Stable, read-only native Health Connect integration (no Flutter health SDK).
+    implementation("androidx.health.connect:connect-client:1.1.0")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.7")
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
 }
 

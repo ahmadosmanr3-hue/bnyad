@@ -1,5 +1,8 @@
 import 'dart:io' show InternetAddress;
 import 'dart:async';
+import '../activity/step_tracker.dart';
+import '../activity/step_health_provider.dart';
+import '../activity/step_models.dart';
 import 'dart:convert';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/foundation.dart';
@@ -142,14 +145,36 @@ class AppState extends ChangeNotifier {
     required AuthService authService,
     required ApiService apiService,
     bool initializeOnCreate = true,
+    StepHealthProvider? stepHealthProvider,
+    StepSettingsStore? stepSettingsStore,
   }) : _authService = authService,
        _apiService = apiService {
+    steps = StepTracker(
+      provider: stepHealthProvider ?? NativeStepHealthProvider(),
+      store: stepSettingsStore ?? LocalStepSettingsStore(),
+      profile: () => _userProfile,
+      weightKg: () => latestWalkingWeight(
+        _weightHistory,
+        DateTime.now(),
+        _userProfile?.weight,
+      ),
+    )..addListener(notifyListeners);
+    steps.setForeground(
+      WidgetsBinding.instance.lifecycleState == AppLifecycleState.resumed,
+    );
     _apiService.onSessionInvalidated = () {
       _sessionNeedsRetry = false;
       _clearData();
     };
     if (initializeOnCreate) unawaited(initializeSession());
   }
+
+  late final StepTracker steps;
+  Future<void> _syncStepsAccount() => steps.attach(
+    isLoggedIn
+        ? '${_apiService.baseUrl}|${_isMockUser ? 'guest' : _apiService.userId}'
+        : null,
+  );
 
   Future<void> initializeSession() async {
     _authLoading = true;
@@ -449,6 +474,7 @@ class AppState extends ChangeNotifier {
     }
 
     await _ensureCurrentNutritionDay();
+    unawaited(_syncStepsAccount());
     // Opening the app is not a new weight measurement.
 
     _startConnectivityListener();
@@ -564,6 +590,7 @@ class AppState extends ChangeNotifier {
   bool get isMockUser => _isMockUser;
 
   void _clearData() {
+    steps.detach();
     if (_isMockUser) return;
 
     _userProfile = null;
@@ -590,6 +617,10 @@ class AppState extends ChangeNotifier {
   }
 
   Future<void> onAppResumed() async {
+    await _syncStepsAccount();
+    steps.setForeground(
+      WidgetsBinding.instance.lifecycleState == AppLifecycleState.resumed,
+    );
     await _ensureCurrentNutritionDay();
 
     // Re-fetch data from API if logged in.
@@ -772,6 +803,7 @@ class AppState extends ChangeNotifier {
     _authLoading = false;
     _sessionNeedsRetry = false;
     _applySessionUser(userData);
+    unawaited(_syncStepsAccount());
     await _loadMicroGoals(prefs);
     await _loadSavedRecipe(prefs);
     await _loadReminders(prefs);
@@ -822,12 +854,14 @@ class AppState extends ChangeNotifier {
       await prefs.setBool('is_guest', true);
       await prefs.setBool('guest_onboarded', false);
       await prefs.setString('guest_display_name', _displayName);
+      unawaited(_syncStepsAccount());
 
       notifyListeners();
     } catch (_) {}
   }
 
   Future<void> clearMockUser() async {
+    await steps.eraseAccount();
     _isMockUser = false;
     _displayName = '';
     _userProfile = null;
@@ -878,6 +912,7 @@ class AppState extends ChangeNotifier {
     }
     final success = await _authService.deleteAccount();
     if (!success) return false;
+    await steps.eraseAccount();
     if (!kIsWeb) {
       unawaited(Purchases.logOut());
     }
@@ -2140,6 +2175,8 @@ class AppState extends ChangeNotifier {
 
   @override
   void dispose() {
+    steps.removeListener(notifyListeners);
+    steps.dispose();
     _connectivitySub?.cancel();
     _apiService.onSessionInvalidated = null;
     _apiService.dispose();

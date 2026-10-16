@@ -2,6 +2,8 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>NSHealthShareUsageDescription</key>
+	<string>With your permission, BNYAD Dev reads steps and optional walking/running distance on this device for activity and estimated walking calories. Health data is never uploaded or sent to AI.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>Allow camera access to scan food and estimate nutrition.</string>
 	<key>NSPhotoLibraryUsageDescription</key>

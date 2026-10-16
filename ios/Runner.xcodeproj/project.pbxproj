@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A8B100000000000000000001 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = A8B100000000000000000002 /* InfoPlist.strings */; };
 		04B492DD2FFEC35D00D7816A /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 04B492DC2FFEC35D00D7816A /* GoogleService-Info.plist */; };
 		0639F799EB1C2BEDBAE5BC2D /* Pods_Runner.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 55F4C719AFFC07D5177BC9E3 /* Pods_Runner.framework */; };
 		1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */ = {isa = PBXBuildFile; fileRef = 1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */; };
@@ -45,6 +46,10 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		A8B100000000000000000003 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		A8B100000000000000000004 /* ar */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ar; path = ar.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		A8B100000000000000000005 /* ckb */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ckb; path = ckb.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		A8B100000000000000000006 /* ku */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ku; path = ku.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		005EEA41600AC2D9B383054A /* Pods-RunnerTests.profile.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RunnerTests.profile.xcconfig"; path = "Target Support Files/Pods-RunnerTests/Pods-RunnerTests.profile.xcconfig"; sourceTree = "<group>"; };
 		0252C18C9329EFAD8F5CAB25 /* Pods-RunnerTests.release-dev.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RunnerTests.release-dev.xcconfig"; path = "Target Support Files/Pods-RunnerTests/Pods-RunnerTests.release-dev.xcconfig"; sourceTree = "<group>"; };
 		04B492DC2FFEC35D00D7816A /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
@@ -159,6 +164,7 @@
 				97C146FD1CF9000F007C117D /* Assets.xcassets */,
 				97C146FF1CF9000F007C117D /* LaunchScreen.storyboard */,
 				97C147021CF9000F007C117D /* Info.plist */,
+				A8B100000000000000000002 /* InfoPlist.strings */,
 				04B492DC2FFEC35D00D7816A /* GoogleService-Info.plist */,
 				1498D2321E8E86230040F4C2 /* GeneratedPluginRegistrant.h */,
 				1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */,
@@ -253,6 +259,9 @@
 					97C146ED1CF9000F007C117D = {
 						CreatedOnToolsVersion = 7.3.1;
 						LastSwiftMigration = 1100;
+						SystemCapabilities = {
+							com.apple.HealthKit = { enabled = 1; };
+						};
 					};
 				};
 			};
@@ -262,6 +271,9 @@
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
+				ar,
+				ckb,
+				ku,
 				Base,
 			);
 			mainGroup = 97C146E51CF9000F007C117D;
@@ -291,6 +303,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				97C147011CF9000F007C117D /* LaunchScreen.storyboard in Resources */,
+				A8B100000000000000000001 /* InfoPlist.strings in Resources */,
 				04B492DD2FFEC35D00D7816A /* GoogleService-Info.plist in Resources */,
 				3B3967161E833CAA004F5970 /* AppFrameworkInfo.plist in Resources */,
 				97C146FE1CF9000F007C117D /* Assets.xcassets in Resources */,
@@ -442,6 +455,17 @@
 /* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
+		A8B100000000000000000002 /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				A8B100000000000000000003 /* en */,
+				A8B100000000000000000004 /* ar */,
+				A8B100000000000000000005 /* ckb */,
+				A8B100000000000000000006 /* ku */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
 		97C146FA1CF9000F007C117D /* Main.storyboard */ = {
 			isa = PBXVariantGroup;
 			children = (

@@ -1,4 +1,5 @@
 import 'dart:math';
+import '../activity/step_widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:nutrify/providers/app_state.dart';
@@ -393,6 +394,20 @@ class _AnimatedNutritionCardState extends State<_AnimatedNutritionCard>
                 ),
               );
             },
+          ),
+          const SizedBox(height: 16),
+          Consumer<AppState>(
+            builder: (context, state, _) => DailyActivityWidget(
+              tracker: state.steps,
+              locale: state.lang,
+              isDark: state.isDark,
+              onTap: () => openStepDetails(
+                context,
+                state.steps,
+                state.lang,
+                state.isDark,
+              ),
+            ),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 18),

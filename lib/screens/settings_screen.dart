@@ -1,5 +1,7 @@
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import '../activity/step_widgets.dart';
+import '../activity/step_strings.dart';
 import 'package:nutrify/widgets/ai_consent.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -53,6 +55,22 @@ class SettingsScreen extends StatelessWidget {
           _PremiumStatusCard(state: state, isDark: isDark),
           const SizedBox(height: 16),
           if (state.isAuthenticated) AiPrivacySettings(state: state),
+
+          _settingsCard(
+            isDark: isDark,
+            icon: Icons.directions_walk_rounded,
+            iconColor: AppTheme.brandTeal,
+            title: StepStrings(state.lang).text('settings'),
+            child: _settingsNavTile(
+              context: context,
+              icon: Icons.directions_walk_rounded,
+              title: StepStrings(state.lang).text('details'),
+              isDark: isDark,
+              onTap: () =>
+                  openStepDetails(context, state.steps, state.lang, isDark),
+            ),
+          ),
+          const SizedBox(height: 16),
 
           // Language
           _settingsCard(

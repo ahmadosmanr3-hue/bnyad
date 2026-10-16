@@ -104,6 +104,9 @@ class _BnyadAppState extends State<BnyadApp> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    context.read<AppState>().steps.setForeground(
+      WidgetsBinding.instance.lifecycleState == AppLifecycleState.resumed,
+    );
     PushService.instance.onNotificationOpened = () {
       _pendingNotification = true;
       _openPendingNotification();
@@ -133,6 +136,9 @@ class _BnyadAppState extends State<BnyadApp> with WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
+    context.read<AppState>().steps.setForeground(
+      state == AppLifecycleState.resumed,
+    );
     if (state == AppLifecycleState.resumed && _splashDone) {
       context.read<AppState>().onAppResumed();
     }
