@@ -69,12 +69,29 @@ private final class BnyadStepBridge {
   deinit {
     if let observer = timeObserver { NotificationCenter.default.removeObserver(observer) }
   }
-  private func diagnostic(_ stage: String) {
+  private func diagnostic(_ stage: @autoclosure () -> String) {
     #if BNYAD_DEVELOPMENT
     if Bundle.main.object(forInfoDictionaryKey: "BNYADOfflinePreview") as? Bool == true {
       // Stage/state only. Never print counts, distances, dates, profiles or IDs.
-      print("BNYAD native health: \(stage)")
+      print("BNYAD native health: \(stage())")
     }
+    #endif
+  }
+  private func diagnoseEmptyToday(start: Date, end: Date) {
+    #if BNYAD_DEVELOPMENT
+    guard Bundle.main.object(forInfoDictionaryKey: "BNYADOfflinePreview") as? Bool == true else { return }
+    // Independent aggregate comparison only; never expose values or raw samples,
+    // and never replace an empty reading with synthetic data.
+    let query = HKStatisticsQuery(
+      quantityType: HKQuantityType.quantityType(forIdentifier: .stepCount)!,
+      quantitySamplePredicate: HKQuery.predicateForSamples(withStart: start, end: end, options: []),
+      options: .cumulativeSum
+    ) { _, statistics, error in
+      DispatchQueue.main.async {
+        self.diagnostic("directToday readable=\(statistics?.sumQuantity() != nil) errorCode=\((error as NSError?)?.code ?? 0) healthKitError=\((error as NSError?)?.domain == HKErrorDomain) currentDay=\(start == Calendar.current.startOfDay(for: Date()))")
+      }
+    }
+    store.execute(query)
     #endif
   }
   private func handle(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
@@ -161,6 +178,7 @@ private final class BnyadStepBridge {
           query.initialResultsHandler = { _, statistics, error in
             DispatchQueue.main.async {
               self.diagnostic("aggregate=\(field) completion error=\(error != nil)")
+              self.diagnostic("aggregate=\(field) readableHistory=\(statistics?.statistics().contains(where: { $0.sumQuantity() != nil }) ?? false)")
               // Missing/denied reads stay null. Optional distance failures must
               // not suppress an otherwise valid step total.
               if field == "steps", error != nil {
@@ -168,6 +186,10 @@ private final class BnyadStepBridge {
                 if healthError?.code != .errorNoData { failed = true }
               }
               for (index, start) in starts.enumerated() {
+                if index == 0 {
+                  let bucket = statistics?.statistics(for: start)
+                  self.diagnostic("today field=\(field) bucket=\(bucket != nil) boundaryMatches=\(bucket?.startDate == start) readable=\(bucket?.sumQuantity() != nil)")
+                }
                 if let quantity = statistics?.statistics(for: start)?.sumQuantity(), error == nil {
                   let value = quantity.doubleValue(for: unit)
                   if field == "steps" {
@@ -188,6 +210,9 @@ private final class BnyadStepBridge {
       }
       group.notify(queue: .main) {
         self.diagnostic("daily read complete failed=\(failed)")
+        if !failed, output.first?["steps"] is NSNull {
+          self.diagnoseEmptyToday(start: starts[0], end: ends[0])
+        }
         if failed { result(FlutterError(code: "health_read_failed", message: "Health data is temporarily unreadable.", details: nil)) }
         else { result(output) }
       }

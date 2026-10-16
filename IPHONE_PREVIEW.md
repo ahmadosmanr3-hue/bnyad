@@ -116,6 +116,28 @@ signing. CocoaPods dependencies are unchanged.
 
 ## Verification and remaining checks
 
+### Empty current-day investigation
+
+The offline development build now compares an empty current-day collection
+result with one independent, read-only `HKStatisticsQuery` for the same window.
+This extra query is compiled only with `BNYAD_DEVELOPMENT` and requires the
+offline preview plist marker. It never replaces the displayed reading or alters
+permissions. Diagnostics contain only readability/boundary flags and the error
+code, not quantities, dates, samples, sources or profile information. Diagnostic
+arguments are evaluated lazily so normal builds do not scan history for logs.
+
+On the connected device, historical aggregates were readable, current-day bucket
+boundaries matched, and the independent query confirmed the native current day
+but returned `HKErrorDomain` code 11 (`errorNoData`). The owner reports Steps
+permission is on and the separate Health Test also currently has no steps.
+This establishes that the full app's UI is receiving an empty HealthKit result;
+it does not yet explain the discrepancy with the owner's Health Today view.
+Same-date Health chart comparison and walking/sync checks remain outstanding.
+Do not claim a complete real-device fix or substitute zero/simulated steps.
+
+Focused regression validation: 89 step/native-preview tests passed; Flutter
+analysis clean. The updated native development app built, installed and launched.
+
 Flutter analysis and full tests cover runtime guards, HTTP blocking, complete
 app mounting/navigation/premium UI, local login/session/food/water persistence,
 real-native-provider wiring using **mocked channel responses**, health profile
