@@ -104,9 +104,14 @@ class _BnyadAppState extends State<BnyadApp> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    context.read<AppState>().steps.setForeground(
-      WidgetsBinding.instance.lifecycleState == AppLifecycleState.resumed,
-    );
+    // A restored connection can notify synchronously when refreshing. Wait
+    // until the provider/widget mount is complete before triggering it.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      context.read<AppState>().steps.setForeground(
+        WidgetsBinding.instance.lifecycleState == AppLifecycleState.resumed,
+      );
+    });
     PushService.instance.onNotificationOpened = () {
       _pendingNotification = true;
       _openPendingNotification();

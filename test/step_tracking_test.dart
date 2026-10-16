@@ -11,6 +11,13 @@ import 'package:nutrify/activity/step_tracker.dart';
 import 'package:nutrify/activity/step_widgets.dart';
 import 'package:nutrify/models/user_profile.dart';
 import 'package:nutrify/theme/app_theme.dart';
+import 'package:provider/provider.dart';
+import 'package:http/http.dart' as http;
+import 'package:http/testing.dart';
+import 'package:nutrify/main.dart' show BnyadApp;
+import 'package:nutrify/providers/app_state.dart';
+import 'package:nutrify/services/api_service.dart';
+import 'package:nutrify/services/auth_service.dart';
 
 class MemoryStepStore extends StepSettingsStore {
   final values = <String, String>{};
@@ -929,4 +936,51 @@ void main() {
       const StepStrings('ku').text('steps'),
     );
   });
+  testWidgets(
+    'mounting the app with connected steps never notifies a provider during build',
+    (tester) async {
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+      final api = ApiService(
+        baseUrl: 'https://fictional.invalid/api',
+        client: MockClient((_) async => http.Response('{}', 503)),
+      );
+      final state = AppState(
+        authService: AuthService(api: api),
+        apiService: api,
+        initializeOnCreate: false,
+        stepHealthProvider: FakeHealth(),
+        stepSettingsStore: MemoryStepStore(),
+      );
+      addTearDown(state.dispose);
+      final visible = ValueNotifier(false);
+      addTearDown(visible.dispose);
+      await state.steps.attach('fictional|account');
+      await state.steps.connect();
+      await tester.pumpWidget(
+        ChangeNotifierProvider<AppState>.value(
+          value: state,
+          child: Consumer<AppState>(
+            builder: (context, current, _) => ValueListenableBuilder<bool>(
+              valueListenable: visible,
+              builder: (context, shown, _) => shown
+                  ? const KeyedSubtree(
+                      key: ValueKey('mounted-app'),
+                      child: BnyadApp(),
+                    )
+                  : const SizedBox(),
+            ),
+          ),
+        ),
+      );
+      visible.value = true;
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox());
+      state.steps.setForeground(false);
+      // Drain the original splash screen's initial delayed animation callback
+      // after disposal; its mounted check prevents it from starting animations.
+      await tester.pump(const Duration(milliseconds: 250));
+    },
+  );
 }

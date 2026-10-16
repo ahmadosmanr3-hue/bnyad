@@ -106,7 +106,7 @@ Before release, record physical iPhone and Android evidence for:
 ## Recorded checks — 16 October 2026
 
 - Flutter analysis: no issues.
-- Full automated suite: 212 passed, including 80 new step-tracking tests and the existing Today’s Meals regression coverage.
+- Full automated suite: 213 passed, including 81 new step-tracking tests and the existing Today’s Meals regression coverage. A browser-console check caught a provider notification during initial mount; the refresh is now deferred until after the first frame, with a regression test reproducing the original failure.
 - Production Flutter Web JavaScript build: passed. Existing `flutter_timezone` WebAssembly dry-run warning remains; a Wasm build is not claimed.
 - iOS development device build with codesigning disabled: passed, including native HealthKit queries and localized resources. Existing `mobile_scanner`/MLKit Apple-Silicon simulator and several plugins' Swift Package Manager warnings remain; this was a device-target compilation, not simulator or signed-device QA.
 - Android debug APK: passed with the existing Gradle wrapper and per-command JDK 17. Native bridge, rationale activity, aggregate calls, permission contracts and manifest compiled. Merged manifest retains min SDK 24 / target 36 with only the two added read-health permissions. Existing Gradle/AGP/Kotlin future-support warnings remain.
