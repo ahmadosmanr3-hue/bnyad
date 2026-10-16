@@ -16,6 +16,7 @@ class StepStrings {
   String status(StepStatus status) => text(switch (status) {
     StepStatus.disconnected => 'disconnected',
     StepStatus.loading => 'loading',
+    StepStatus.waitingForForeground => 'waitingForeground',
     StepStatus.ready => 'ready',
     StepStatus.emptyOrPrivate => 'empty',
     StepStatus.denied => 'denied',
@@ -24,6 +25,11 @@ class StepStrings {
     StepStatus.error => 'error',
   });
   static const en = {
+    'waitingForeground':
+        'Connection saved. Bring BNYAD to the foreground and tap Refresh to read Health data.',
+    'readingDay': 'Local date being read',
+    'connectionSaved':
+        'Connection saved for this account. Empty or private readings do not mean you are disconnected. Refresh after Health syncs; review access in Apple Health / Health Connect if needed.',
     'burned': 'kcal burned',
     'calorieInfoTitle': 'About walking calories',
     'calorieInfo':
@@ -90,6 +96,11 @@ class StepStrings {
     'settings': 'Step settings',
   };
   static const ar = {
+    'waitingForeground':
+        'الاتصال محفوظ. افتح BNYAD في المقدمة واضغط تحديث لقراءة بيانات الصحة.',
+    'readingDay': 'التاريخ المحلي للقراءة',
+    'connectionSaved':
+        'الاتصال محفوظ لهذا الحساب. القراءات الفارغة أو الخاصة لا تعني انقطاع الاتصال. حدّث بعد مزامنة تطبيق الصحة، وراجع الأذونات فيه عند الحاجة.',
     'burned': 'سعرة محروقة',
     'calorieInfoTitle': 'حول سعرات المشي',
     'calorieInfo':
@@ -155,6 +166,11 @@ class StepStrings {
     'settings': 'إعدادات الخطوات',
   };
   static const ku = {
+    'waitingForeground':
+        'پەیوەندی پاشەکەوت کراوە. BNYAD بکەرەوە لە پێشەوە و نوێکردنەوە دابگرە بۆ خوێندنەوەی داتای تەندروستی.',
+    'readingDay': 'بەرواری ناوخۆیی بۆ خوێندنەوە',
+    'connectionSaved':
+        'پەیوەندی بۆ ئەم هەژمارە پاشەکەوت کراوە. خوێندنەوەی بەتاڵ یان تایبەت واتای پچڕانی پەیوەندی نییە. دوای هاوکاتکردنی تەندروستی نوێی بکەرەوە؛ ئەگەر پێویست بوو مۆڵەتەکان لەوێ بپشکنە.',
     'burned': 'کالۆری سووتاو',
     'calorieInfoTitle': 'دەربارەی کالۆریی پیاسە',
     'calorieInfo':

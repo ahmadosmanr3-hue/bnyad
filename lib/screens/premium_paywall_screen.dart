@@ -36,7 +36,9 @@ class _PremiumPaywallSheetState extends State<_PremiumPaywallSheet> {
   }
 
   Future<void> _loadPrices() async {
-    if (kIsWeb) return; // Browser previews must not contact mobile billing SDKs.
+    if (kIsWeb || !context.read<AppState>().supportsOptionalDeviceServices) {
+      return;
+    }
     try {
       final products = await Purchases.getProducts(['BNYAD_M1', 'BNYAD_Y1']);
       if (!mounted) return;
@@ -420,31 +422,37 @@ class _PremiumPaywallSheetState extends State<_PremiumPaywallSheet> {
                   ),
                 ),
                 const SizedBox(width: 12),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      price,
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w900,
-                        color: isSelected
-                            ? (isDark ? AppTheme.indigoLight : AppTheme.indigo)
-                            : (isDark ? Colors.white : const Color(0xFF1E293B)),
+                Flexible(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        price,
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.w900,
+                          color: isSelected
+                              ? (isDark
+                                    ? AppTheme.indigoLight
+                                    : AppTheme.indigo)
+                              : (isDark
+                                    ? Colors.white
+                                    : const Color(0xFF1E293B)),
+                        ),
                       ),
-                    ),
-                    Text(
-                      period,
-                      style: TextStyle(
-                        fontSize: 11.5,
-                        color: isDark
-                            ? const Color(0xFF64748B)
-                            : const Color(0xFF94A3B8),
-                        fontWeight: FontWeight.w600,
+                      Text(
+                        period,
+                        style: TextStyle(
+                          fontSize: 11.5,
+                          color: isDark
+                              ? const Color(0xFF64748B)
+                              : const Color(0xFF94A3B8),
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ],
             ),

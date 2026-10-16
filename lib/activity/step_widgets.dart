@@ -353,6 +353,14 @@ class StepDetailsScreen extends StatelessWidget {
                         ),
                         const SizedBox(height: 16),
                         Text(
+                          '${s.text('readingDay')}: ${stepDateKey(tracker.clock())}',
+                        ),
+                        if (tracker.connected)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 8, bottom: 8),
+                            child: Text(s.text('connectionSaved')),
+                          ),
+                        Text(
                           tracker.simulated &&
                                   tracker.status == StepStatus.ready
                               ? s.text('demo')
@@ -374,8 +382,7 @@ class StepDetailsScreen extends StatelessWidget {
                             child: Text(s.text('demoNote')),
                           ),
                         if (!tracker.connected ||
-                            tracker.status == StepStatus.denied ||
-                            tracker.status == StepStatus.emptyOrPrivate)
+                            tracker.status == StepStatus.denied)
                           _button(
                             s.text('connect'),
                             webUnavailable || tracker.busy

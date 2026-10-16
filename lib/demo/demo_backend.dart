@@ -6,7 +6,7 @@ import 'package:nutrify/services/api_service.dart';
 import 'demo_fixtures.dart';
 import 'demo_guard.dart';
 
-/// All responses stay in this browser. There is no real HTTP transport or API key.
+/// All responses stay in this isolated preview. No real HTTP transport/API key.
 class DemoBackend {
   static const baseUrl = 'https://bnyad-demo.invalid/api';
   static const token = 'fictional-local-demo-session';

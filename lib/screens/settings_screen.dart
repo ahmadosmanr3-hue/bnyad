@@ -359,11 +359,13 @@ class SettingsScreen extends StatelessWidget {
               children: [
                 Icon(icon, size: 20, color: iconColor),
                 const SizedBox(width: 8),
-                Text(
-                  title,
-                  style: TextStyle(
-                    fontWeight: FontWeight.w700,
-                    color: isDark ? Colors.white : AppTheme.slate900,
+                Expanded(
+                  child: Text(
+                    title,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w700,
+                      color: isDark ? Colors.white : AppTheme.slate900,
+                    ),
                   ),
                 ),
               ],
@@ -625,7 +627,9 @@ class _PremiumStatusCard extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 10),
-                    Row(
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
                       children: [
                         Container(
                           padding: const EdgeInsets.symmetric(
@@ -647,7 +651,6 @@ class _PremiumStatusCard extends StatelessWidget {
                           ),
                         ),
                         if (!premium) ...[
-                          const SizedBox(width: 8),
                           GestureDetector(
                             onTap: () async {
                               final success = await state.restorePurchases();

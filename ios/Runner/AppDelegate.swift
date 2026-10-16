@@ -69,8 +69,28 @@ private final class BnyadStepBridge {
   deinit {
     if let observer = timeObserver { NotificationCenter.default.removeObserver(observer) }
   }
+  private func diagnostic(_ stage: String) {
+    #if BNYAD_DEVELOPMENT
+    if Bundle.main.object(forInfoDictionaryKey: "BNYADOfflinePreview") as? Bool == true {
+      // Stage/state only. Never print counts, distances, dates, profiles or IDs.
+      print("BNYAD native health: \(stage)")
+    }
+    #endif
+  }
   private func handle(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
+    diagnostic("method=\(call.method) appState=\(UIApplication.shared.applicationState.rawValue)")
     switch call.method {
+    case "foreground":
+      // Permission sheets can leave Flutter temporarily inactive. Inactive is
+      // still foreground; never override a genuinely background application.
+      result(UIApplication.shared.applicationState != .background)
+    case "offlinePreviewAllowed":
+      #if BNYAD_DEVELOPMENT
+      result(Bundle.main.bundleIdentifier == "com.nutrify.bnyad.dev" &&
+        Bundle.main.object(forInfoDictionaryKey: "BNYADOfflinePreview") as? Bool == true)
+      #else
+      result(false)
+      #endif
     case "healthDiagnosticAllowed":
       // A separate development bundle only. Production has no diagnostic route.
       #if BNYAD_DEVELOPMENT
@@ -89,6 +109,7 @@ private final class BnyadStepBridge {
         HKQuantityType.quantityType(forIdentifier: .distanceWalkingRunning)!]
       store.requestAuthorization(toShare: [], read: types) { [weak self] completed, error in
         DispatchQueue.main.async {
+          self?.diagnostic("permission completion=\(completed) error=\(error != nil)")
           self?.requesting = false
           // Completion is NOT proof that the user granted read access.
           if error != nil { result(FlutterError(code: "health_unavailable", message: "Health access could not be requested.", details: nil)) }
@@ -139,6 +160,7 @@ private final class BnyadStepBridge {
             anchorDate: first, intervalComponents: DateComponents(day: 1))
           query.initialResultsHandler = { _, statistics, error in
             DispatchQueue.main.async {
+              self.diagnostic("aggregate=\(field) completion error=\(error != nil)")
               // Missing/denied reads stay null. Optional distance failures must
               // not suppress an otherwise valid step total.
               if field == "steps", error != nil {
@@ -165,6 +187,7 @@ private final class BnyadStepBridge {
           store.execute(query)
       }
       group.notify(queue: .main) {
+        self.diagnostic("daily read complete failed=\(failed)")
         if failed { result(FlutterError(code: "health_read_failed", message: "Health data is temporarily unreadable.", details: nil)) }
         else { result(output) }
       }

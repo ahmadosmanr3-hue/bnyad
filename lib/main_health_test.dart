@@ -135,7 +135,7 @@ class _HealthTestAppState extends State<HealthTestApp>
   Future<void> _editProfile(BuildContext context) async {
     final value = await showDialog<UserProfile>(
       context: context,
-      builder: (_) => _HealthProfileDialog(profile: profile),
+      builder: (_) => LocalHealthProfileDialog(profile: profile),
     );
     if (value == null) return;
     try {
@@ -252,14 +252,16 @@ class _HealthTestAppState extends State<HealthTestApp>
   );
 }
 
-class _HealthProfileDialog extends StatefulWidget {
+/// Reused by the offline full-app preview; this is only a local input dialog,
+/// not the diagnostic app or its startup/authentication flow.
+class LocalHealthProfileDialog extends StatefulWidget {
   final UserProfile? profile;
-  const _HealthProfileDialog({this.profile});
+  const LocalHealthProfileDialog({super.key, this.profile});
   @override
-  State<_HealthProfileDialog> createState() => _HealthProfileDialogState();
+  State<LocalHealthProfileDialog> createState() => _HealthProfileDialogState();
 }
 
-class _HealthProfileDialogState extends State<_HealthProfileDialog> {
+class _HealthProfileDialogState extends State<LocalHealthProfileDialog> {
   final form = GlobalKey<FormState>();
   late final weight = TextEditingController(
     text: widget.profile?.weight.toString(),

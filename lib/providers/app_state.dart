@@ -147,17 +147,23 @@ class AppState extends ChangeNotifier {
     bool initializeOnCreate = true,
     StepHealthProvider? stepHealthProvider,
     StepSettingsStore? stepSettingsStore,
+    this.optionalDeviceServicesEnabled = true,
+    UserProfile? Function()? stepProfile,
+    void Function(String)? stepDiagnostics,
   }) : _authService = authService,
        _apiService = apiService {
     steps = StepTracker(
       provider: stepHealthProvider ?? NativeStepHealthProvider(),
       store: stepSettingsStore ?? LocalStepSettingsStore(),
-      profile: () => _userProfile,
-      weightKg: () => latestWalkingWeight(
-        _weightHistory,
-        DateTime.now(),
-        _userProfile?.weight,
-      ),
+      diagnostics: stepDiagnostics,
+      profile: stepProfile ?? () => _userProfile,
+      weightKg: stepProfile != null
+          ? () => stepProfile()?.weight
+          : () => latestWalkingWeight(
+              _weightHistory,
+              DateTime.now(),
+              _userProfile?.weight,
+            ),
     )..addListener(notifyListeners);
     steps.setForeground(
       WidgetsBinding.instance.lifecycleState == AppLifecycleState.resumed,
@@ -170,6 +176,12 @@ class AppState extends ChangeNotifier {
   }
 
   late final StepTracker steps;
+
+  /// Disable billing, notifications/push and connectivity probes for the
+  /// isolated offline preview. This never disables the native health provider.
+  final bool optionalDeviceServicesEnabled;
+  bool get supportsOptionalDeviceServices =>
+      optionalDeviceServicesEnabled && !kIsWeb;
   Future<void> _syncStepsAccount() => steps.attach(
     isLoggedIn
         ? '${_apiService.baseUrl}|${_isMockUser ? 'guest' : _apiService.userId}'
@@ -461,7 +473,7 @@ class AppState extends ChangeNotifier {
       prefs.getString('meal_plan_cuisine'),
     );
     _loadPremium(prefs);
-    if (!kIsWeb && (_isMockUser || _isLoggedIn)) {
+    if (supportsOptionalDeviceServices && (_isMockUser || _isLoggedIn)) {
       unawaited(syncPremiumFromRevenueCat());
     }
     await _loadNotifications(prefs);
@@ -479,7 +491,7 @@ class AppState extends ChangeNotifier {
 
     _startConnectivityListener();
 
-    if (!kIsWeb) {
+    if (supportsOptionalDeviceServices) {
       try {
         await NotificationService.instance.init();
         await _rescheduleAllReminders();
@@ -566,7 +578,7 @@ class AppState extends ChangeNotifier {
       _persistDailyNutritionSnapshot();
       notifyListeners();
 
-      if (!kIsWeb && _apiService.userId != null) {
+      if (supportsOptionalDeviceServices && _apiService.userId != null) {
         try {
           await Purchases.logIn(_apiService.userId!.toString());
         } catch (e) {
@@ -576,7 +588,9 @@ class AppState extends ChangeNotifier {
       }
       await syncPremiumFromServer();
       unawaited(syncNotifications());
-      unawaited(PushService.instance.registerForUser(_apiService));
+      if (supportsOptionalDeviceServices) {
+        unawaited(PushService.instance.registerForUser(_apiService));
+      }
 
       if (_isOnline) {
         unawaited(refreshNutritionHistoryFromCloud());
@@ -628,7 +642,7 @@ class AppState extends ChangeNotifier {
       unawaited(_fetchUserData());
     }
 
-    if (kIsWeb) return;
+    if (!supportsOptionalDeviceServices) return;
     try {
       await NotificationService.instance.refreshSchedules(
         rescheduleAll: _rescheduleAllReminders,
@@ -714,7 +728,7 @@ class AppState extends ChangeNotifier {
       if (_isLoggedIn && !_isMockUser) {
         await _apiService.updateProfileField({'language': newLang});
       }
-      if (!kIsWeb && _weeklyDigestEnabled) {
+      if (supportsOptionalDeviceServices && _weeklyDigestEnabled) {
         await _persistWeeklyDigestNotifStrings();
         final p = await SharedPreferences.getInstance();
         await NotificationService.instance.scheduleWeeklySummary(
@@ -896,7 +910,7 @@ class AppState extends ChangeNotifier {
       await clearMockUser();
       return;
     }
-    if (!kIsWeb) {
+    if (supportsOptionalDeviceServices) {
       unawaited(Purchases.logOut());
     }
     await _authService.signOut();
@@ -913,7 +927,7 @@ class AppState extends ChangeNotifier {
     final success = await _authService.deleteAccount();
     if (!success) return false;
     await steps.eraseAccount();
-    if (!kIsWeb) {
+    if (supportsOptionalDeviceServices) {
       unawaited(Purchases.logOut());
     }
 
@@ -1473,7 +1487,7 @@ class AppState extends ChangeNotifier {
     _weeklyDigestEnabled = enabled;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('weekly_digest_enabled', enabled);
-    if (!kIsWeb) {
+    if (supportsOptionalDeviceServices) {
       if (enabled) {
         await _persistWeeklyDigestNotifStrings();
         final p = await SharedPreferences.getInstance();
@@ -1534,7 +1548,7 @@ class AppState extends ChangeNotifier {
       );
       return;
     }
-    if (!kIsWeb) {
+    if (supportsOptionalDeviceServices) {
       try {
         if (await _applyStoreEntitlement(await Purchases.getCustomerInfo())) {
           return;
@@ -1559,7 +1573,7 @@ class AppState extends ChangeNotifier {
   }
 
   Future<void> syncPremiumFromRevenueCat() async {
-    if (kIsWeb) return;
+    if (!supportsOptionalDeviceServices) return;
     try {
       final info = await Purchases.getCustomerInfo();
       if (!await _applyStoreEntitlement(info) && _isLoggedIn && !_isMockUser) {
@@ -1569,7 +1583,7 @@ class AppState extends ChangeNotifier {
   }
 
   Future<bool> purchasePremium({String? productId}) async {
-    if (kIsWeb || !isAuthenticated) return false;
+    if (!supportsOptionalDeviceServices || !isAuthenticated) return false;
     try {
       await Purchases.logIn(_apiService.userId!.toString());
       if (productId != null) {
@@ -1594,7 +1608,7 @@ class AppState extends ChangeNotifier {
 
   Future<bool> restorePurchases() async {
     if (!isAuthenticated) return false;
-    if (kIsWeb) {
+    if (!supportsOptionalDeviceServices) {
       await syncPremiumFromServer();
       return isPremium;
     }
@@ -1665,7 +1679,7 @@ class AppState extends ChangeNotifier {
       final prefs = await SharedPreferences.getInstance();
       await _saveNotifications(prefs);
 
-      if (!kIsWeb) {
+      if (supportsOptionalDeviceServices) {
         for (final n in fresh) {
           try {
             await NotificationService.instance.showServerNotification(
@@ -1738,7 +1752,7 @@ class AppState extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('reminder_${mealId}_enabled', enabled);
 
-    if (!kIsWeb) {
+    if (supportsOptionalDeviceServices) {
       if (enabled) {
         final time = _reminderTimes[mealId]!;
         final label = _reminderLabel(mealId);
@@ -1762,7 +1776,7 @@ class AppState extends ChangeNotifier {
     await prefs.setInt('reminder_${mealId}_hour', time.hour);
     await prefs.setInt('reminder_${mealId}_minute', time.minute);
 
-    if (!kIsWeb && (_reminderEnabled[mealId] ?? false)) {
+    if (supportsOptionalDeviceServices && (_reminderEnabled[mealId] ?? false)) {
       final label = _reminderLabel(mealId);
       await NotificationService.instance.scheduleMealReminder(
         mealId: mealId,
@@ -1845,14 +1859,14 @@ class AppState extends ChangeNotifier {
   Future<void> addVitamin(VitaminEntry entry) async {
     _vitamins = [..._vitamins, entry];
     await _saveVitamins();
-    if (!kIsWeb && entry.reminderEnabled) {
+    if (supportsOptionalDeviceServices && entry.reminderEnabled) {
       await _scheduleVitaminReminder(entry);
     }
     notifyListeners();
   }
 
   Future<void> removeVitamin(String id) async {
-    if (!kIsWeb) {
+    if (supportsOptionalDeviceServices) {
       await NotificationService.instance.cancelSupplementReminder(id);
     }
     _vitamins = _vitamins.where((v) => v.id != id).toList();
@@ -1878,7 +1892,7 @@ class AppState extends ChangeNotifier {
     await _saveVitamins();
 
     final updated = _vitamins.firstWhere((v) => v.id == id);
-    if (!kIsWeb) {
+    if (supportsOptionalDeviceServices) {
       if (enabled) {
         await _scheduleVitaminReminder(updated);
       } else {
@@ -1902,7 +1916,7 @@ class AppState extends ChangeNotifier {
   }
 
   Future<void> _rescheduleAllSupplementReminders() async {
-    if (kIsWeb) return;
+    if (!supportsOptionalDeviceServices) return;
     for (final v in _vitamins) {
       if (v.reminderEnabled) {
         await _scheduleVitaminReminder(v);
@@ -1959,7 +1973,7 @@ class AppState extends ChangeNotifier {
   }
 
   Future<bool> checkConnectivity() async {
-    if (kIsWeb) {
+    if (!supportsOptionalDeviceServices) {
       _isOnline = true;
       return true;
     }
@@ -1989,7 +2003,7 @@ class AppState extends ChangeNotifier {
   }
 
   void _startConnectivityListener() {
-    if (kIsWeb) return;
+    if (!supportsOptionalDeviceServices) return;
     _connectivitySub?.cancel();
     _connectivitySub = Connectivity().onConnectivityChanged.listen(
       (results) async {

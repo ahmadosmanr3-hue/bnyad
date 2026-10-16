@@ -52,6 +52,7 @@ class LocalStepSettingsStore extends StepSettingsStore {
 enum StepStatus {
   disconnected,
   loading,
+  waitingForForeground,
   ready,
   emptyOrPrivate,
   denied,
@@ -66,11 +67,16 @@ class StepTracker extends ChangeNotifier {
   final UserProfile? Function() profile;
   final double? Function()? weightKg;
   final DateTime Function() clock;
+
+  /// Optional local-preview diagnostics. Never includes health values/profile,
+  /// identifiers, keys or tokens; normal app builds leave this callback null.
+  final void Function(String)? diagnostics;
   StepTracker({
     required this.provider,
     required this.store,
     required this.profile,
     this.weightKg,
+    this.diagnostics,
     DateTime Function()? clock,
   }) : clock = clock ?? DateTime.now {
     provider.onTimeChanged = () {
@@ -137,8 +143,17 @@ class StepTracker extends ChangeNotifier {
   String _signature(DateTime now) =>
       '${stepDateKey(now)}|${now.timeZoneOffset.inMinutes}|${now.timeZoneName}';
   void _notify() {
-    if (!_disposed) notifyListeners();
+    if (!_disposed) {
+      diagnostics?.call(
+        'connected=$connected status=${status.name} foreground=$_foreground busy=$_busy',
+      );
+      notifyListeners();
+    }
   }
+
+  /// Recalculate presentation from current local profile without changing an
+  /// accepted goal, health records or any nutrition target.
+  void refreshProfilePresentation() => _notify();
 
   Future<void> attach(String? owner) async {
     if (_disposed || owner == _owner) return;
@@ -148,6 +163,7 @@ class StepTracker extends ChangeNotifier {
     final epoch = _epoch;
     try {
       final raw = await store.read(_key(owner));
+      diagnostics?.call('restore: settingsPresent=${raw != null}');
       if (epoch != _epoch || _disposed) return;
       if (raw != null) {
         final data = jsonDecode(raw) as Map<String, dynamic>;
@@ -211,8 +227,10 @@ class StepTracker extends ChangeNotifier {
       );
       _writes = operation.catchError((Object _) {});
       await operation;
+      diagnostics?.call('settings saved');
       return epoch == _epoch && !_disposed;
     } catch (_) {
+      diagnostics?.call('settings save failed');
       if (epoch == _epoch) {
         status = StepStatus.error;
         _notify();
@@ -289,7 +307,28 @@ class StepTracker extends ChangeNotifier {
   }
 
   Future<void> refresh({bool force = false}) async {
-    if (_owner == null || !connected || !_foreground || _disposed) return;
+    if (_owner == null || !connected || _disposed) return;
+    if (!_foreground && force) {
+      final epoch = _epoch;
+      try {
+        final visible = await provider.foreground().timeout(
+          const Duration(seconds: 2),
+        );
+        if (_disposed || epoch != _epoch) return;
+        if (visible != null) _foreground = visible;
+      } catch (_) {
+        /* Keep the lifecycle's conservative state. */
+      }
+    }
+    if (!_foreground) {
+      // connect() previously left "Refreshing…" forever if a permission
+      // sheet changed lifecycle state before its final read could begin.
+      if (!_busy) {
+        status = StepStatus.waitingForForeground;
+        _notify();
+      }
+      return;
+    }
     final now = clock(), epoch = _epoch;
     final zone = _signature(now);
     final changedDay = _zoneSignature != zone;

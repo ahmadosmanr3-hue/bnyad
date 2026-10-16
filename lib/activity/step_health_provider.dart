@@ -9,6 +9,10 @@ abstract class StepHealthProvider {
   Future<bool> requestAccess();
   Future<List<StepDay>> readDays(List<StepWindow> windows);
   Future<void> openSettings();
+
+  /// Native visibility is authoritative after OS permission sheets. Null
+  /// means this provider cannot confirm foreground state (including mocks).
+  Future<bool?> foreground() async => null;
   void dispose() {}
 }
 
@@ -29,6 +33,16 @@ class NativeStepHealthProvider extends StepHealthProvider {
         TargetPlatform.iOS,
         TargetPlatform.android,
       ].contains(defaultTargetPlatform);
+
+  @override
+  Future<bool?> foreground() async {
+    if (!supported || defaultTargetPlatform != TargetPlatform.iOS) return null;
+    try {
+      return await channel.invokeMethod<bool>('foreground');
+    } catch (_) {
+      return null;
+    }
+  }
 
   @override
   Future<HealthAccess> access() async {
