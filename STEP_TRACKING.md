@@ -2,6 +2,45 @@
 
 No backend endpoints, migrations, Gemini configuration, paid APIs or new environment variables are required. Nothing in this feature uploads health records. No deployment or store submission was performed.
 
+## Backend-free iPhone diagnostic and compact calories — 16 October 2026
+
+The activity widget retains its step count, progress bar, colors and layout. Its calorie footer now shows a flame icon and `≈… kcal burned` (translated EN/AR/Sorani), with a separate 48-point information button. The localized dialog explains estimation, dependence on available steps/profile/distance, and that food allowance never increases. The walking formula is unchanged. Narrow-screen, dark/light, RTL and large-text tests cover the footer; the information button does not trigger the parent card's navigation.
+
+`lib/main_health_test.dart` is an isolated diagnostic entry point, **not imported by production or normal development main**. It uses the same `NativeStepHealthProvider`, Swift HealthKit channel, `StepTracker`, calorie calculation and details/settings screen. There is no auth client, backend initialization, Firebase startup, Gemini, purchases or demo provider. No nutrition target or production account is read or modified. Real steps require explicit in-app consent and the OS Health permission sheet. Missing readings remain unknown, not fabricated zeros.
+
+The diagnostic requires all of: native iOS, non-release Flutter mode, native development compilation, and exact bundle identifier `com.nutrify.bnyad.healthtest`. Missing/false native guard, Web, Android, production bundle or release mode fails closed before any settings/health read. Profile mode is intentional: AOT development signing lets the app reopen independently of Flutter/Xcode's debugger, unlike a JIT debug build on current iOS. This is not a store release build.
+
+The separate app is named **BNYAD Health Test** and does not replace `com.nutrify.bnyad` or `com.nutrify.bnyad.dev`. Debug-dev/Profile-dev retain their existing defaults, with two Runner-only variables allowing the diagnostic's ID and plist; normal production/Release configurations are unchanged. The diagnostic still uses `Development.entitlements` with HealthKit intact. Only the HealthKit entitlement is requested in the signed application: no clinical-record, health-write or background-delivery entitlement. Apple's automatically generated provisioning profile may allow a broader superset; that is not the application's signed/requested capability set.
+
+### Build and install on a connected iPhone
+
+Use an existing eligible Apple Developer Program team signed in to Xcode, a valid Apple Development certificate/private key, an unlocked trusted device with Developer Mode, and HealthKit-capable development provisioning. Do not purchase membership or strip entitlements if provisioning fails. The owner/team administrator may need to grant Certificates, Identifiers & Profiles access, enable HealthKit for the diagnostic ID, register the test device and refresh its development profile. Do not change the published app ID.
+
+```sh
+FLUTTER_BIN=/absolute/path/to/flutter bash tool/run_health_test_ios.sh TEAM_ID DEVICE_UDID
+```
+
+The script gets existing dependencies, prepares the dev flavor in profile mode, builds/signs with the existing team, verifies the resulting bundle ID, installs **only** the diagnostic, and launches it. Automatic provisioning may register this separate diagnostic App ID/device and create its development profile. It never archives, exports, uploads, deploys or submits anything. Team/device values are command arguments, not committed signing secrets. Approve any keychain signing dialog yourself using your Mac keychain/login password; never send credentials in chat.
+
+### On-phone test guide
+
+1. Open **BNYAD Health Test**. Use **Set your profile** to enter your own weight/height/age/activity and optionally choose cautious goals. There are no sample body measurements. These user-entered diagnostic preferences are saved only in a separate, device-local keychain namespace; no Apple Health weight permission is requested. Incomplete/corrupt saved body values are rejected rather than replaced with normal onboarding defaults. Profile controls/test banner are English; the reused activity/settings UI supports EN/AR/Sorani.
+2. Tap **Connect Apple Health / Health Connect**, read the explanation and continue. On iPhone, allow **Steps**; **Walking + Running Distance** is optional. No write types are requested. HealthKit does not reveal whether read access was denied, so an empty result cannot prove permission was granted. Check Health → profile → Apps and Services → BNYAD Health Test if necessary.
+3. Compare the current count with Health → Browse → Activity → Steps → **Today**, not a weekly average, source-specific total or manually summed phone/watch records. Check the same local date, allow watch/phone sync to finish, and refresh. Source ordering, sync timing and edited samples may explain differences; record any persistent discrepancy for investigation.
+4. Carry the iPhone and walk normally. Allow Health to update, return and refresh BNYAD. Manual refresh is throttled to 15 seconds; background/resume also refreshes. The estimate may remain unchanged after a few steps because calories round down; distance can only reduce the conservative step-derived estimate.
+5. Choose a manual goal; verify progress changes but steps do not. Close/reopen the diagnostic from the home screen and verify profile/goal/connection preferences persist. Daily totals are reread from Health, **not stored**. Original BNYAD nutrition targets remain untouched; the diagnostic has no active nutrition account or allowance.
+6. To exercise personalized suggestions, review only representative completed days that have fully synced. At least seven confirmed history days are needed. Suggestions require acceptance and follow the existing gradual-change/cooldown rules. Changing the local profile shows a new starting recommendation but deliberately does not silently reset an accepted goal.
+7. Disconnect and revoke optional OS access in Health when finished. Disconnect stops reads; local profile values can be edited but no health totals are saved. Never add these real readings, screenshots containing personal health data, keychain contents or provisioning profiles to GitHub.
+
+### Evidence and limits
+
+- Eligible Individual team and valid Apple Development certificate were available; automatic signing produced a separate HealthKit-enabled diagnostic provisioning profile. Signed entitlements and bundle ID were inspected, code signature verified, and the profile-mode device build installed/launched on the connected physical iPhone. Its process was observed running.
+- The owner reported that real steps and an estimated calorie total display after granting access. Personal health measurements are intentionally omitted from this repository document. This is user-reported device evidence, not an independently captured Health-app comparison.
+- New automated tests use **mocked** channel responses/settings: they cover fail-closed runtime guards, incomplete-profile rejection, localized compact calorie dialogs/touch targets/parent navigation, real-provider wiring without demo injection, unknown HealthKit read permission, explicit consent, no estimate before profile entry, profile/goal persistence across app reconstruction, changed readings/calorie updates, and no persisted step totals.
+- Final source validation: Flutter analysis clean; full suite **223 tests passed** (10 added in this change); normal production-entry JavaScript Web build passed with the existing `flutter_timezone` Wasm dry-run warning. Browser UI at 320px and the separate information dialog were checked using explicitly simulated data. The diagnostic profile-mode iPhone build passed and its code signature was verified.
+- Walking-after-sync updates, Health-app total comparison, permission revocation and physical restart/goal persistence still require owner confirmation. Automated/browser fixtures do not validate OS aggregation or sensors. Browser preview remains explicitly simulated.
+- No new Flutter dependency, backend change, database migration, production environment change, store update or paid service is needed. Existing mobile_scanner/MLKit simulator/SPM and linker warnings remain; this diagnostic was built for a real device, not a simulator.
+
 ## Implementation
 
 - `lib/activity/step_models.dart`: calendar-day boundaries, conservative goals and walking estimates (pure Dart).

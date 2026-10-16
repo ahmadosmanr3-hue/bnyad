@@ -944,6 +944,8 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 9740EEB21CF90195004384FC /* Debug.xcconfig */;
 			buildSettings = {
+				BNYAD_DEVELOPMENT_BUNDLE_ID = com.nutrify.bnyad.dev;
+				BNYAD_DEVELOPMENT_INFO_PLIST = Runner/Development-Info.plist;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = Runner/Development.entitlements;
@@ -953,12 +955,12 @@
 				ENABLE_BITCODE = NO;
 				EXCLUDED_SOURCE_FILE_NAMES = "GoogleService-Info.plist";
 				FLUTTER_TARGET = lib/main_development.dart;
-				INFOPLIST_FILE = "Runner/Development-Info.plist";
+				INFOPLIST_FILE = "$(BNYAD_DEVELOPMENT_INFO_PLIST)";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.nutrify.bnyad.dev;
+				PRODUCT_BUNDLE_IDENTIFIER = "$(BNYAD_DEVELOPMENT_BUNDLE_ID)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
@@ -1005,6 +1007,8 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 7AFA3C8E1D35360C0083082E /* Release.xcconfig */;
 			buildSettings = {
+				BNYAD_DEVELOPMENT_BUNDLE_ID = com.nutrify.bnyad.dev;
+				BNYAD_DEVELOPMENT_INFO_PLIST = Runner/Development-Info.plist;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = Runner/Development.entitlements;
@@ -1014,12 +1018,12 @@
 				ENABLE_BITCODE = NO;
 				EXCLUDED_SOURCE_FILE_NAMES = "GoogleService-Info.plist";
 				FLUTTER_TARGET = lib/main_development.dart;
-				INFOPLIST_FILE = "Runner/Development-Info.plist";
+				INFOPLIST_FILE = "$(BNYAD_DEVELOPMENT_INFO_PLIST)";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.nutrify.bnyad.dev;
+				PRODUCT_BUNDLE_IDENTIFIER = "$(BNYAD_DEVELOPMENT_BUNDLE_ID)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;

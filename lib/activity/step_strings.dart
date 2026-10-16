@@ -24,6 +24,10 @@ class StepStrings {
     StepStatus.error => 'error',
   });
   static const en = {
+    'burned': 'kcal burned',
+    'calorieInfoTitle': 'About walking calories',
+    'calorieInfo':
+        'Calories burned are estimates, not measurements. They depend on your steps, available profile weight and height, and optional walking distance. Missing profile data means no estimate. Burned calories do not increase your food allowance or change nutrition targets.',
     'unit': 'kcal',
     'activity': 'Daily activity',
     'steps': 'steps',
@@ -86,6 +90,10 @@ class StepStrings {
     'settings': 'Step settings',
   };
   static const ar = {
+    'burned': 'سعرة محروقة',
+    'calorieInfoTitle': 'حول سعرات المشي',
+    'calorieInfo':
+        'السعرات المحروقة تقديرية وليست قياساً. تعتمد على خطواتك والوزن والطول المتاحين في ملفك والمسافة الاختيارية. عند نقص بيانات الملف لا نعرض تقديراً. السعرات المحروقة لا تزيد حصتك الغذائية ولا تغيّر أهداف التغذية.',
     'unit': 'سعرة',
     'activity': 'النشاط اليومي',
     'steps': 'خطوة',
@@ -147,6 +155,10 @@ class StepStrings {
     'settings': 'إعدادات الخطوات',
   };
   static const ku = {
+    'burned': 'کالۆری سووتاو',
+    'calorieInfoTitle': 'دەربارەی کالۆریی پیاسە',
+    'calorieInfo':
+        'کالۆریی سووتاو خەمڵاندنە، نەک پێوانە. پشت بە هەنگاوەکانت، کێش و باڵای بەردەست لە پڕۆفایلەکەت و دووریی هەڵبژاردە دەبەستێت. ئەگەر داتای پڕۆفایل نەبێت خەمڵاندن نیشان نادرێت. کالۆریی سووتاو ڕێگەپێدراوی خواردنت زیاد ناکات و ئامانجی خۆراک ناگۆڕێت.',
     'unit': 'کالۆری',
     'activity': 'چالاکی ڕۆژانە',
     'steps': 'هەنگاو',

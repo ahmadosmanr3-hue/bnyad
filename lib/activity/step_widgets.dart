@@ -126,14 +126,61 @@ class DailyActivityWidget extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    Text(
-                      '${s.text('estimated')}: ${tracker.walking?.calories ?? '—'} ${s.text('unit')}',
-                      key: const ValueKey('walking-calories'),
-                      style: TextStyle(fontSize: 11, color: muted, height: 1.4),
-                    ),
-                    Text(
-                      s.text('notAdded'),
-                      style: TextStyle(fontSize: 10, color: muted, height: 1.4),
+                    Row(
+                      children: [
+                        const ExcludeSemantics(
+                          child: Icon(
+                            Icons.local_fire_department_rounded,
+                            size: 18,
+                            color: AppTheme.brandOrange,
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: Text(
+                            '≈${tracker.walking?.calories ?? '—'} ${s.text('burned')}',
+                            key: const ValueKey('walking-calories'),
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: muted,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                        IconButton(
+                          key: const ValueKey('walking-calories-info'),
+                          tooltip: s.text('calorieInfoTitle'),
+                          constraints: const BoxConstraints(
+                            minWidth: 48,
+                            minHeight: 48,
+                          ),
+                          padding: EdgeInsets.zero,
+                          icon: Icon(
+                            Icons.info_outline_rounded,
+                            size: 18,
+                            color: muted,
+                          ),
+                          onPressed: () => showDialog<void>(
+                            context: context,
+                            builder: (context) => Directionality(
+                              textDirection: s.rtl
+                                  ? TextDirection.rtl
+                                  : TextDirection.ltr,
+                              child: AlertDialog(
+                                title: Text(s.text('calorieInfoTitle')),
+                                scrollable: true,
+                                content: Text(s.text('calorieInfo')),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(context),
+                                    child: Text(s.text('close')),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ] else
                     Text(

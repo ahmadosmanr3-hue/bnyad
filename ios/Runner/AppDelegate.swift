@@ -71,6 +71,13 @@ private final class BnyadStepBridge {
   }
   private func handle(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
     switch call.method {
+    case "healthDiagnosticAllowed":
+      // A separate development bundle only. Production has no diagnostic route.
+      #if BNYAD_DEVELOPMENT
+      result(Bundle.main.bundleIdentifier == "com.nutrify.bnyad.healthtest")
+      #else
+      result(false)
+      #endif
     case "access":
       // HealthKit intentionally NEVER reveals READ authorization status.
       result(["availability": HKHealthStore.isHealthDataAvailable() ? "available" : "unavailable",
