@@ -458,6 +458,7 @@ class _AnimatedNutritionCardState extends State<_AnimatedNutritionCard>
           ),
           const SizedBox(height: 14),
           Row(
+            key: const ValueKey('dashboard-macros'),
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(
@@ -619,6 +620,7 @@ class _MacroOrbCard extends StatelessWidget {
                                 children: [
                                   Text(
                                     '$current',
+                                    textDirection: TextDirection.ltr,
                                     style: TextStyle(
                                       fontSize: 17,
                                       fontWeight: FontWeight.w800,
@@ -630,6 +632,9 @@ class _MacroOrbCard extends StatelessWidget {
                                   ),
                                   Text(
                                     '/$goal',
+                                    // Keep the slash before the target, independent
+                                    // of the surrounding localized card direction.
+                                    textDirection: TextDirection.ltr,
                                     style: TextStyle(
                                       fontSize: 9,
                                       fontWeight: FontWeight.w700,
@@ -992,6 +997,7 @@ class DashboardScreen extends StatelessWidget {
                       ),
                       child: Text(
                         '${state.vitamins.where((v) => v.taken).length}/${state.vitamins.length}',
+                        textDirection: TextDirection.ltr,
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w800,
@@ -2120,6 +2126,7 @@ class _VitaminSheetState extends State<_VitaminSheet>
                     ),
                     Text(
                       '${_formatGoal(current)} / ${_formatGoal(goal)} $unit',
+                      textDirection: TextDirection.ltr,
                       style: TextStyle(
                         fontWeight: FontWeight.w800,
                         fontSize: 12,

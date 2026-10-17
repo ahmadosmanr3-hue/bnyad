@@ -466,7 +466,7 @@ class StepDetailsScreen extends StatelessWidget {
                                     : null,
                               ),
                               Text(
-                                '${s.text('historyCount')}: ${tracker.pastDays.where((d) => tracker.confirmedDays.contains(d.date)).length} / 14',
+                                '${s.text('historyCount')}: ${ltrFragment('${tracker.pastDays.where((d) => tracker.confirmedDays.contains(d.date)).length} / 14')}',
                                 style: Theme.of(context).textTheme.bodySmall,
                               ),
                               if (suggestion != null) ...[

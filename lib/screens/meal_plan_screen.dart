@@ -1874,6 +1874,7 @@ class _DailyTotalCard extends StatelessWidget {
             FittedBox(
               child: Text(
                 value,
+                textDirection: TextDirection.ltr,
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w900,
