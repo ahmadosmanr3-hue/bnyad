@@ -94,10 +94,18 @@ device results separately and never commit personal measurements/screenshots.
   APK inspected for `com.bnyad.app.dev`, label `BNYAD Dev`, read-only health
   permissions and **absence of INTERNET**. App installed and process launched;
   owner confirmed the complete dashboard opens and granted Steps and Distance.
-- The current native aggregate returned an empty reading without an error.
-  This is not yet a verified real-step or calorie display. Same-day Health
-  Connect data/source comparison and walking/profile/goal/restart checks are
-  pending; no synthetic native steps were inserted.
+- Initially, the native aggregate returned an empty reading without an error.
+  The owner verified Health Connect itself had no current-day entries. Samsung
+  Health was then installed/configured by the owner to write Steps; the owner
+  confirmed real entries appeared in Health Connect and, after refreshing,
+  **real steps and estimated calories appeared in BNYAD Dev**. No synthetic
+  native steps were inserted. These display confirmations are owner-reported;
+  no personal quantities/profile details/screenshots are recorded here.
+  The owner also confirmed that a selected manual goal, health connection and
+  calorie estimate persist after fully closing/reopening and the food calorie
+  target remains unchanged. USB temporarily disconnected and later reconnected.
+  A numerical same-date/source-priority comparison, walking-after-sync updates,
+  revocation, midnight and broader device coverage remain release QA.
 - The original installed `com.bnyad.app` version and last-update timestamp were
   unchanged after dev installation. Ordinary debug manifest/config generation
   retained that original package/label/Internet access and preview flag=false.
