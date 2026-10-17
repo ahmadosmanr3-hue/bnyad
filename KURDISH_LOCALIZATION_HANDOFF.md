@@ -1,6 +1,6 @@
 # Sorani localization repair — release/developer handoff
 
-Branch: codex/bnyad-stability-2026-10-13. See KURDISH_LOCALIZATION_AUDIT.md for verified results and remaining manual QA.
+Branch: codex/bnyad-stability-2026-10-13. See the main repository’s [audit report](https://github.com/ahmadosmanr3-hue/bnyad/blob/codex/bnyad-stability-2026-10-13/KURDISH_LOCALIZATION_AUDIT.md) for verified results and remaining manual QA. Flutter commands below run from the main repository; backend commands run from vercel-api in the corresponding repository.
 
 ## Safety and dependencies
 
