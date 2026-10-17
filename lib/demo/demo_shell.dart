@@ -111,7 +111,7 @@ class _DemoShellState extends State<DemoShell> {
                       if (!widget.nativeHealth || _toolsExpanded)
                         Text(
                           widget.nativeHealth
-                              ? 'Nutrition/account data is fictional and local. Apple Health steps are real, with separate consent. No server, AI, SMS or purchases. Login: 7700000010; registration: 7700000011; OTP: 123456. Enter only fictional login/profile details; use Health profile below for your own step estimates.'
+                              ? 'Nutrition/account data is fictional and local. Native health steps are real, with separate consent. No server, AI, SMS or purchases. Login: 7700000010; registration: 7700000011; OTP: 123456. Enter only fictional login/profile details; use Health profile below for your own step estimates.'
                               : 'Use fictional details and sample images only. Nothing is uploaded. Login phone: 7700000010; registration: 7700000011; password: demo123; OTP: 123456.',
                           style: TextStyle(fontSize: 12, color: Colors.black87),
                         ),

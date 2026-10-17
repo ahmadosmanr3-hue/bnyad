@@ -5,6 +5,10 @@ import io.flutter.embedding.android.FlutterFragmentActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 
+// Both native compilation and the installed ID must authorize fixture access.
+internal fun offlinePreviewAllowed(context: android.content.Context): Boolean =
+    BuildConfig.DEBUG && BuildConfig.BNYAD_OFFLINE_PREVIEW && context.packageName == "com.bnyad.app.dev"
+
 class MainActivity : FlutterFragmentActivity() {
     private var healthBridge: HealthStepBridge? = null
     private var unsupportedChannel: MethodChannel? = null
@@ -19,6 +23,7 @@ class MainActivity : FlutterFragmentActivity() {
             unsupportedChannel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.bnyad.app/steps")
             unsupportedChannel?.setMethodCallHandler { call, result ->
                 when (call.method) {
+                    "offlinePreviewAllowed" -> result.success(offlinePreviewAllowed(this))
                     "access" -> result.success(mapOf("availability" to "unavailable", "permission" to "unknown"))
                     "requestAccess" -> result.success(false)
                     "readDays" -> result.success(emptyList<Any>())

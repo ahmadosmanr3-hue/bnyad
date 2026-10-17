@@ -1,5 +1,15 @@
 # BNYAD on-device step tracking — developer handoff
 
+## Complete Android offline preview — 17 October 2026
+
+See [ANDROID_PREVIEW.md](ANDROID_PREVIEW.md) for the complete Android development
+app, isolated ID, build/install command and real Health Connect test procedure.
+This reuses the complete iPhone offline preview runner and native Android bridge;
+it does not replace the published app or require a backend. Browser-only
+simulated steps remain forbidden on both native platforms. Android 14+ settings
+navigation now uses the platform's `HEALTH_HOME_SETTINGS` action, verified on the
+connected Samsung; the former `HEALTH_CONNECT_SETTINGS` action did not resolve.
+
 No backend endpoints, migrations, Gemini configuration, paid APIs or new environment variables are required. Nothing in this feature uploads health records. No deployment or store submission was performed.
 
 ## Backend-free iPhone diagnostic and compact calories — 16 October 2026

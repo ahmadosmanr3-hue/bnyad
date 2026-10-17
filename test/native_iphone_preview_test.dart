@@ -15,6 +15,7 @@ import 'package:nutrify/demo/demo_steps.dart';
 import 'package:nutrify/demo/demo_storage.dart';
 import 'package:nutrify/main.dart' show BnyadApp;
 import 'package:nutrify/main_iphone_preview.dart' as preview;
+import 'package:nutrify/main_android_preview.dart' as android_preview;
 import 'package:nutrify/models/log_entry.dart';
 import 'package:nutrify/models/user_profile.dart';
 import 'package:nutrify/providers/app_state.dart';
@@ -146,7 +147,13 @@ void main() {
                   platform: platform,
                   nativeAllowed: allowed,
                 ),
-                !release && !web && platform == TargetPlatform.iOS && allowed,
+                !release &&
+                    !web &&
+                    [
+                      TargetPlatform.iOS,
+                      TargetPlatform.android,
+                    ].contains(platform) &&
+                    allowed,
               );
             }
           }
@@ -157,15 +164,17 @@ void main() {
   test(
     'native handshake fails closed and never permits browser fake steps',
     () async {
-      debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
-      nativeAllowed = false;
-      await expectLater(authorizeNativePreview(), throwsStateError);
-      expect(requireNativePreview, throwsStateError);
-      nativeAllowed = true;
-      await authorizeNativePreview();
-      expect(requireNativePreview, returnsNormally);
-      expect(DemoStepHealthProvider.new, throwsStateError);
-      expect(requireDemoRuntime, throwsStateError);
+      for (final platform in [TargetPlatform.iOS, TargetPlatform.android]) {
+        debugDefaultTargetPlatformOverride = platform;
+        nativeAllowed = false;
+        await expectLater(authorizeNativePreview(), throwsStateError);
+        expect(requireNativePreview, throwsStateError);
+        nativeAllowed = true;
+        await authorizeNativePreview();
+        expect(requireNativePreview, returnsNormally);
+        expect(DemoStepHealthProvider.new, throwsStateError);
+        expect(requireDemoRuntime, throwsStateError);
+      }
     },
   );
   test(
@@ -190,6 +199,7 @@ void main() {
       for (final entry in ['main.dart', 'main_development.dart']) {
         final text = File('lib/$entry').readAsStringSync();
         expect(text, isNot(contains('main_iphone_preview')));
+        expect(text, isNot(contains('main_android_preview')));
         expect(text, isNot(contains('demo/')));
       }
       final swift = File('ios/Runner/AppDelegate.swift').readAsStringSync();
@@ -305,50 +315,68 @@ void main() {
     },
   );
 
-  testWidgets(
-    'complete native preview mounts BnyadApp, dashboard and navigation without billing',
-    (tester) async {
-      debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
-      tester.view.physicalSize = const Size(390, 900);
-      tester.view.devicePixelRatio = 1;
-      addTearDown(tester.view.resetPhysicalSize);
-      addTearDown(tester.view.resetDevicePixelRatio);
-      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
-      await preview.main();
-      await tester.pump();
-      // Original dashboard has a continuously repeating animation. Use
-      // bounded frames, not pumpAndSettle, and advance each splash delay.
-      for (var i = 0; i < 60; i++) {
-        await tester.pump(const Duration(milliseconds: 100));
-      }
-      expect(find.byType(BnyadApp), findsOneWidget);
-      expect(find.textContaining('OFFLINE DEMO'), findsOneWidget);
-      expect(find.text('Dashboard'), findsWidgets);
-      expect(find.byKey(const ValueKey('daily-activity')), findsOneWidget);
-      expect(find.byKey(const ValueKey('simulated-steps')), findsNothing);
-      final state = Provider.of<AppState>(
-        tester.element(find.byType(BnyadApp)),
-        listen: false,
-      );
-      await state.steps.connect();
-      await tester.pump(const Duration(milliseconds: 500));
-      expect(state.steps.todaySteps, 6420);
-      expect(state.steps.walking, isNull);
-      state.setActiveTab(1);
-      await tester.pump(const Duration(milliseconds: 500));
-      state.setActiveTab(0);
-      await tester.pump(const Duration(milliseconds: 500));
-      final context = tester.element(find.byType(BnyadApp));
-      showPremiumPaywall(context);
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 500));
-      expect(tester.takeException(), isNull);
-      await tester.pumpWidget(const SizedBox());
-      await tester.pump(const Duration(milliseconds: 250));
-      state.dispose();
-      debugDefaultTargetPlatformOverride = null;
-    },
-  );
+  for (final platform in [TargetPlatform.iOS, TargetPlatform.android]) {
+    testWidgets(
+      'complete $platform preview mounts BnyadApp, dashboard and navigation without billing',
+      (tester) async {
+        debugDefaultTargetPlatformOverride = platform;
+        tester.binding.resetEpoch();
+        tester.view.physicalSize = const Size(390, 900);
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+        tester.binding.handleAppLifecycleStateChanged(
+          AppLifecycleState.resumed,
+        );
+        if (platform == TargetPlatform.android) {
+          await android_preview.main();
+        } else {
+          await preview.main();
+        }
+        await tester.pump();
+        // Original dashboard has a continuously repeating animation. Use
+        // bounded frames, not pumpAndSettle, and advance each splash delay.
+        for (var i = 0; i < 60; i++) {
+          await tester.pump(const Duration(milliseconds: 100));
+        }
+        expect(find.byType(BnyadApp), findsOneWidget);
+        expect(find.textContaining('OFFLINE DEMO'), findsOneWidget);
+        expect(find.text('Dashboard'), findsWidgets);
+        expect(find.byKey(const ValueKey('daily-activity')), findsOneWidget);
+        expect(find.byKey(const ValueKey('simulated-steps')), findsNothing);
+        final state = Provider.of<AppState>(
+          tester.element(find.byType(BnyadApp)),
+          listen: false,
+        );
+        await state.steps.connect();
+        await tester.pump(const Duration(milliseconds: 500));
+        expect(state.steps.todaySteps, 6420);
+        expect(state.steps.walking, isNull);
+        final healthProfile = preview.NativePreviewHealthProfile(
+          MemoryStepStore(),
+        );
+        await healthProfile.save(profile());
+        final restored = preview.NativePreviewHealthProfile(
+          healthProfile.store,
+        );
+        await restored.restore();
+        expect(restored.value?.weight, 70);
+        state.setActiveTab(1);
+        await tester.pump(const Duration(milliseconds: 500));
+        state.setActiveTab(0);
+        await tester.pump(const Duration(milliseconds: 500));
+        final context = tester.element(find.byType(BnyadApp));
+        showPremiumPaywall(context);
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 500));
+        expect(tester.takeException(), isNull);
+        await tester.pumpWidget(const SizedBox());
+        await tester.pump(const Duration(milliseconds: 250));
+        state.dispose();
+        debugDefaultTargetPlatformOverride = null;
+      },
+    );
+  }
 
   testWidgets(
     'saved connection with empty today survives cold restart without another permission prompt',

@@ -9,12 +9,21 @@ plugins {
 }
 
 val firebaseConfigured = file("google-services.json").exists()
-if (firebaseConfigured) apply(plugin = "com.google.gms.google-services")
+val offlinePreview = providers.gradleProperty("bnyadOfflinePreview").orNull == "true"
+if (firebaseConfigured && !offlinePreview) apply(plugin = "com.google.gms.google-services")
 val releaseProperties = Properties()
 val releasePropertiesFile = rootProject.file("key.properties")
 if (releasePropertiesFile.exists()) releasePropertiesFile.inputStream().use { releaseProperties.load(it) }
 
 gradle.taskGraph.whenReady {
+    if (offlinePreview) {
+        val unsafeTasks = allTasks.filter { it.project.path == ":app" &&
+            (it.name.endsWith("Release", ignoreCase = true) || it.name.endsWith("Profile", ignoreCase = true) ||
+             it.name.contains("ReleaseResources") || it.name.contains("ProfileResources")) }
+        require(unsafeTasks.isEmpty()) {
+            "Offline Android preview is restricted to debug builds: ${unsafeTasks.map { it.path }}"
+        }
+    }
     if (allTasks.any { it.name.contains("Release", ignoreCase = true) }) {
         require(releasePropertiesFile.exists()) { "Release signing requires android/key.properties from the release developer." }
         require(firebaseConfigured) { "Release builds require the existing android/app/google-services.json." }
@@ -25,6 +34,10 @@ android {
     namespace = "com.bnyad.app"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
+    buildFeatures { buildConfig = true }
+    if (offlinePreview) {
+        sourceSets.getByName("debug").manifest.srcFile("src/offlinePreview/AndroidManifest.xml")
+    }
 
     compileOptions {
         isCoreLibraryDesugaringEnabled = true
@@ -58,8 +71,19 @@ android {
         }
     }
     buildTypes {
+        debug {
+            if (offlinePreview) applicationIdSuffix = ".dev"
+            buildConfigField("boolean", "BNYAD_OFFLINE_PREVIEW", offlinePreview.toString())
+        }
         release {
+            buildConfigField("boolean", "BNYAD_OFFLINE_PREVIEW", "false")
             signingConfig = signingConfigs.findByName("release")
+        }
+    }
+    // Profile builds are never allowed to activate fixture authentication.
+    buildTypes.configureEach {
+        if (name != "debug" && name != "release") {
+            buildConfigField("boolean", "BNYAD_OFFLINE_PREVIEW", "false")
         }
     }
 }

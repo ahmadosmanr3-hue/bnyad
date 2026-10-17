@@ -43,6 +43,10 @@ class HealthStepBridge(private val activity: FlutterFragmentActivity, flutterEng
     init {
         channel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.bnyad.app/steps")
         channel?.setMethodCallHandler { call, result ->
+            if (call.method == "offlinePreviewAllowed") {
+                result.success(offlinePreviewAllowed(activity))
+                return@setMethodCallHandler
+            }
             activity.lifecycleScope.launch {
                 try {
                     val sdk = HealthConnectClient.getSdkStatus(activity)
@@ -50,7 +54,7 @@ class HealthStepBridge(private val activity: FlutterFragmentActivity, flutterEng
                         val intent = if (sdk == HealthConnectClient.SDK_UNAVAILABLE_PROVIDER_UPDATE_REQUIRED)
                             Intent(Intent.ACTION_VIEW, android.net.Uri.parse("market://details?id=com.google.android.apps.healthdata"))
                         else Intent(if (Build.VERSION.SDK_INT >= 34)
-                            "android.health.connect.action.HEALTH_CONNECT_SETTINGS"
+                            "android.health.connect.action.HEALTH_HOME_SETTINGS"
                             else "androidx.health.ACTION_HEALTH_CONNECT_SETTINGS")
                         if (Build.VERSION.SDK_INT < 34 && sdk == HealthConnectClient.SDK_AVAILABLE)
                             intent.setPackage("com.google.android.apps.healthdata")

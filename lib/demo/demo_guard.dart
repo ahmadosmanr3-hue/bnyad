@@ -8,10 +8,14 @@ bool isAllowedNativePreview({
   required bool web,
   required TargetPlatform platform,
   required bool nativeAllowed,
-}) => !release && !web && platform == TargetPlatform.iOS && nativeAllowed;
+}) =>
+    !release &&
+    !web &&
+    [TargetPlatform.iOS, TargetPlatform.android].contains(platform) &&
+    nativeAllowed;
 
-/// Only the explicit iPhone preview entry point calls this. A native check
-/// requires the dev bundle, dev compilation and a preview-only plist marker.
+/// Only explicit native preview entry points call this. iOS requires the dev
+/// bundle/compilation/plist marker; Android requires the debug preview flag/ID.
 Future<void> authorizeNativePreview() async {
   _nativePreviewAuthorized = false;
   if (!isAllowedNativePreview(
@@ -71,7 +75,10 @@ void requireDemoDebugBuild() {
       !(_nativePreviewAuthorized &&
           !kReleaseMode &&
           !kIsWeb &&
-          defaultTargetPlatform == TargetPlatform.iOS)) {
+          [
+            TargetPlatform.iOS,
+            TargetPlatform.android,
+          ].contains(defaultTargetPlatform))) {
     throw StateError('Demo services are disabled outside debug builds.');
   }
 }

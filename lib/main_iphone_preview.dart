@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -32,12 +33,19 @@ class OfflinePreviewHttpOverrides extends HttpOverrides {
 
 /// Not imported by production/main_development/main_demo. Complete existing
 /// BnyadApp, fictional local API fixtures, REAL native health, never fake steps.
-Future<void> main() async {
+Future<void> main() => runNativeOfflinePreview();
+
+/// Shared by the isolated iPhone and Android preview launchers only.
+Future<void> runNativeOfflinePreview() async {
   WidgetsFlutterBinding.ensureInitialized();
   try {
     await authorizeNativePreview();
     HttpOverrides.global = OfflinePreviewHttpOverrides();
-    SharedPreferences.setPrefix('bnyad_iphone_preview.');
+    SharedPreferences.setPrefix(
+      defaultTargetPlatform == TargetPlatform.android
+          ? 'bnyad_android_preview.'
+          : 'bnyad_iphone_preview.',
+    );
     final preferences = await SharedPreferences.getInstance();
     final backend = DemoBackend(preferences);
     backend.data['consent'] = false;
@@ -113,8 +121,8 @@ Future<void> main() async {
             child: Padding(
               padding: EdgeInsets.all(24),
               child: Text(
-                'BNYAD offline iPhone preview could not start. '
-                'Use the dedicated non-release dev bundle and preview plist. '
+                'BNYAD offline preview could not start. '
+                'Use the dedicated development bundle and preview configuration. '
                 'No production server was contacted.',
               ),
             ),
@@ -130,7 +138,9 @@ Future<void> main() async {
 class NativePreviewHealthProfile {
   final StepSettingsStore store;
   UserProfile? value;
-  static const key = 'bnyad_iphone_preview_health_profile_v1';
+  static String get key => defaultTargetPlatform == TargetPlatform.android
+      ? 'bnyad_android_preview_health_profile_v1'
+      : 'bnyad_iphone_preview_health_profile_v1';
   NativePreviewHealthProfile(this.store);
   Future<void> restore() async {
     requireNativePreview();
