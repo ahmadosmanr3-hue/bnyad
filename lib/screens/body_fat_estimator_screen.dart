@@ -3,6 +3,7 @@ import 'package:nutrify/widgets/ai_consent.dart';
 import 'package:nutrify/utils/ai_strings.dart';
 
 import 'package:flutter/material.dart';
+import 'package:nutrify/l10n/localized_numbers.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:nutrify/providers/app_state.dart';
@@ -53,7 +54,7 @@ class _BodyFatEstimatorScreenState extends State<BodyFatEstimatorScreen> {
   }
 
   double? _parseCm(TextEditingController c) {
-    final v = double.tryParse(c.text.trim().replaceAll(',', '.'));
+    final v = parseLocalizedDouble(c.text);
     if (v == null || v <= 0) return null;
     return v;
   }
@@ -325,7 +326,7 @@ class _BodyFatEstimatorScreenState extends State<BodyFatEstimatorScreen> {
             ),
             const SizedBox(height: 12),
             Text(
-              '${t.bodyFatProfileContext}: ${profile.weight.round()} kg · ${profile.height.round()} cm · ${profile.age} ${t.age}',
+              '${t.bodyFatProfileContext}: ${ltrFragment('${profile.weight.round()} kg')} · ${ltrFragment('${profile.height.round()} cm')} · ${profile.age} ${t.age}',
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
@@ -469,7 +470,9 @@ class _BodyFatEstimatorScreenState extends State<BodyFatEstimatorScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              '${_fmtPct(estimate.minPercent)}% — ${_fmtPct(estimate.maxPercent)}%',
+              ltrFragment(
+                '${_fmtPct(estimate.minPercent)}% — ${_fmtPct(estimate.maxPercent)}%',
+              ),
               style: TextStyle(
                 fontSize: 36,
                 fontWeight: FontWeight.w800,

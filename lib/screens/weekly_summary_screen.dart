@@ -1,8 +1,64 @@
 import 'package:flutter/material.dart';
+import 'package:nutrify/l10n/localized_numbers.dart';
+import 'package:nutrify/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:nutrify/providers/app_state.dart';
 import 'package:nutrify/theme/app_theme.dart';
 import 'package:nutrify/utils/weekly_summary_stats.dart';
+
+class _WeightInputDialog extends StatefulWidget {
+  const _WeightInputDialog({required this.current, required this.t});
+  final double current;
+  final AppLocalizations t;
+  @override
+  State<_WeightInputDialog> createState() => _WeightInputDialogState();
+}
+
+class _WeightInputDialogState extends State<_WeightInputDialog> {
+  late final controller = TextEditingController(
+    text: widget.current == widget.current.roundToDouble()
+        ? '${widget.current.round()}'
+        : widget.current.toStringAsFixed(1),
+  );
+  String? error;
+  @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => AlertDialog(
+    title: Text(widget.t.weeklyUpdateWeight),
+    content: TextField(
+      controller: controller,
+      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+      decoration: InputDecoration(
+        labelText: widget.t.weight,
+        suffixText: 'kg',
+        errorText: error,
+      ),
+      autofocus: true,
+    ),
+    actions: [
+      TextButton(
+        onPressed: () => Navigator.pop(context),
+        child: Text(widget.t.cancel),
+      ),
+      FilledButton(
+        onPressed: () {
+          final value = parseLocalizedDouble(controller.text);
+          if (value == null || value <= 0) {
+            setState(() => error = widget.t.get('invalidNumber'));
+          } else {
+            Navigator.pop(context, value);
+          }
+        },
+        child: Text(widget.t.save),
+      ),
+    ],
+  );
+}
 
 class WeeklySummaryScreen extends StatefulWidget {
   const WeeklySummaryScreen({super.key});
@@ -24,43 +80,14 @@ class _WeeklySummaryScreenState extends State<WeeklySummaryScreen> {
   }
 
   Future<void> _promptUpdateWeight(AppState state) async {
-    final t = state.t;
-    final current = state.userProfile?.weight ?? 70.0;
-    final controller = TextEditingController(
-      text: current == current.roundToDouble() ? '${current.round()}' : current.toStringAsFixed(1),
-    );
-
     final value = await showDialog<double>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(t.weeklyUpdateWeight),
-        content: TextField(
-          controller: controller,
-          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          decoration: InputDecoration(
-            labelText: t.weight,
-            suffixText: 'kg',
-          ),
-          autofocus: true,
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(t.cancel)),
-          FilledButton(
-            onPressed: () {
-              final v = double.tryParse(controller.text.trim().replaceAll(',', '.'));
-              if (v == null || v <= 0) return;
-              Navigator.pop(ctx, v);
-            },
-            child: Text(t.save),
-          ),
-        ],
+      builder: (_) => _WeightInputDialog(
+        current: state.userProfile?.weight ?? 70,
+        t: state.t,
       ),
     );
-
-    controller.dispose();
-    if (value != null) {
-      await state.recordTodayWeight(value);
-    }
+    if (value != null) await state.recordTodayWeight(value);
   }
 
   String _weightDeltaLabel(dynamic t, WeeklySummaryStats stats) {
@@ -127,7 +154,7 @@ class _WeeklySummaryScreenState extends State<WeeklySummaryScreen> {
         padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
         children: [
           Text(
-            stats.weekRangeLabel,
+            ltrFragment(stats.weekRangeLabel),
             style: TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.w800,
@@ -198,7 +225,7 @@ class _WeeklySummaryScreenState extends State<WeeklySummaryScreen> {
               Expanded(
                 child: _MiniStat(
                   label: t.protein,
-                  value: '${stats.avgProtein}g',
+                  value: '${stats.avgProtein} ${t.grams}',
                   suffix: '',
                   isDark: isDark,
                 ),
@@ -211,7 +238,7 @@ class _WeeklySummaryScreenState extends State<WeeklySummaryScreen> {
               Expanded(
                 child: _MiniStat(
                   label: t.carbs,
-                  value: '${stats.avgCarbs}g',
+                  value: '${stats.avgCarbs} ${t.grams}',
                   suffix: '',
                   isDark: isDark,
                 ),
@@ -220,7 +247,7 @@ class _WeeklySummaryScreenState extends State<WeeklySummaryScreen> {
               Expanded(
                 child: _MiniStat(
                   label: t.fat,
-                  value: '${stats.avgFat}g',
+                  value: '${stats.avgFat} ${t.grams}',
                   suffix: '',
                   isDark: isDark,
                 ),
@@ -538,7 +565,7 @@ class _CalorieChart extends StatelessWidget {
                       top: BorderSide(
                         color: AppTheme.emerald.withValues(alpha: 0.45),
                         width: 1.5,
-                        strokeAlign: BorderSide.strokeAlignCenter,
+                        strokeAlign: BorderSide.strokeAlignInside,
                       ),
                     ),
                   ),

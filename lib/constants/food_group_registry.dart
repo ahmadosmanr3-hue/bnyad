@@ -26,7 +26,7 @@ class FoodPickGroup {
 
   String titleForLang(String lang) {
     if (lang == 'ar') return titleAr ?? titleEn ?? '';
-    if (lang == 'ku') return titleKu ?? titleEn ?? '';
+    if ((lang == 'ku' || lang == 'ckb')) return titleKu ?? titleEn ?? '';
     return titleEn ?? '';
   }
 }
@@ -50,7 +50,7 @@ class FoodGroupOption {
 
   String labelForLang(String lang) {
     if (lang == 'ar') return labelAr ?? labelEn;
-    if (lang == 'ku') return labelKu ?? labelEn;
+    if ((lang == 'ku' || lang == 'ckb')) return labelKu ?? labelEn;
     return labelEn;
   }
 }

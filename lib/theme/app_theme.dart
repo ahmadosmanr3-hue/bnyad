@@ -190,7 +190,7 @@ class AppTheme {
         shadowColor: brandOrange.withValues(alpha: 0.45),
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        textStyle: const TextStyle(fontWeight: FontWeight.w800, fontSize: 15, letterSpacing: 0.3),
+        textStyle: const TextStyle(fontFamily: fontFamily, fontFamilyFallback: fontFamilyFallback, fontWeight: FontWeight.w800, fontSize: 15, letterSpacing: 0.3),
       ),
     ),
     floatingActionButtonTheme: FloatingActionButtonThemeData(
@@ -291,7 +291,7 @@ class AppTheme {
         shadowColor: brandOrange.withValues(alpha: 0.4),
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        textStyle: const TextStyle(fontWeight: FontWeight.w800, fontSize: 15, letterSpacing: 0.3),
+        textStyle: const TextStyle(fontFamily: fontFamily, fontFamilyFallback: fontFamilyFallback, fontWeight: FontWeight.w800, fontSize: 15, letterSpacing: 0.3),
       ),
     ),
     floatingActionButtonTheme: FloatingActionButtonThemeData(

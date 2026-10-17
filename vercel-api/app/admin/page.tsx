@@ -944,6 +944,8 @@ function Notifications({ secret }: { secret: string }) {
   const [loading, setLoading] = useState(true);
 
   const [title, setTitle] = useState('');
+  const [translated, setTranslated] = useState(false);
+  const [translations, setTranslations] = useState({ ar: { title: '', body: '' }, ckb: { title: '', body: '' } });
   const [body, setBody] = useState('');
   const [phone, setPhone] = useState('');
   const [broadcast, setBroadcast] = useState(true);
@@ -972,11 +974,14 @@ function Notifications({ secret }: { secret: string }) {
           title: title.trim(),
           body: body.trim(),
           phone: broadcast ? undefined : phone.trim(),
+          ...(translated ? { translations: { en: { title: title.trim(), body: body.trim() }, ...translations } } : {}),
         }),
       });
       setMsg('Notification sent.');
       setTitle('');
       setBody('');
+      setTranslated(false);
+      setTranslations({ ar: { title: '', body: '' }, ckb: { title: '', body: '' } });
       setPhone('');
       load();
     } catch (e) {
@@ -1009,9 +1014,25 @@ function Notifications({ secret }: { secret: string }) {
         <Field label="Message">
           <textarea value={body} onChange={(e) => setBody(e.target.value)} rows={3} style={{ ...input(), resize: 'vertical' }} />
         </Field>
+        <label style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+          <input type="checkbox" checked={translated} onChange={(e) => setTranslated(e.target.checked)} />
+          Author English, Arabic and Kurdish Sorani versions
+        </label>
+        {translated && <div>
+          <p style={{ fontSize: 12 }}>The title/message above are the English fallback. All three versions are required. No automatic translation is performed.</p>
+          {(['ar', 'ckb'] as const).map((lang) => <fieldset key={lang} dir="rtl" style={{ border: '1px solid #ccc', marginTop: 12 }}>
+            <legend>{lang === 'ckb' ? 'Kurdish Sorani / کوردیی سۆرانی' : 'Arabic / العربية'}</legend>
+            <Field label={lang === 'ckb' ? 'ناونیشان' : 'العنوان'}>
+              <input maxLength={120} value={translations[lang].title} onChange={(e) => setTranslations((old) => ({ ...old, [lang]: { ...old[lang], title: e.target.value } }))} style={input()} />
+            </Field>
+            <Field label={lang === 'ckb' ? 'پەیام' : 'الرسالة'}>
+              <textarea maxLength={4000} rows={3} value={translations[lang].body} onChange={(e) => setTranslations((old) => ({ ...old, [lang]: { ...old[lang], body: e.target.value } }))} style={input()} />
+            </Field>
+          </fieldset>)}
+        </div>}
         {err && <div style={{ color: C.red, fontSize: 13, marginTop: 10 }}>{err}</div>}
         {msg && <div style={{ color: C.green, fontSize: 13, marginTop: 10 }}>{msg}</div>}
-        <button onClick={send} disabled={sending || !title || !body || (!broadcast && !phone)} style={{ ...btn(C.indigo, '#fff'), marginTop: 14 }}>
+        <button onClick={send} disabled={sending || !title || !body || (translated && Object.values(translations).some(text => !text.title.trim() || !text.body.trim())) || (!broadcast && !phone)} style={{ ...btn(C.indigo, '#fff'), marginTop: 14 }}>
           {sending ? 'Sending…' : 'Send notification'}
         </button>
       </div>

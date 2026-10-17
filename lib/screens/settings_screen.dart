@@ -1,5 +1,7 @@
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:nutrify/l10n/localized_time_picker.dart';
+import 'package:nutrify/l10n/localized_numbers.dart';
 import '../activity/step_widgets.dart';
 import '../activity/step_strings.dart';
 import 'package:nutrify/widgets/ai_consent.dart';
@@ -538,7 +540,7 @@ class _PremiumStatusCard extends StatelessWidget {
     final title = premium ? t.premiumActive : t.premiumTitle;
     final subtitle = premium
         ? (until != null
-              ? '${t.premiumActiveUntil.replaceAll('{date}', _formatUntil(until))}${daysLeft > 0 ? ' ($daysLeft days left)' : ''}'
+              ? '${t.premiumActiveUntil.replaceAll('{date}', _formatUntil(until))}${daysLeft > 0 ? ' (${t.get('daysRemaining').replaceAll('{days}', '$daysLeft')})' : ''}'
               : t.premium)
         : t.premiumSubtitle;
     final cta = premium ? t.premiumManage : t.premiumUnlockCta;
@@ -922,7 +924,7 @@ class _MacrosEditorSheetState extends State<_MacrosEditorSheet> {
   }
 
   int? _parse(TextEditingController c) {
-    final v = int.tryParse(c.text.trim());
+    final v = parseLocalizedInt(c.text);
     if (v == null) return null;
     return v;
   }
@@ -1304,7 +1306,7 @@ class _MealReminderControls extends StatelessWidget {
         ),
         GestureDetector(
           onTap: () async {
-            final picked = await showTimePicker(
+            final picked = await showBnyadTimePicker(
               context: context,
               initialTime: time,
             );
@@ -1408,7 +1410,7 @@ class _SupplementReminderControls extends StatelessWidget {
         ),
         GestureDetector(
           onTap: () async {
-            final picked = await showTimePicker(
+            final picked = await showBnyadTimePicker(
               context: context,
               initialTime: TimeOfDay(hour: hour, minute: minute),
             );

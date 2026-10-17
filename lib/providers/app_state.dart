@@ -1,5 +1,7 @@
 import 'dart:io' show InternetAddress;
 import 'dart:async';
+import 'package:nutrify/l10n/notification_text.dart';
+import 'package:nutrify/l10n/native_locale.dart';
 import '../activity/step_tracker.dart';
 import '../activity/step_health_provider.dart';
 import '../activity/step_models.dart';
@@ -267,7 +269,9 @@ class AppState extends ChangeNotifier {
   String? get healthGuidance {
     final m = _healthGuidanceByLang;
     if (m == null) return null;
-    final k = _lang == 'ar' ? 'ar' : (_lang == 'ku' ? 'ku' : 'en');
+    final k = _lang == 'ar'
+        ? 'ar'
+        : ((_lang == 'ku' || _lang == 'ckb') ? 'ku' : 'en');
     final primary = m[k];
     if (primary != null && primary.trim().isNotEmpty) return primary;
     for (final fb in ['en', 'ar', 'ku']) {
@@ -287,7 +291,7 @@ class AppState extends ChangeNotifier {
 
   String formatAllergiesForPrompt(List<String> keys) =>
       keys.map((k) => t.getAllergy(k)).join(', ');
-  bool get isRTL => _lang == 'ar' || _lang == 'ku';
+  bool get isRTL => _lang == 'ar' || (_lang == 'ku' || _lang == 'ckb');
   AiService get ai => AiService(api: _apiService);
   String get aiErrorCode => _apiService.aiErrorCode;
   int? get sessionAccountId => _apiService.userId;
@@ -489,6 +493,11 @@ class AppState extends ChangeNotifier {
     unawaited(_syncStepsAccount());
     // Opening the app is not a new weight measurement.
 
+    await prefs.setString('lang', _lang);
+    unawaited(syncNativeLanguage(_lang));
+    if (supportsOptionalDeviceServices) {
+      await NotificationService.instance.setLanguage(_lang);
+    }
     _startConnectivityListener();
 
     if (supportsOptionalDeviceServices) {
@@ -713,20 +722,29 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> _languagePersistence = Future.value();
+
   Future<void> setLang(String newLang) async {
     if (newLang == 'ckb') newLang = 'ku';
     if (_lang == newLang) return;
     _lang = newLang;
     notifyListeners();
-    unawaited(_persistLang(newLang));
+    _languagePersistence = _languagePersistence.then((_) => _persistLang(newLang));
+    await _languagePersistence;
   }
 
   Future<void> _persistLang(String newLang) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('lang', newLang);
+      unawaited(syncNativeLanguage(newLang));
       if (_isLoggedIn && !_isMockUser) {
         await _apiService.updateProfileField({'language': newLang});
+      }
+      if (supportsOptionalDeviceServices) {
+        await NotificationService.instance.setLanguage(newLang);
+        await _rescheduleAllReminders();
+        await _rescheduleAllSupplementReminders();
       }
       if (supportsOptionalDeviceServices && _weeklyDigestEnabled) {
         await _persistWeeklyDigestNotifStrings();
@@ -1661,6 +1679,7 @@ class AppState extends ChangeNotifier {
             (n) => {
               'id': (n['id'] as num?)?.toInt() ?? 0,
               'title': n['title']?.toString() ?? '',
+              'translations': n['translations'],
               'body': n['body']?.toString() ?? '',
               'createdAt': n['createdAt']?.toString() ?? '',
             },
@@ -1684,10 +1703,10 @@ class AppState extends ChangeNotifier {
           try {
             await NotificationService.instance.showServerNotification(
               id: n['id'] as int,
-              title: (n['title'] as String).isEmpty
+              title: notificationText(n, 'title', _lang).isEmpty
                   ? 'BNYAD'
-                  : n['title'] as String,
-              body: n['body'] as String,
+                  : notificationText(n, 'title', _lang),
+              body: notificationText(n, 'body', _lang),
             );
           } catch (e) {
             debugPrint('show server notification error: $e');

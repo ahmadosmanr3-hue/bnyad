@@ -95,6 +95,6 @@ double meatLogMacroMultiplier(FoodItem food, {required bool withBones}) {
 String meatBoneSuffixForLang(String lang, {required bool withBones}) {
   if (!withBones) return '';
   if (lang == 'ar') return ' (مع عظم)';
-  if (lang == 'ku') return ' (بە ئێسک)';
+  if ((lang == 'ku' || lang == 'ckb')) return ' (بە ئێسک)';
   return ' (with bones)';
 }

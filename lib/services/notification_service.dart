@@ -1,4 +1,6 @@
 import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:nutrify/l10n/app_localizations.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:timezone/timezone.dart' as tz;
@@ -15,17 +17,19 @@ class NotificationService {
 
   /// v2 channel so Android picks up the custom sound (channels are immutable).
   static const _channelId = 'meal_reminders_v2';
-  static const _channelName = 'Meal Reminders';
-  static const _channelDesc = 'Daily meal reminder notifications';
+  String _language = 'en';
+  AppLocalizations get _t => AppLocalizations(_language);
+  String get _channelName => _t.get('mealChannel');
+  String get _channelDesc => _t.get('mealChannelDescription');
   static const _soundResource = 'meal_chime';
 
   static const _weeklyChannelId = 'weekly_summary_v2';
-  static const _weeklyChannelName = 'Weekly summary';
-  static const _weeklyChannelDesc = 'Weekly nutrition digest';
+  String get _weeklyChannelName => _t.get('weeklyChannel');
+  String get _weeklyChannelDesc => _t.get('weeklyChannelDescription');
 
   static const _supplementChannelId = 'supplement_reminders_v1';
-  static const _supplementChannelName = 'Supplement Reminders';
-  static const _supplementChannelDesc = 'Daily pill and supplement reminders';
+  String get _supplementChannelName => _t.get('supplementChannel');
+  String get _supplementChannelDesc => _t.get('supplementChannelDescription');
 
   static const int weeklySummaryNotifId = 104;
   static const int _supplementNotifBaseId = 200;
@@ -38,13 +42,17 @@ class NotificationService {
     'snacks': 103,
   };
 
-  static const _mealAndroidSound =
-      RawResourceAndroidNotificationSound(_soundResource);
-  static const _weeklyAndroidSound =
-      RawResourceAndroidNotificationSound(_soundResource);
+  static const _mealAndroidSound = RawResourceAndroidNotificationSound(
+    _soundResource,
+  );
+  static const _weeklyAndroidSound = RawResourceAndroidNotificationSound(
+    _soundResource,
+  );
 
   Future<void> init() async {
     if (_initialized) return;
+    _language =
+        (await SharedPreferences.getInstance()).getString('lang') ?? 'en';
 
     tz_data.initializeTimeZones();
     await _refreshLocalTimeZone();
@@ -59,14 +67,55 @@ class NotificationService {
     await _plugin.initialize(
       const InitializationSettings(android: androidInit, iOS: darwinInit),
       onDidReceiveNotificationResponse: (response) {
-        debugPrint('Local Notification tapped: id=${response.id}, payload=${response.payload}');
+        debugPrint(
+          'Local Notification tapped: id=${response.id}, payload=${response.payload}',
+        );
       },
     );
 
     await _requestPermissions();
 
     _initialized = true;
+    await setLanguage(_language);
     debugPrint('NotificationService initialized (tz: ${tz.local.name})');
+  }
+
+  /// Update names/descriptions on existing channels without replacing IDs or user preferences.
+  Future<void> setLanguage(String language) async {
+    _language = language;
+    if (!_initialized ||
+        kIsWeb ||
+        defaultTargetPlatform != TargetPlatform.android) {
+      return;
+    }
+    final android = _plugin
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >();
+    for (final channel in [
+      AndroidNotificationChannel(
+        _channelId,
+        _channelName,
+        description: _channelDesc,
+        importance: Importance.max,
+        sound: _mealAndroidSound,
+      ),
+      AndroidNotificationChannel(
+        _weeklyChannelId,
+        _weeklyChannelName,
+        description: _weeklyChannelDesc,
+        sound: _weeklyAndroidSound,
+      ),
+      AndroidNotificationChannel(
+        _supplementChannelId,
+        _supplementChannelName,
+        description: _supplementChannelDesc,
+        importance: Importance.max,
+        sound: _mealAndroidSound,
+      ),
+    ]) {
+      await android?.createNotificationChannel(channel);
+    }
   }
 
   Future<void> _refreshLocalTimeZone() async {
@@ -103,16 +152,20 @@ class NotificationService {
   Future<void> _requestPermissions() async {
     try {
       if (defaultTargetPlatform == TargetPlatform.android) {
-        final android = _plugin.resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>();
+        final android = _plugin
+            .resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin
+            >();
         if (android != null) {
           final granted = await android.requestNotificationsPermission();
           debugPrint('Android notification permission: $granted');
           await android.requestExactAlarmsPermission();
         }
       } else if (defaultTargetPlatform == TargetPlatform.iOS) {
-        final ios = _plugin.resolvePlatformSpecificImplementation<
-            IOSFlutterLocalNotificationsPlugin>();
+        final ios = _plugin
+            .resolvePlatformSpecificImplementation<
+              IOSFlutterLocalNotificationsPlugin
+            >();
         if (ios != null) {
           final granted = await ios.requestPermissions(
             alert: true,
@@ -187,14 +240,15 @@ class NotificationService {
 
   /// Stable notification id for a supplement entry (200–999 range).
   static int supplementNotifId(String vitaminId) =>
-      _supplementNotifBaseId + (vitaminId.hashCode.abs() % _supplementNotifRange);
+      _supplementNotifBaseId +
+      (vitaminId.hashCode.abs() % _supplementNotifRange);
 
   static const DarwinNotificationDetails _darwinDetails =
       DarwinNotificationDetails(
-    presentAlert: true,
-    presentBadge: true,
-    presentSound: true,
-  );
+        presentAlert: true,
+        presentBadge: true,
+        presentSound: true,
+      );
 
   Future<void> scheduleMealReminder({
     required String mealId,
@@ -217,7 +271,13 @@ class NotificationService {
 
     final now = tz.TZDateTime.now(tz.local);
     var scheduled = tz.TZDateTime(
-        tz.local, now.year, now.month, now.day, hour, minute);
+      tz.local,
+      now.year,
+      now.month,
+      now.day,
+      hour,
+      minute,
+    );
     if (scheduled.isBefore(now)) {
       scheduled = scheduled.add(const Duration(days: 1));
     }
@@ -238,8 +298,9 @@ class NotificationService {
     );
 
     debugPrint(
-        'Scheduled [$mealId] at $hour:${minute.toString().padLeft(2, '0')} '
-        '(next fire: $scheduled)');
+      'Scheduled [$mealId] at $hour:${minute.toString().padLeft(2, '0')} '
+      '(next fire: $scheduled)',
+    );
   }
 
   Future<void> cancelMealReminder(String mealId) async {
@@ -257,7 +318,9 @@ class NotificationService {
     required String body,
   }) async {
     if (!_initialized) {
-      debugPrint('NotificationService not initialized, skipping supplement schedule');
+      debugPrint(
+        'NotificationService not initialized, skipping supplement schedule',
+      );
       return;
     }
 
@@ -268,7 +331,13 @@ class NotificationService {
 
     final now = tz.TZDateTime.now(tz.local);
     var scheduled = tz.TZDateTime(
-        tz.local, now.year, now.month, now.day, hour, minute);
+      tz.local,
+      now.year,
+      now.month,
+      now.day,
+      hour,
+      minute,
+    );
     if (scheduled.isBefore(now)) {
       scheduled = scheduled.add(const Duration(days: 1));
     }
@@ -289,8 +358,9 @@ class NotificationService {
     );
 
     debugPrint(
-        'Scheduled supplement [$vitaminId] at $hour:${minute.toString().padLeft(2, '0')} '
-        '(next fire: $scheduled)');
+      'Scheduled supplement [$vitaminId] at $hour:${minute.toString().padLeft(2, '0')} '
+      '(next fire: $scheduled)',
+    );
   }
 
   Future<void> cancelSupplementReminder(String vitaminId) async {
@@ -398,7 +468,7 @@ class NotificationService {
   Future<void> showTestNotification() async {
     if (!_initialized) return;
 
-    const body = 'Notifications are working!';
+    final body = _t.get('notificationTestBody');
     await _plugin.show(
       999,
       'BNYAD',

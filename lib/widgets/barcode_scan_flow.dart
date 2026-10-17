@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:nutrify/l10n/localized_numbers.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:nutrify/constants/food_database.dart';
 import 'package:nutrify/models/food_item.dart';
@@ -204,7 +205,7 @@ class _BarcodeScannerPageState extends State<_BarcodeScannerPage> {
   }
 
   Future<void> _lookupManual() async {
-    final code = _manualController.text.trim();
+    final code = normalizeDigits(_manualController.text).trim();
     if (code.isEmpty) return;
     _lastHandledCode = null;
     await _lookupBarcode(code);
@@ -762,7 +763,7 @@ class _BarcodeNotFoundSheetState extends State<_BarcodeNotFoundSheet> {
   }
 
   double _parseField(TextEditingController c) =>
-      double.tryParse(c.text.trim().replaceAll(',', '.')) ?? 0;
+      parseLocalizedDouble(c.text) ?? 0;
 
   Future<void> _saveManual() async {
     final name = _nameController.text.trim();

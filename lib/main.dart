@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:nutrify/l10n/framework_localizations.dart';
 import 'dart:io' show Platform;
 import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
@@ -161,6 +162,9 @@ class _BnyadAppState extends State<BnyadApp> with WidgetsBindingObserver {
     return MaterialApp(
       navigatorKey: _navigatorKey,
       title: AppBranding.name,
+      locale: bnyadLocale(state.lang),
+      supportedLocales: bnyadLocales,
+      localizationsDelegates: bnyadDelegates,
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,

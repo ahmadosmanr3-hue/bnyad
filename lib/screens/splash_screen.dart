@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'package:nutrify/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:nutrify/theme/app_theme.dart';
 import 'package:nutrify/widgets/app_logo.dart';
@@ -309,7 +310,9 @@ class _SplashScreenState extends State<SplashScreen>
                         ),
                         const SizedBox(width: 8),
                         Text(
-                          'Powered by AI',
+                          AppLocalizations(
+                            Localizations.localeOf(context).languageCode,
+                          ).get('poweredByBnyad'),
                           style: TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w600,

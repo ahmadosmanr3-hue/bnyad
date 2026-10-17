@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:nutrify/l10n/localized_numbers.dart';
 import 'package:flutter/services.dart';
 import '../theme/app_theme.dart';
 import 'step_models.dart';
@@ -89,7 +90,7 @@ class DailyActivityWidget extends StatelessWidget {
                       runSpacing: 4,
                       children: [
                         Text(
-                          '$count / ${tracker.goal} ${s.text('steps')}',
+                          '${s.rtl ? ltrFragment('$count / ${tracker.goal}') : '$count / ${tracker.goal}'} ${s.text('steps')}',
                           key: const ValueKey('step-count'),
                           style: TextStyle(
                             fontSize: 15,
@@ -393,7 +394,7 @@ class StepDetailsScreen extends StatelessWidget {
                           alignment: WrapAlignment.spaceBetween,
                           children: [
                             Text(
-                              '${s.text('today')}: ${stepDateKey(tracker.clock())}',
+                              '${s.text('today')}: ${ltrFragment(stepDateKey(tracker.clock()))}',
                               style: Theme.of(context).textTheme.bodySmall,
                             ),
                             if (tracker.connected)
@@ -411,7 +412,7 @@ class StepDetailsScreen extends StatelessWidget {
                         ),
                         if (last != null)
                           Text(
-                            '${s.text('updated')}: ${stepDateKey(last)} '
+                            '${s.text('updated')}: ${ltrFragment(stepDateKey(last))} '
                             '${last.hour.toString().padLeft(2, '0')}:${last.minute.toString().padLeft(2, '0')}',
                             style: Theme.of(context).textTheme.bodySmall,
                           ),

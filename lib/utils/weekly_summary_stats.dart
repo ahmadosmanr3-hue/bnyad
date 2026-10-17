@@ -1,4 +1,5 @@
 import 'package:nutrify/models/nutritional_goals.dart';
+import 'package:nutrify/l10n/framework_localizations.dart';
 import 'package:nutrify/models/user_profile.dart';
 
 class WeeklyDayStat {
@@ -107,7 +108,7 @@ String _weekdayShort(DateTime d, String lang) {
   const ku = ['دو', 'سێ', 'چو', 'پێ', 'هە', 'شە', 'یە'];
   final i = (d.weekday - 1).clamp(0, 6);
   if (lang == 'ar') return ar[i];
-  if (lang == 'ku') return ku[i];
+  if ((lang == 'ku' || lang == 'ckb')) return ku[i];
   return en[i];
 }
 
@@ -118,6 +119,7 @@ String _weekRangeLabel(List<String> keys, String lang) {
   String month(int m) {
     const en = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     const ar = ['ين', 'فبر', 'مار', 'أبر', 'ماي', 'يون', 'يول', 'أغس', 'سب', 'أكت', 'نوف', 'ديس'];
+    if (lang == 'ku' || lang == 'ckb') return SoraniDates.months[m - 1];
     if (lang == 'ar') return ar[m - 1];
     return en[m - 1];
   }

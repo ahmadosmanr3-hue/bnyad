@@ -288,6 +288,8 @@ class _BlockLockOverlay extends StatelessWidget {
                       vertical: 14,
                     ),
                     textStyle: const TextStyle(
+                      fontFamily: AppTheme.fontFamily,
+                      fontFamilyFallback: AppTheme.fontFamilyFallback,
                       fontSize: 14,
                       fontWeight: FontWeight.w800,
                       letterSpacing: 0.2,

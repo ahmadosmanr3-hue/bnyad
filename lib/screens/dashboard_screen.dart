@@ -1,6 +1,8 @@
 import 'dart:math';
 import '../activity/step_widgets.dart';
 import 'package:flutter/material.dart';
+import 'package:nutrify/l10n/localized_time_picker.dart';
+import 'package:nutrify/l10n/localized_numbers.dart';
 import 'package:provider/provider.dart';
 import 'package:nutrify/providers/app_state.dart';
 import 'package:nutrify/screens/body_fat_estimator_screen.dart';
@@ -99,7 +101,7 @@ class _NotificationBell extends StatelessWidget {
       children: [
         IconButton(
           icon: Icon(Icons.notifications_none_rounded, color: color, size: 26),
-          tooltip: 'Notifications',
+          tooltip: state.t.get('notifications'),
           onPressed: () => guardAuth(context, () {
             Navigator.of(context).push(
               MaterialPageRoute<void>(
@@ -328,7 +330,7 @@ class _AnimatedNutritionCardState extends State<_AnimatedNutritionCard>
                                   ),
                                   const SizedBox(height: 2),
                                   scaleDownText(
-                                    'of ${w.caloriesGoal} ${w.t.kcal}',
+                                    '${w.t.get('ofTotal').replaceAll('{total}', ltrFragment('${w.caloriesGoal}'))} ${w.t.kcal}',
                                     style: TextStyle(
                                       fontSize: 11,
                                       fontWeight: FontWeight.w600,
@@ -1056,7 +1058,7 @@ class DashboardScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        '${state.waterIntake} / ${state.dailyWaterTargetMl} ${t.ml}',
+                        '${ltrFragment('${state.waterIntake} / ${state.dailyWaterTargetMl}')} ${t.ml}',
                         style: TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.w700,
@@ -2242,7 +2244,7 @@ class _VitaminSheetState extends State<_VitaminSheet>
               if (_reminderOnAdd)
                 GestureDetector(
                   onTap: () async {
-                    final picked = await showTimePicker(
+                    final picked = await showBnyadTimePicker(
                       context: context,
                       initialTime: _reminderTime,
                     );
@@ -2299,7 +2301,7 @@ class _VitaminSheetState extends State<_VitaminSheet>
               if (_reminderOnAdd)
                 GestureDetector(
                   onTap: () async {
-                    final picked = await showTimePicker(
+                    final picked = await showBnyadTimePicker(
                       context: context,
                       initialTime: _reminderTime,
                     );
@@ -2511,7 +2513,7 @@ class _VitaminSheetState extends State<_VitaminSheet>
                                       hour: v.reminderHour ?? 8,
                                       minute: v.reminderMinute ?? 0,
                                     );
-                                    final picked = await showTimePicker(
+                                    final picked = await showBnyadTimePicker(
                                       context: context,
                                       initialTime: initial,
                                     );

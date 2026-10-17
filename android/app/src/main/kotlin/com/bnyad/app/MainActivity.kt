@@ -10,11 +10,20 @@ internal fun offlinePreviewAllowed(context: android.content.Context): Boolean =
     BuildConfig.DEBUG && BuildConfig.BNYAD_OFFLINE_PREVIEW && context.packageName == "com.bnyad.app.dev"
 
 class MainActivity : FlutterFragmentActivity() {
+    private var localeChannel: MethodChannel? = null
     private var healthBridge: HealthStepBridge? = null
     private var unsupportedChannel: MethodChannel? = null
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+        localeChannel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.bnyad.app/localization").also { channel ->
+            channel.setMethodCallHandler { call, result ->
+                if (call.method == "setLanguage" && call.arguments in listOf("en", "ar", "ku", "ckb")) {
+                    getSharedPreferences("bnyad_localization", MODE_PRIVATE).edit().putString("language", call.arguments as String).apply()
+                    result.success(null)
+                } else result.notImplemented()
+            }
+        }
         // Keep BNYAD's existing API 24 support. Never load Health Connect's
         // API-26+ classes on an unsupported device (HC itself requires API 28).
         if (Build.VERSION.SDK_INT >= 28) {
@@ -35,6 +44,7 @@ class MainActivity : FlutterFragmentActivity() {
     override fun onDestroy() {
         if (Build.VERSION.SDK_INT >= 28) healthBridge?.dispose()
         unsupportedChannel?.setMethodCallHandler(null)
+        localeChannel?.setMethodCallHandler(null)
         super.onDestroy()
     }
 }

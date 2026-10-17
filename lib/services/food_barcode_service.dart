@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:nutrify/l10n/localized_numbers.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:nutrify/constants/food_database.dart';
@@ -172,7 +173,7 @@ class FoodBarcodeService {
 
   /// Normalizes scanner output into barcode strings to try against databases.
   static List<String> barcodeLookupCandidates(String raw) {
-    final digits = raw.replaceAll(RegExp(r'\D'), '');
+    final digits = normalizeDigits(raw).replaceAll(RegExp(r'\D'), '');
     if (digits.length < 8) return [];
 
     final out = <String>[];

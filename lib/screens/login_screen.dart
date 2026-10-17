@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:nutrify/l10n/localized_numbers.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:nutrify/l10n/app_localizations.dart';
@@ -60,7 +61,9 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   String get _fullPhoneNumber {
-    var digits = _phoneController.text.replaceAll(RegExp(r'\D'), '');
+    var digits = normalizeDigits(
+      _phoneController.text,
+    ).replaceAll(RegExp(r'\D'), '');
     if (digits.startsWith('0')) {
       digits = digits.substring(1);
     }
@@ -68,16 +71,18 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   String get _displayPhoneNumber {
-    var digits = _phoneController.text.replaceAll(RegExp(r'\D'), '');
+    var digits = normalizeDigits(
+      _phoneController.text,
+    ).replaceAll(RegExp(r'\D'), '');
     if (digits.startsWith('0')) {
       digits = digits.substring(1);
     }
     if (digits.isEmpty) return _countryCode;
-    return '$_countryCode $digits';
+    return ltrFragment('$_countryCode $digits');
   }
 
   bool _isValidPhone(String digits) {
-    var d = digits;
+    var d = normalizeDigits(digits);
     if (d.startsWith('0')) {
       d = d.substring(1);
     }
@@ -105,7 +110,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> _continueFromPhone(AppState state) async {
     final t = state.t;
-    final digits = _phoneController.text.replaceAll(RegExp(r'\D'), '');
+    final digits = normalizeDigits(
+      _phoneController.text,
+    ).replaceAll(RegExp(r'\D'), '');
     if (!_isValidPhone(digits)) {
       ScaffoldMessenger.of(
         context,
@@ -173,7 +180,9 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _sendOtp(AppState state) async {
-    final digits = _phoneController.text.replaceAll(RegExp(r'\D'), '');
+    final digits = normalizeDigits(
+      _phoneController.text,
+    ).replaceAll(RegExp(r'\D'), '');
     if (!_isValidPhone(digits)) {
       ScaffoldMessenger.of(
         context,
@@ -233,7 +242,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> _verifyOtp(AppState state) async {
     final t = state.t;
-    final code = _otpController.text.trim();
+    final code = normalizeDigits(_otpController.text).trim();
     if (code.length != 6 || int.tryParse(code) == null) {
       ScaffoldMessenger.of(
         context,
@@ -452,7 +461,9 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _submitPasswordLogin(AppState state) async {
-    final digits = _phoneController.text.replaceAll(RegExp(r'\D'), '');
+    final digits = normalizeDigits(
+      _phoneController.text,
+    ).replaceAll(RegExp(r'\D'), '');
     if (!_isValidPhone(digits)) {
       ScaffoldMessenger.of(
         context,
@@ -561,8 +572,10 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         ),
         const SizedBox(height: 8),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        Wrap(
+          alignment: WrapAlignment.spaceBetween,
+          spacing: 8,
+          runSpacing: 4,
           children: [
             TextButton(
               onPressed: _loading ? null : _backToWelcome,
@@ -810,7 +823,7 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
         const SizedBox(height: 8),
         Text(
-          '${t.otpSentTo} $_displayPhoneNumber',
+          '${t.otpSentTo} ${ltrFragment(_displayPhoneNumber)}',
           textAlign: TextAlign.center,
           style: TextStyle(
             fontSize: 13,
@@ -864,7 +877,10 @@ class _LoginScreenState extends State<LoginScreen> {
           textAlign: TextAlign.center,
           maxLength: 6,
           onSubmitted: (_) => _loading ? null : _verifyOtp(state),
-          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+          inputFormatters: [
+            const LocalizedDigitsFormatter(),
+            FilteringTextInputFormatter.digitsOnly,
+          ],
           style: TextStyle(
             fontSize: 28,
             fontWeight: FontWeight.w800,
@@ -912,8 +928,10 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         ),
         const SizedBox(height: 8),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        Wrap(
+          alignment: WrapAlignment.spaceBetween,
+          spacing: 8,
+          runSpacing: 4,
           children: [
             TextButton(
               onPressed: _loading ? null : _backToPhoneStep,
@@ -1044,7 +1062,10 @@ class _LoginScreenState extends State<LoginScreen> {
           ? null
           : (_) =>
                 _loading ? null : _continueFromPhone(context.read<AppState>()),
-      inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[\d\s\-]'))],
+      inputFormatters: [
+        const LocalizedDigitsFormatter(),
+        FilteringTextInputFormatter.allow(RegExp(r'[\d\s\-]')),
+      ],
       decoration: InputDecoration(
         prefixIcon: Padding(
           padding: const EdgeInsetsDirectional.only(start: 16, end: 8),
@@ -1059,6 +1080,7 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(width: 8),
               Text(
                 _countryCode,
+                textDirection: TextDirection.ltr,
                 style: TextStyle(
                   fontWeight: FontWeight.w800,
                   color: isDark ? Colors.white : const Color(0xFF334155),
@@ -1188,11 +1210,14 @@ class _LoginScreenState extends State<LoginScreen> {
             children: [
               const Icon(Icons.login_rounded, size: 20),
               const SizedBox(width: 10),
-              Text(
-                t.login,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
+              Flexible(
+                child: Text(
+                  t.login,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
                 ),
               ),
             ],
@@ -1227,11 +1252,14 @@ class _LoginScreenState extends State<LoginScreen> {
             children: [
               const Icon(Icons.person_add_rounded, size: 20),
               const SizedBox(width: 10),
-              Text(
-                t.signUp,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
+              Flexible(
+                child: Text(
+                  t.signUp,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
                 ),
               ),
             ],

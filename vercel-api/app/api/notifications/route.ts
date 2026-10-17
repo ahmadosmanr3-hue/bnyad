@@ -1,4 +1,5 @@
 import { safeRoute } from '@/lib/http';
+import { localizedNotification } from '@/lib/notification-localization';
 import { prisma } from '@/lib/db';
 import { userFromAuthHeader } from '@/lib/auth';
 import { error, json, options } from '@/lib/http';
@@ -33,8 +34,8 @@ async function handleGET(req: Request) {
   return json({
     data: notes.map((n) => ({
       id: n.id,
-      title: n.title,
-      body: n.body,
+      ...localizedNotification(n, user.profile?.language),
+      translations: n.translations,
       createdAt: n.createdAt,
     })),
   });

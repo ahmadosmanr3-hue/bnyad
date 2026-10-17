@@ -40,7 +40,7 @@ class Meal {
 
   static String _normLang(String lang) {
     if (lang == 'ar') return 'ar';
-    if (lang == 'ku') return 'ku';
+    if ((lang == 'ku' || lang == 'ckb')) return 'ku';
     return 'en';
   }
 

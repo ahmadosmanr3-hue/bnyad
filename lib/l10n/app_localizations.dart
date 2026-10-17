@@ -712,6 +712,24 @@ class AppLocalizations {
 
   // ─── English ────────────────────────────────────────
   static const Map<String, dynamic> _en = {
+    'or': 'or',
+    'notifications': 'Notifications',
+    'ofTotal': 'of {total}',
+    'versus': 'compared with',
+    'daysRemaining': '{days} days remaining',
+    'poweredByBnyad': 'Made for your wellbeing',
+    'invalidNumber': 'Enter a valid positive number.',
+    'mealChannel': 'Meal reminders',
+    'mealChannelDescription': 'Daily meal reminder notifications',
+    'weeklyChannel': 'Weekly summary',
+    'weeklyChannelDescription': 'Weekly nutrition digest',
+    'supplementChannel': 'Supplement reminders',
+    'supplementChannelDescription': 'Daily pill and supplement reminders',
+    'notificationTestBody': 'Notifications are working!',
+    'androidRenewal':
+        'Payment is charged to your Google Play account after confirmation. Subscriptions renew automatically unless canceled before renewal. Manage or cancel in Google Play subscriptions.',
+    'webRenewal':
+        'Your app store shows subscription and renewal terms before confirmation.',
     'dashboard': 'Dashboard',
     'profile': 'Health Profile',
     'foodLog': 'Food Log',
@@ -1187,7 +1205,7 @@ class AppLocalizations {
     'premiumActiveUntil': 'Active until {date}',
     'premiumTitle': 'Go Premium',
     'premiumSubtitle': 'Unlock the full power of BNYAD\'s AI.',
-    'premiumPerkMealPlan': 'AI-generated weekly meal plans',
+    'premiumPerkMealPlan': 'AI-generated daily meal plans',
     'premiumPerkScanner': 'AI food & fridge scanner',
     'premiumPerkAiTips': 'Personalized AI health guidance',
     'premiumPerkNutrients': 'Nutrient & supplement tracking',
@@ -1249,7 +1267,7 @@ class AppLocalizations {
     'barcodeLogged': 'Food added to your daily log',
     'barcodeAmountLabel': 'How much did you eat?',
     'barcodeNotOnWeb':
-        'Barcode scan works on the Android app. Install the APK on your phone.',
+        'Use the BNYAD app on iPhone or Android to scan barcodes.',
     'barcodeCameraDenied':
         'Camera access is needed to scan barcodes. Allow camera permission and try again.',
     'barcodeCameraSettings':
@@ -1411,6 +1429,23 @@ class AppLocalizations {
 
   // ─── Arabic ─────────────────────────────────────────
   static const Map<String, dynamic> _ar = {
+    'or': 'أو',
+    'notifications': 'الإشعارات',
+    'ofTotal': 'من {total}',
+    'versus': 'مقارنةً بـ',
+    'daysRemaining': 'الأيام المتبقية: {days}',
+    'poweredByBnyad': 'من أجل صحتك',
+    'invalidNumber': 'أدخل رقماً موجباً صالحاً.',
+    'mealChannel': 'تذكيرات الوجبات',
+    'mealChannelDescription': 'إشعارات تذكير يومية بالوجبات',
+    'weeklyChannel': 'الملخص الأسبوعي',
+    'weeklyChannelDescription': 'ملخص التغذية الأسبوعي',
+    'supplementChannel': 'تذكيرات المكملات',
+    'supplementChannelDescription': 'تذكيرات الأدوية والمكملات اليومية',
+    'notificationTestBody': 'الإشعارات تعمل!',
+    'androidRenewal':
+        'يُخصم الدفع من حساب Google Play بعد التأكيد. تتجدد الاشتراكات تلقائياً ما لم تُلغَ قبل موعد التجديد. يمكنك إدارة الاشتراك أو إلغاؤه في اشتراكات Google Play.',
+    'webRenewal': 'يعرض متجر التطبيقات شروط الاشتراك والتجديد قبل التأكيد.',
     'generateAllDetailsHint':
         'سيتم تخطي الوجبات التي تحتوي بالفعل على المكونات والخطوات. لتحديث وجبة واحدة، استخدم الزر الموجود في بطاقتها.',
     'dashboard': 'لوحة القيادة',
@@ -1875,7 +1910,7 @@ class AppLocalizations {
     'premiumActiveUntil': 'مفعّل حتى {date}',
     'premiumTitle': 'اشترك في بريميوم',
     'premiumSubtitle': 'افتح كامل قدرات الذكاء الاصطناعي في BNYAD.',
-    'premiumPerkMealPlan': 'خطط وجبات أسبوعية بالذكاء الاصطناعي',
+    'premiumPerkMealPlan': 'خطط وجبات يومية بالذكاء الاصطناعي',
     'premiumPerkScanner': 'ماسح الطعام والثلاجة بالذكاء الاصطناعي',
     'premiumPerkAiTips': 'نصائح صحية شخصية بالذكاء الاصطناعي',
     'premiumPerkNutrients': 'تتبّع المغذيات والمكمّلات',
@@ -1936,7 +1971,7 @@ class AppLocalizations {
     'barcodeLogged': 'تمت إضافة الطعام لسجل اليوم',
     'barcodeAmountLabel': 'كم أكلت؟',
     'barcodeNotOnWeb':
-        'مسح الباركود يعمل على تطبيق أندرويد. ثبّت ملف APK على هاتفك.',
+        'استخدم تطبيق BNYAD على آي أو إس أو أندرويد لمسح الباركود.',
     'barcodeCameraDenied':
         'يلزم الوصول إلى الكاميرا لمسح الباركود. اسمح بالإذن وحاول مرة أخرى.',
     'barcodeCameraSettings':
@@ -2098,6 +2133,25 @@ class AppLocalizations {
 
   // ─── Kurdish Sorani ────────────────────────────────
   static const Map<String, dynamic> _ku = {
+    'or': 'یان',
+    'notifications': 'ئاگادارکردنەوەکان',
+    'ofTotal': 'لە {total}',
+    'versus': 'بە بەراورد بە',
+    'daysRemaining': '{days} ڕۆژ ماوە',
+    'poweredByBnyad': 'بۆ تەندروستیی تۆ',
+    'invalidNumber': 'ژمارەیەکی دروستی گەورەتر لە سفر بنووسە.',
+    'mealChannel': 'بیرهێنانەوەی ژەمەکان',
+    'mealChannelDescription': 'ئاگادارکردنەوەی ڕۆژانە بۆ ژەمەکان',
+    'weeklyChannel': 'پوختەی هەفتانە',
+    'weeklyChannelDescription': 'پوختەی خۆراکی هەفتانە',
+    'supplementChannel': 'بیرهێنانەوەی تەواوکەرەکان',
+    'supplementChannelDescription':
+        'بیرهێنانەوەی ڕۆژانەی دەرمان و تەواوکەرەکان',
+    'notificationTestBody': 'ئاگادارکردنەوەکان کار دەکەن!',
+    'androidRenewal':
+        'دوای پشتڕاستکردنەوە، پارەکە لە هەژماری Google Play دەبڕدرێت. بەشدارییەکە خۆکارانە نوێ دەبێتەوە، مەگەر پێش بەرواری نوێکردنەوە هەڵیبوەشێنیتەوە. دەتوانیت لە بەشی بەشدارییەکانی Google Play بەڕێوەی ببەیت یان هەڵیبوەشێنیتەوە.',
+    'webRenewal':
+        'فرۆشگای ئەپ پێش پشتڕاستکردنەوە مەرجی بەشداری و نوێکردنەوە پیشان دەدات.',
     'dashboard': 'داشبۆرد',
     'profile': 'پڕۆفایلی تەندروستی',
     'foodLog': 'تۆماری خۆراک',
@@ -2403,9 +2457,9 @@ class AppLocalizations {
     'byPiece': 'بە پارچە',
     'byBowl': 'بە قاپ',
     'bowlWeight': 'کێشی هەر قاپێک (گرام)',
-    'scanFridge': 'سکانی فریزەرەکەم',
+    'scanFridge': 'سکانی سەلاجەکەم',
     'scanFridgeDesc':
-        'وێنەیەک لە فریزەرەکەت بگرە و AI ژەمێکت بۆ پێشنیار دەکات بەپێی ئەوەی هەتە.',
+        'وێنەیەک لە سەلاجەکەت بگرە و AI ژەمێکت بۆ پێشنیار دەکات بەپێی ئەوەی هەتە.',
     'selectMealType': 'ئەم ژەمە بۆ:',
     'detectedIngredients': 'پێکهاتە دۆزراوەکان',
     'ingredientBreakdown': 'وردەکاری پێکهاتەکان',
@@ -2472,7 +2526,7 @@ class AppLocalizations {
     'bodyFatScreenIntro':
         'بۆ وردتر، یەکەم پێوانەی نەرم بەکاربهێنە (کەمەر + مل). وێنە دەتوانێت ئەنجامەکە کەمێک ڕێک بخات، بەڵام هەرگیز وردتر نییە لە پێوانە.',
     'bodyFatStaticDisclaimer':
-        'ئەم تایبەتمەندییە تەنها بۆ زانیاری گشتییە؛ نەشێوانە و نە ئامێری پزیشکی. بۆ وردەکاری پێویستت بە ڕاوێژکاری پزیشکی هەیە.',
+        'ئەم تایبەتمەندییە تەنها بۆ زانیاری گشتییە؛ نە دەستنیشانکردنی نەخۆشییە و نە ئامێری پزیشکی. بۆ ڕێنمایی تایبەت بە خۆت، ڕاوێژ بە پزیشک بکە.',
     'bodyFatAnalyzing': 'وێنە شیکار دەکرێت…',
     'bodyFatEstimatedRange': 'مەودای خەمڵێنراو',
     'bodyFatConfidenceLabel': 'متمانە',
@@ -2562,8 +2616,8 @@ class AppLocalizations {
     'categoryList': {
       'Kurdish': 'خواردنی کوردی',
       'Bread': 'نان و نانەوێڵە',
-      'RiceDishes': 'خواردنەوەی برنج',
-      'Soup': 'شۆربا و نیشاستە',
+      'RiceDishes': 'خواردنەکانی برنج',
+      'Soup': 'شۆربا و خورش',
       'Arabic': 'عەرەبی / ڕۆژهەڵاتی ناوەڕاست',
       'Protein': 'پرۆتین',
       'Dairy': 'بەرهەمی شیر',
@@ -2587,7 +2641,7 @@ class AppLocalizations {
     'premiumActiveUntil': 'چالاکە تا {date}',
     'premiumTitle': 'پرێمیەم وەربگرە',
     'premiumSubtitle': 'هەموو توانای زیرەکی دەستکردی BNYAD بکەرەوە.',
-    'premiumPerkMealPlan': 'پلانی هەفتانەی خۆراک بە زیرەکی دەستکرد',
+    'premiumPerkMealPlan': 'پلانی ڕۆژانەی خۆراک بە زیرەکیی دەستکرد',
     'premiumPerkScanner': 'سکانەری خۆراک و سەلاجە بە زیرەکی دەستکرد',
     'premiumPerkAiTips': 'ڕێنمایی تەندروستی تایبەتکراو',
     'premiumPerkNutrients': 'شوێنپێیی پێکهاتە و سوپلیمێنت',
@@ -2598,7 +2652,7 @@ class AppLocalizations {
     'premiumRestore': 'گەڕانەوەی کڕین',
     'premiumComingSoon':
         'پارەدان بە ڕاستی بەم زووانە. بۆ تاقیکردنەوە چالاک بکە.',
-    'premiumManage': 'بەڕێوەبردنی پسوولە',
+    'premiumManage': 'بەڕێوەبردنی بەشداری',
     'premiumFooterNote':
         'پێوەری چەوریی لەش و ژمێرکاری ماکرۆ بەخۆڕایی دەمێننەوە.',
     'optionalField': 'هەڵبژاردەیی',
@@ -2651,7 +2705,7 @@ class AppLocalizations {
     'barcodeLogged': 'خواردنەکە بۆ تۆمارەی ئەمڕۆ زیاد کرا',
     'barcodeAmountLabel': 'چەندت خوارد؟',
     'barcodeNotOnWeb':
-        'خوێندنەوەی بارکۆد لە ئەپەکانی ئەندرۆیددا کار دەکات. APK لە مۆبایل دابمەزرێنە.',
+        'بۆ خوێندنەوەی بارکۆد، ئەپی BNYAD لە iPhone یان Android بەکاربهێنە.',
     'barcodeCameraDenied':
         'پێویستە مۆڵەتی کامێرا بدەیت بۆ خوێندنەوەی بارکۆد. دووبارە هەوڵ بدەرەوە.',
     'barcodeCameraSettings':
@@ -2680,7 +2734,7 @@ class AppLocalizations {
     'bonePortionHint':
         'ئەگەر بە ئێسکەوە کێشت، تەنها گۆشتی خواردن دەژمێردرێت بۆ ئەوەی کالۆریەکان زیادە نەبن.',
     'medicationsLabel': 'دەرمانەکان (هەڵبژاردەیی)',
-    'medicationsHint': 'بە بزر دابڕێنە، نموونە: Metformin، Lisinopril',
+    'medicationsHint': 'بە کۆما جیا بکەرەوە، نموونە: Metformin، Lisinopril',
     'onboardTrainingTitle': 'وەرزش و چێشتلێنان',
     'onboardTrainingSubtitle': 'قەبارەی وەرزش و کاتی چێشتلێنان.',
     'workoutDaysPerWeek': 'ڕۆژانی وەرزش لە هەفتە',

@@ -1,7 +1,8 @@
 import { safeRoute } from '@/lib/http';
+import { localizedNotification, parseNotificationTranslations } from '@/lib/notification-localization';
 import { prisma } from '@/lib/db';
 import { isAdminAuthed } from '@/lib/admin';
-import { ALL_USERS_TOPIC, sendPush, type PushResult } from '@/lib/fcm';
+import { sendPush, type PushResult } from '@/lib/fcm';
 import { error, json, options, readJson } from '@/lib/http';
 
 export const runtime = 'nodejs';
@@ -24,6 +25,7 @@ async function handleGET(req: Request) {
     id: n.id,
     title: n.title,
     body: n.body,
+    translations: n.translations,
     target: n.userId ? (n.user?.profile?.displayName || n.user?.name || n.user?.phone || `#${n.userId}`) : 'All users',
     userId: n.userId,
     createdAt: n.createdAt,
@@ -42,10 +44,12 @@ async function handlePOST(req: Request) {
   const body = await readJson<{
     title?: string;
     body?: string;
+    translations?: unknown;
     userId?: number;
     phone?: string;
   }>(req);
 
+  const translations = parseNotificationTranslations(body.translations);
   const title = body.title?.trim();
   const message = body.body?.trim();
   if (!title) return error('Title is required.', 422);
@@ -59,7 +63,7 @@ async function handlePOST(req: Request) {
   }
 
   const note = await prisma.notification.create({
-    data: { title, body: message, userId },
+    data: { title, body: message, userId, ...(translations ? { translations } : {}) },
   });
 
   let push: PushResult = { sent: false };
@@ -67,10 +71,11 @@ async function handlePOST(req: Request) {
   if (userId) {
     const user = await prisma.user.findUnique({
       where: { id: userId },
-      select: { fcmToken: true },
+      select: { fcmToken: true, profile: { select: { language: true } } },
     });
     if (user?.fcmToken) {
-      push = await sendPush({ token: user.fcmToken }, title, message);
+      const localized = localizedNotification(note, user.profile?.language);
+      push = await sendPush({ token: user.fcmToken }, localized.title, localized.body);
     } else {
       push = { sent: false, error: 'User has no FCM token yet (app not opened since update).' };
     }
@@ -78,13 +83,16 @@ async function handlePOST(req: Request) {
     // Find all unique FCM tokens in the database
     const users = await prisma.user.findMany({
       where: { fcmToken: { not: null } },
-      select: { fcmToken: true },
+      select: { fcmToken: true, profile: { select: { language: true } } },
     });
     const tokens = Array.from(new Set(users.map((u) => u.fcmToken as string).filter(Boolean)));
 
     if (tokens.length > 0) {
       const results = await Promise.all(
-        tokens.map((token) => sendPush({ token }, title, message))
+        tokens.map((token) => {
+          const text = localizedNotification(note, users.find(u => u.fcmToken === token)?.profile?.language);
+          return sendPush({ token }, text.title, text.body);
+        })
       );
       const failed = results.filter((r) => !r.sent);
       if (failed.length === 0) {

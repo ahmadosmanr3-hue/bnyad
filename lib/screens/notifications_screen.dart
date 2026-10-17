@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:nutrify/l10n/notification_text.dart';
+import 'package:nutrify/l10n/localized_numbers.dart';
 import 'package:provider/provider.dart';
 
 import 'package:nutrify/providers/app_state.dart';
@@ -28,6 +30,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     switch (lang) {
       case 'ar':
         return 'الإشعارات';
+      case 'ckb':
       case 'ku':
         return 'ئاگادارکردنەوەکان';
       default:
@@ -39,6 +42,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     switch (lang) {
       case 'ar':
         return 'لا توجد إشعارات بعد';
+      case 'ckb':
       case 'ku':
         return 'هیچ ئاگادارکردنەوەیەک نییە';
       default:
@@ -71,11 +75,19 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.notifications_off_outlined, size: 48, color: muted),
+                  Icon(
+                    Icons.notifications_off_outlined,
+                    size: 48,
+                    color: muted,
+                  ),
                   const SizedBox(height: 12),
                   Text(
                     _empty(lang),
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: muted),
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: muted,
+                    ),
                   ),
                 ],
               ),
@@ -94,7 +106,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                       color: cardColor,
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(
-                        color: isDark ? AppTheme.slate700.withValues(alpha: 0.5) : AppTheme.slate200,
+                        color: isDark
+                            ? AppTheme.slate700.withValues(alpha: 0.5)
+                            : AppTheme.slate200,
                       ),
                     ),
                     child: Column(
@@ -110,12 +124,16 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                   colors: AppTheme.brandGradient,
                                 ),
                               ),
-                              child: const Icon(Icons.campaign_rounded, size: 16, color: Colors.white),
+                              child: const Icon(
+                                Icons.campaign_rounded,
+                                size: 16,
+                                color: Colors.white,
+                              ),
                             ),
                             const SizedBox(width: 12),
                             Expanded(
                               child: Text(
-                                n['title']?.toString() ?? '',
+                                notificationText(n, 'title', lang),
                                 style: TextStyle(
                                   fontSize: 15,
                                   fontWeight: FontWeight.w800,
@@ -127,19 +145,25 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                         ),
                         const SizedBox(height: 10),
                         Text(
-                          n['body']?.toString() ?? '',
+                          notificationText(n, 'body', lang),
                           style: TextStyle(
                             fontSize: 13.5,
                             height: 1.5,
                             fontWeight: FontWeight.w500,
-                            color: isDark ? AppTheme.slate300 : AppTheme.slate700,
+                            color: isDark
+                                ? AppTheme.slate300
+                                : AppTheme.slate700,
                           ),
                         ),
                         if ((n['createdAt']?.toString() ?? '').isNotEmpty) ...[
                           const SizedBox(height: 10),
                           Text(
-                            _formatDate(n['createdAt'].toString()),
-                            style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600, color: muted),
+                            ltrFragment(_formatDate(n['createdAt'].toString())),
+                            style: TextStyle(
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.w600,
+                              color: muted,
+                            ),
                           ),
                         ],
                       ],

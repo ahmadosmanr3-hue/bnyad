@@ -226,7 +226,11 @@ class _PremiumPaywallSheetState extends State<_PremiumPaywallSheet> {
                           ),
                         ),
                         child: Text(
-                          t.subscriptionAutoRenewTerms,
+                          kIsWeb
+                              ? t.get('webRenewal')
+                              : defaultTargetPlatform == TargetPlatform.android
+                              ? t.get('androidRenewal')
+                              : t.subscriptionAutoRenewTerms,
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 10.5,
@@ -654,6 +658,8 @@ class _ActivateButton extends StatelessWidget {
         foregroundColor: Colors.white,
         padding: const EdgeInsets.symmetric(vertical: 18),
         textStyle: const TextStyle(
+                      fontFamily: AppTheme.fontFamily,
+                      fontFamilyFallback: AppTheme.fontFamilyFallback,
           fontSize: 15,
           fontWeight: FontWeight.w800,
           letterSpacing: 0.2,

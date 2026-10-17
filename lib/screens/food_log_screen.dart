@@ -99,6 +99,8 @@ class _FoodLogScreenState extends State<FoodLogScreen> {
                       vertical: 10,
                     ),
                     textStyle: const TextStyle(
+                      fontFamily: AppTheme.fontFamily,
+                      fontFamilyFallback: AppTheme.fontFamilyFallback,
                       fontWeight: FontWeight.w800,
                       fontSize: 13,
                     ),

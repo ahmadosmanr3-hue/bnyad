@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:nutrify/l10n/localized_numbers.dart';
 import 'package:flutter/services.dart';
 import 'activity/step_health_provider.dart';
 import 'activity/step_tracker.dart';
@@ -291,7 +292,7 @@ class _HealthProfileDialogState extends State<LocalHealthProfileDialog> {
     decoration: InputDecoration(labelText: label),
     keyboardType: TextInputType.numberWithOptions(decimal: !whole),
     validator: (text) {
-      final value = double.tryParse(text ?? '');
+      final value = parseLocalizedDouble(text ?? '');
       return value == null ||
               !value.isFinite ||
               value < min ||
@@ -311,7 +312,7 @@ class _HealthProfileDialogState extends State<LocalHealthProfileDialog> {
         mainAxisSize: MainAxisSize.min,
         children: [
           const Text(
-            'Use your own values. Saved only on this iPhone, separately from BNYAD accounts. '
+            'Use your own values. Saved only on this device, separately from BNYAD accounts. '
             'No Apple Health weight permission or nutrition calculation is used.',
           ),
           field('Weight (kg)', weight, 20, 350),
@@ -365,9 +366,9 @@ class _HealthProfileDialogState extends State<LocalHealthProfileDialog> {
             context,
             UserProfile.fromMap({
               'uid': 'health-diagnostic',
-              'weight': double.parse(weight.text),
-              'height': double.parse(height.text),
-              'age': double.parse(age.text).toInt(),
+              'weight': parseLocalizedDouble(weight.text)!,
+              'height': parseLocalizedDouble(height.text)!,
+              'age': parseLocalizedDouble(age.text)!.toInt(),
               'activityLevel': activity,
               'disabilities': gentle ? ['cautious'] : <String>[],
             }),

@@ -756,6 +756,8 @@ class _OnboardingScreenState extends State<OnboardingScreen>
             style: ElevatedButton.styleFrom(
               padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 10),
               textStyle: const TextStyle(
+                fontFamily: AppTheme.fontFamily,
+                fontFamilyFallback: AppTheme.fontFamilyFallback,
                 fontWeight: FontWeight.w800,
                 fontSize: 14,
               ),
@@ -931,7 +933,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                 if (calDelta != 0) ...[
                   const SizedBox(height: 4),
                   Text(
-                    '${calDelta > 0 ? '+' : ''}$calDelta ${t.kcal} vs ${t.maintenanceCalories.toLowerCase()} ($maintenance)',
+                    '${calDelta > 0 ? '+' : ''}$calDelta ${t.kcal} ${t.get('versus')} ${t.maintenanceCalories.toLowerCase()} ($maintenance)',
                     textAlign: TextAlign.center,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
@@ -1598,6 +1600,8 @@ class _OnboardingScreenState extends State<OnboardingScreen>
               isExpanded: true,
               dropdownColor: isDark ? AppTheme.navy800 : Colors.white,
               style: TextStyle(
+                fontFamily: AppTheme.fontFamily,
+                fontFamilyFallback: AppTheme.fontFamilyFallback,
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
                 color: isDark ? Colors.white : AppTheme.slate800,

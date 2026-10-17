@@ -238,7 +238,7 @@ class FoodItem {
 
   String getLocalizedName(String lang) {
     if (lang == 'ar') return nameAr ?? name;
-    if (lang == 'ku') return nameKu ?? name;
+    if ((lang == 'ku' || lang == 'ckb')) return nameKu ?? name;
     return name;
   }
 
@@ -247,6 +247,7 @@ class FoodItem {
     switch (lang) {
       case 'ar':
         return servingLabelAr ?? servingLabelEn;
+      case 'ckb':
       case 'ku':
         return servingLabelKu ?? servingLabelEn;
       default:

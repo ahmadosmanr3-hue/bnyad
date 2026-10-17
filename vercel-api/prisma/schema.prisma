@@ -65,6 +65,7 @@ model Notification {
   userId    Int?     @map("user_id")
   title     String
   body      String
+  translations Json?
   createdAt DateTime @default(now()) @map("created_at")
 
   user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
