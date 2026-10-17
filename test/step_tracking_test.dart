@@ -841,6 +841,68 @@ void main() {
       }
     }
   }
+  for (final width in [320.0, 430.0]) {
+    for (final locale in ['en', 'ar', 'ku']) {
+      for (final dark in [false, true]) {
+        testWidgets(
+          'activity details $width $locale dark=$dark keeps controls accessible',
+          (tester) async {
+              tracker.dispose();
+              tracker = StepTracker(
+                provider: health,
+                store: store,
+                profile: () => profile(),
+                clock: () => now,
+              );
+            tester.view.physicalSize = Size(width, 850);
+            tester.view.devicePixelRatio = 1;
+            addTearDown(tester.view.resetPhysicalSize);
+            addTearDown(tester.view.resetDevicePixelRatio);
+            await tracker.attach('a');
+            await tracker.connect();
+            final strings = StepStrings(locale);
+            await tester.pumpWidget(
+              MaterialApp(
+                theme: dark ? AppTheme.darkTheme : AppTheme.lightTheme,
+                home: MediaQuery(
+                  data: MediaQueryData(
+                    size: Size(width, 850),
+                    textScaler: const TextScaler.linear(1.6),
+                  ),
+                  child: StepDetailsScreen(
+                    tracker: tracker,
+                    locale: locale,
+                    isDark: dark,
+                  ),
+                ),
+              ),
+            );
+            await tester.pumpAndSettle();
+            expect(find.text(strings.text('revoke')), findsNothing);
+            expect(find.text(strings.text('algorithm')), findsNothing);
+            expect(find.text(strings.text('connected')), findsOneWidget);
+            expect(tester.takeException(), isNull);
+            await tester.ensureVisible(
+              find.text(strings.text('healthConnection')),
+            );
+            await tester.pumpAndSettle();
+            await tester.tap(find.text(strings.text('healthConnection')));
+            await tester.pumpAndSettle();
+            expect(find.text(strings.text('revoke')), findsOneWidget);
+            await tester.ensureVisible(
+              find.byKey(const ValueKey('disconnect-steps')),
+            );
+            await tester.pumpAndSettle();
+            expect(tester.takeException(), isNull);
+            expect(tracker.connected, true);
+            expect(tracker.todaySteps, 6420);
+            await tester.pumpWidget(const SizedBox());
+            tracker.setForeground(false);
+          },
+        );
+      }
+    }
+  }
   testWidgets(
     'health explanation must be accepted before any native permission request',
     (tester) async {

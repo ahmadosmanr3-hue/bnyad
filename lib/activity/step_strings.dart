@@ -25,6 +25,10 @@ class StepStrings {
     StepStatus.error => 'error',
   });
   static const en = {
+    'today': 'Today',
+    'connected': 'Connection saved',
+    'howItWorks': 'Goals & calorie estimates',
+    'healthConnection': 'Health connection & privacy',
     'waitingForeground':
         'Connection saved. Bring BNYAD to the foreground and tap Refresh to read Health data.',
     'readingDay': 'Local date being read',
@@ -96,6 +100,10 @@ class StepStrings {
     'settings': 'Step settings',
   };
   static const ar = {
+    'today': 'اليوم',
+    'connected': 'تم حفظ الاتصال',
+    'howItWorks': 'الأهداف وتقديرات السعرات',
+    'healthConnection': 'الاتصال بالصحة والخصوصية',
     'waitingForeground':
         'الاتصال محفوظ. افتح BNYAD في المقدمة واضغط تحديث لقراءة بيانات الصحة.',
     'readingDay': 'التاريخ المحلي للقراءة',
@@ -166,6 +174,10 @@ class StepStrings {
     'settings': 'إعدادات الخطوات',
   };
   static const ku = {
+    'today': 'ئەمڕۆ',
+    'connected': 'پەیوەندی پاشەکەوت کراوە',
+    'howItWorks': 'ئامانج و خەمڵاندنی کالۆری',
+    'healthConnection': 'پەیوەندی تەندروستی و تایبەتمەندی',
     'waitingForeground':
         'پەیوەندی پاشەکەوت کراوە. BNYAD بکەرەوە لە پێشەوە و نوێکردنەوە دابگرە بۆ خوێندنەوەی داتای تەندروستی.',
     'readingDay': 'بەرواری ناوخۆیی بۆ خوێندنەوە',

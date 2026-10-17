@@ -324,11 +324,45 @@ class StepDetailsScreen extends StatelessWidget {
       ),
     ),
   );
+
+  Widget _section(Widget child) => Padding(
+    padding: const EdgeInsets.only(top: 16),
+    child: Material(
+      color: isDark ? AppTheme.slate800 : Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(color: isDark ? AppTheme.slate700 : AppTheme.slate200),
+      ),
+      child: Padding(padding: const EdgeInsets.all(16), child: child),
+    ),
+  );
+
+  Widget _disclosure(
+    String title,
+    IconData icon,
+    List<Widget> children, {
+    Key? key,
+  }) => _section(
+    ExpansionTile(
+      key: key,
+      tilePadding: EdgeInsets.zero,
+      childrenPadding: const EdgeInsets.only(top: 8),
+      expandedCrossAxisAlignment: CrossAxisAlignment.stretch,
+      shape: const Border(),
+      collapsedShape: const Border(),
+      leading: Icon(icon, color: AppTheme.brandTeal),
+      title: Text(
+        title,
+        style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+      ),
+      children: children,
+    ),
+  );
   @override
   Widget build(BuildContext context) => Directionality(
     textDirection: s.rtl ? TextDirection.rtl : TextDirection.ltr,
     child: Scaffold(
-      appBar: AppBar(title: Text(s.text('details'))),
+      appBar: AppBar(title: Text(s.text('activity'))),
       body: AnimatedBuilder(
         animation: tracker,
         builder: (context, _) {
@@ -338,6 +372,7 @@ class StepDetailsScreen extends StatelessWidget {
           return RefreshIndicator(
             onRefresh: () => tracker.refresh(force: true),
             child: ListView(
+              physics: const AlwaysScrollableScrollPhysics(),
               padding: const EdgeInsets.all(16),
               children: [
                 Center(
@@ -351,35 +386,34 @@ class StepDetailsScreen extends StatelessWidget {
                           locale: locale,
                           isDark: isDark,
                         ),
-                        const SizedBox(height: 16),
-                        Text(
-                          '${s.text('readingDay')}: ${stepDateKey(tracker.clock())}',
-                        ),
-                        if (tracker.connected)
-                          Padding(
-                            padding: const EdgeInsets.only(top: 8, bottom: 8),
-                            child: Text(s.text('connectionSaved')),
-                          ),
-                        Text(
-                          tracker.simulated &&
-                                  tracker.status == StepStatus.ready
-                              ? s.text('demo')
-                              : s.status(
-                                  webUnavailable
-                                      ? StepStatus.unavailable
-                                      : tracker.status,
+                        const SizedBox(height: 12),
+                        Wrap(
+                          spacing: 12,
+                          runSpacing: 6,
+                          alignment: WrapAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              '${s.text('today')}: ${stepDateKey(tracker.clock())}',
+                              style: Theme.of(context).textTheme.bodySmall,
+                            ),
+                            if (tracker.connected)
+                              Text(
+                                s.text('connected'),
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w700,
+                                  color: isDark
+                                      ? AppTheme.slate100
+                                      : AppTheme.slate800,
                                 ),
+                              ),
+                          ],
                         ),
                         if (last != null)
                           Text(
                             '${s.text('updated')}: ${stepDateKey(last)} '
                             '${last.hour.toString().padLeft(2, '0')}:${last.minute.toString().padLeft(2, '0')}',
                             style: Theme.of(context).textTheme.bodySmall,
-                          ),
-                        if (tracker.simulated)
-                          Padding(
-                            padding: const EdgeInsets.only(top: 12),
-                            child: Text(s.text('demoNote')),
                           ),
                         if (!tracker.connected ||
                             tracker.status == StepStatus.denied)
@@ -390,120 +424,157 @@ class StepDetailsScreen extends StatelessWidget {
                                 : () => _connect(context),
                             key: const ValueKey('connect-steps'),
                           ),
-                        if (tracker.connected) ...[
+                        if (tracker.connected)
                           _button(
                             s.text('refresh'),
                             tracker.busy
                                 ? null
                                 : () => tracker.refresh(force: true),
                           ),
-                          _button(
-                            s.text('disconnect'),
-                            () => tracker.disconnect(),
-                            key: const ValueKey('disconnect-steps'),
-                          ),
-                        ],
-                        _button(
-                          s.text('manage'),
-                          webUnavailable || tracker.simulated
-                              ? null
-                              : () async {
-                                  try {
-                                    await tracker.provider.openSettings();
-                                  } catch (_) {
-                                    if (context.mounted) {
-                                      ScaffoldMessenger.of(
-                                        context,
-                                      ).showSnackBar(
-                                        SnackBar(
-                                          content: Text(s.text('error')),
-                                        ),
-                                      );
-                                    }
-                                  }
-                                },
-                        ),
-                        const SizedBox(height: 12),
-                        Text(
-                          s.text('revoke'),
-                          style: Theme.of(context).textTheme.bodySmall,
-                        ),
-                        const Divider(height: 32),
-                        Text(
-                          '${s.text('goal')}: ${tracker.goal}',
-                          style: Theme.of(context).textTheme.titleMedium,
-                        ),
-                        Text(
-                          '${s.text('initial')}: ${initialStepGoal(tracker.profile())} ${s.text('steps')}',
-                        ),
-                        SwitchListTile.adaptive(
-                          contentPadding: EdgeInsets.zero,
-                          title: Text(s.text('automatic')),
-                          subtitle: Text(s.text('automaticHint')),
-                          value: tracker.automatic,
-                          onChanged: (value) => tracker.setAutomatic(value),
-                        ),
-                        _button(
-                          s.text('manual'),
-                          () => _manual(context),
-                          key: const ValueKey('manual-step-goal'),
-                        ),
-                        if (!tracker.automatic)
-                          _button(
-                            s.text('restore'),
-                            () => tracker.setAutomatic(true),
-                          ),
-                        if (needsGentleStepGoals(tracker.profile()))
-                          Padding(
-                            padding: const EdgeInsets.only(top: 12),
-                            child: Text(s.text('gentle')),
-                          ),
-                        _button(
-                          s.text('review'),
-                          tracker.connected ? () => _history(context) : null,
-                        ),
-                        Text(
-                          '${s.text('historyCount')}: ${tracker.pastDays.where((d) => tracker.confirmedDays.contains(d.date)).length} / 14',
-                        ),
-                        if (suggestion != null) ...[
-                          const SizedBox(height: 12),
-                          Text(
-                            '${s.text('suggested')}: $suggestion ${s.text('steps')}',
-                            style: const TextStyle(fontWeight: FontWeight.w800),
-                          ),
-                          _button(s.text('accept'), () async {
-                            final accepted = await showDialog<bool>(
-                              context: context,
-                              builder: (context) => AlertDialog(
-                                title: Text(s.text('suggested')),
-                                content: Text(
-                                  '${tracker.goal} → $suggestion ${s.text('steps')}',
-                                ),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () =>
-                                        Navigator.pop(context, false),
-                                    child: Text(s.text('cancel')),
-                                  ),
-                                  TextButton(
-                                    onPressed: () =>
-                                        Navigator.pop(context, true),
-                                    child: Text(s.text('accept')),
-                                  ),
-                                ],
+                        _section(
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              Text(
+                                '${s.text('goal')}: ${tracker.goal}',
+                                style: Theme.of(context).textTheme.titleMedium,
                               ),
-                            );
-                            if (accepted == true) {
-                              await tracker.acceptRecommendation(
-                                expected: suggestion,
-                              );
-                            }
-                          }),
-                        ],
-                        const SizedBox(height: 16),
-                        Text(s.text('algorithm')),
-                        const Divider(height: 32),
-                        Text(s.text('calorieNote')),
+                              _button(
+                                s.text('manual'),
+                                () => _manual(context),
+                                key: const ValueKey('manual-step-goal'),
+                              ),
+                              const SizedBox(height: 8),
+                              SwitchListTile.adaptive(
+                                contentPadding: EdgeInsets.zero,
+                                title: Text(s.text('automatic')),
+                                subtitle: Text(s.text('automaticHint')),
+                                value: tracker.automatic,
+                                onChanged: (value) =>
+                                    tracker.setAutomatic(value),
+                              ),
+                              if (needsGentleStepGoals(tracker.profile()))
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 12),
+                                  child: Text(s.text('gentle')),
+                                ),
+                              _button(
+                                s.text('review'),
+                                tracker.connected
+                                    ? () => _history(context)
+                                    : null,
+                              ),
+                              Text(
+                                '${s.text('historyCount')}: ${tracker.pastDays.where((d) => tracker.confirmedDays.contains(d.date)).length} / 14',
+                                style: Theme.of(context).textTheme.bodySmall,
+                              ),
+                              if (suggestion != null) ...[
+                                const SizedBox(height: 12),
+                                Text(
+                                  '${s.text('suggested')}: $suggestion ${s.text('steps')}',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                ),
+                                _button(s.text('accept'), () async {
+                                  final accepted = await showDialog<bool>(
+                                    context: context,
+                                    builder: (context) => AlertDialog(
+                                      title: Text(s.text('suggested')),
+                                      content: Text(
+                                        '${tracker.goal} → $suggestion ${s.text('steps')}',
+                                      ),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () =>
+                                              Navigator.pop(context, false),
+                                          child: Text(s.text('cancel')),
+                                        ),
+                                        TextButton(
+                                          onPressed: () =>
+                                              Navigator.pop(context, true),
+                                          child: Text(s.text('accept')),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                  if (accepted == true) {
+                                    await tracker.acceptRecommendation(
+                                      expected: suggestion,
+                                    );
+                                  }
+                                }),
+                              ],
+                            ],
+                          ),
+                        ),
+                        _disclosure(
+                          s.text('howItWorks'),
+                          Icons.info_outline_rounded,
+                          [
+                            Text(
+                              '${s.text('initial')}: ${initialStepGoal(tracker.profile())} ${s.text('steps')}',
+                            ),
+                            const SizedBox(height: 12),
+                            Text(s.text('algorithm')),
+                            const SizedBox(height: 16),
+                            Text(
+                              s.text('calorieInfoTitle'),
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(s.text('calorieNote')),
+                            if (tracker.simulated) ...[
+                              const SizedBox(height: 12),
+                              Text(s.text('demoNote')),
+                            ],
+                          ],
+                        ),
+                        _disclosure(
+                          s.text('healthConnection'),
+                          Icons.health_and_safety_outlined,
+                          [
+                            if (tracker.connected) ...[
+                              Text(s.text('connectionSaved')),
+                              const SizedBox(height: 12),
+                            ],
+                            Text(s.text('privacy')),
+                            _button(
+                              s.text('manage'),
+                              webUnavailable || tracker.simulated
+                                  ? null
+                                  : () async {
+                                      try {
+                                        await tracker.provider.openSettings();
+                                      } catch (_) {
+                                        if (context.mounted) {
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).showSnackBar(
+                                            SnackBar(
+                                              content: Text(s.text('error')),
+                                            ),
+                                          );
+                                        }
+                                      }
+                                    },
+                            ),
+                            if (tracker.connected)
+                              _button(
+                                s.text('disconnect'),
+                                () => tracker.disconnect(),
+                                key: const ValueKey('disconnect-steps'),
+                              ),
+                            const SizedBox(height: 12),
+                            Text(
+                              s.text('revoke'),
+                              style: Theme.of(context).textTheme.bodySmall,
+                            ),
+                          ],
+                          key: const ValueKey('health-connection-details'),
+                        ),
                         const SizedBox(height: 24),
                       ],
                     ),

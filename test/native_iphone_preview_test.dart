@@ -389,9 +389,18 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(find.byKey(const ValueKey('connect-steps')), findsNothing);
-      expect(find.text(StepStrings.en['connectionSaved']!), findsOneWidget);
+      expect(find.text(StepStrings.en['connected']!), findsOneWidget);
+      expect(find.text(StepStrings.en['connectionSaved']!), findsNothing);
       expect(find.text('Refresh'), findsOneWidget);
-      expect(find.textContaining('Local date being read'), findsOneWidget);
+      expect(find.textContaining('Today:'), findsOneWidget);
+      await tester.ensureVisible(
+        find.byKey(const ValueKey('health-connection-details')),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(StepStrings.en['healthConnection']!));
+      await tester.pumpAndSettle();
+      expect(find.text(StepStrings.en['connectionSaved']!), findsOneWidget);
+      expect(find.byKey(const ValueKey('disconnect-steps')), findsOneWidget);
       expect(tester.takeException(), isNull);
       await tester.pumpWidget(const SizedBox());
       tracker.dispose();

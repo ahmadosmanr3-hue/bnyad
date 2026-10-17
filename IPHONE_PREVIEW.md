@@ -89,6 +89,24 @@ signing. CocoaPods dependencies are unchanged.
 
 ## Health refresh / reopening checks
 
+### Daily activity page cleanup
+
+The owner subsequently confirmed that current-day steps display. The Health
+screenshots used for comparison had selected the previous day; no HealthKit
+query or calculation change was necessary for that date mismatch. Full walking,
+restart and goal-persistence device checks remain separate release checks.
+
+The details page now groups the existing activity summary, current date,
+connection state and refresh control above a goal-settings card. Longer goal
+and calorie explanations, and health connection/privacy controls, are collapsed
+until opened. Disconnect and OS settings remain accessible in the connection
+section. The recommendations switch also restores suggestions, replacing the
+redundant second restore button. Consent dialogs, calculations, tracker state,
+the dashboard widget and native bridge are unchanged. Labels support EN/AR/Sorani.
+
+Layout regression checks cover 320/430px widths, both themes, all three languages
+and 1.6× text, plus expanding privacy controls. Browser data is simulated only.
+
 1. Open **BNYAD Dev**, not Health Test. Expand local controls to set your own
    health-estimate profile; collapse controls to explore the complete app.
 2. Tap the dashboard activity card → Connect → accept the explanation → allow
