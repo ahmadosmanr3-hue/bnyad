@@ -1,5 +1,21 @@
 # Gemini development testing — 20 October 2026
 
+## Daily-plan repair follow-up — current status
+
+The daily-planning failure and 13-request total below describe the earlier test
+phase. They are retained as historical evidence, not the current result.
+After the daily-plan repair, three additional real generations passed the
+unchanged validators: standard, vegan, and multiple-allergy fictional profiles.
+The cumulative ledger is now **19 of 20 HTTP requests**. Stop live generation:
+the single remaining attempt cannot cover countTokens plus generateContent.
+Do not reset the ledger or run a second copy to replenish this allowance.
+
+See [DAILY_MEAL_PLAN_REPAIR.md](DAILY_MEAL_PLAN_REPAIR.md) for exact causes,
+changes, new results, limitations, and regression coverage. No safety limits,
+saved targets, production configuration, UI, or health tracking were changed.
+
+## Historical first test phase
+
 ## Observed result, not a production readiness certificate
 
 The owner confirmed Free Tier in AI Studio. A key cannot independently prove the

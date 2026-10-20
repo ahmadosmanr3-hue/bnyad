@@ -50,10 +50,11 @@ test('2.5 Flash-Lite uses thinkingBudget and preserves structured multimodal inp
   const c = { ...config(), model: 'gemini-2.5-flash-lite' };
   const image = { mimeType:'image/png', data:'fixture' };
   for (const operation of ['food', 'fridge', 'recipe', 'meal-plan'] as const) {
-    const request = geminiRequest(operation, 'fixture', { image }, c);
+    const prompt = operation === 'meal-plan' ? buildPrompt(operation, {}, { dailyCalories: 2000, dailyProtein: 100, dailyCarbs: 260, dailyFat: 60 }) : 'fixture';
+    const request = geminiRequest(operation, prompt, { image }, c);
     assert.deepEqual(request.generationConfig.thinkingConfig, { thinkingBudget: 0 });
     assert.equal(request.generationConfig.responseMimeType, 'application/json');
-    assert.deepEqual(request.generationConfig.responseJsonSchema, schemaFor(operation));
+    assert.deepEqual(request.generationConfig.responseJsonSchema, schemaFor(operation, operation === 'meal-plan' ? JSON.parse(prompt).dailyMealPortions : undefined));
     assert.deepEqual(request.contents[0].parts[1], { inlineData:image });
     assert.ok(!JSON.stringify(request).includes(c.key));
   }
@@ -119,8 +120,10 @@ test('daily plan prompt explains existing bounds without changing profile, catal
   assert.deepEqual(prompt.dailyNutritionBounds.protein, { minimum: 70, target: 100, maximum: 130 });
   assert.deepEqual(prompt.dailyNutritionBounds.carbs, { minimum: 182, target: 260, maximum: 338 });
   assert.deepEqual(prompt.dailyNutritionBounds.fat, { minimum: 42, target: 60, maximum: 78 });
-  assert.match(prompt.mealPlanningGuide.instruction, /grams\/referenceGrams/);
-  assert.deepEqual(prompt.allowedIngredients.map((f: any) => f.id), allowedCatalog(p).map(f => f.external_id));
+  assert.match(prompt.mealPlanningGuide.instruction, /Copy the exact catalog IDs and integer grams/);
+  const permitted = new Set(allowedCatalog(p).map(f => f.external_id));
+  assert.ok(prompt.allowedIngredients.every((f: any) => permitted.has(f.id)));
+  assert.equal(prompt.mealTarget, undefined);
   assert.equal(JSON.parse(buildPrompt('recipe', { ingredients: ['rice'] }, p)).dailyNutritionBounds, undefined);
   assert.throws(() => validateOutput('meal-plan', plan(), {}, p));
 });

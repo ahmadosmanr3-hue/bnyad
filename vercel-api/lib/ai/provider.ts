@@ -1,5 +1,15 @@
 import { RequestError } from '../http';
 import { schemaFor, SYSTEM_INSTRUCTION, type Operation, type Input } from './contract';
+import { assertDailyPortions, type DailyPortions } from './daily-plan';
+
+function plannedPortions(operation: Operation, prompt: string): DailyPortions | undefined {
+  if (operation !== 'meal-plan') return undefined;
+  let daily: DailyPortions;
+  try { daily = JSON.parse(prompt).dailyMealPortions; }
+  catch { throw new RequestError('Daily meal portions must be prepared before generation.', 422); }
+  if (!daily) throw new RequestError('Daily meal portions must be prepared before generation.', 422);
+  return daily;
+}
 
 export function aiConfig() {
   const model = process.env.GEMINI_MODEL || 'gemini-3.1-flash-lite';
@@ -27,7 +37,7 @@ export function geminiRequest(operation: Operation, prompt: string, input: Input
   const thinkingConfig = /^gemini-2\.5-flash(?:-|$)/.test(config.model)
     ? { thinkingBudget: 0 } : { thinkingLevel: 'minimal' };
   return { systemInstruction: { parts: [{ text: SYSTEM_INSTRUCTION }] }, contents: [{ role: 'user', parts }],
-    generationConfig: { temperature: 0.2, maxOutputTokens: config.outputLimit, responseMimeType: 'application/json', responseJsonSchema: schemaFor(operation), thinkingConfig } };
+    generationConfig: { temperature: 0.2, maxOutputTokens: config.outputLimit, responseMimeType: 'application/json', responseJsonSchema: schemaFor(operation, plannedPortions(operation, prompt)), thinkingConfig } };
 }
 async function limitedJson(response: Response) {
   if (!response.body) throw new RequestError('AI provider returned no response.', 502);
@@ -59,5 +69,7 @@ export async function callGemini(operation: Operation, prompt: string, input: In
   const content = candidate.content?.parts?.filter((p: any) => !p.thought && typeof p.text === 'string').map((p: any) => p.text).join('');
   let result: unknown;
   try { result = JSON.parse(content); } catch { throw new RequestError('AI returned malformed content.', 502); }
+  const expected = plannedPortions(operation, prompt);
+  if (expected) assertDailyPortions(result, expected);
   return { result, inputTokens: usage.promptTokenCount as number, outputTokens: (usage.totalTokenCount - usage.promptTokenCount) as number };
 }

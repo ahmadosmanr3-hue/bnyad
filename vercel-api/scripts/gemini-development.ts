@@ -6,8 +6,13 @@ import { callGemini, estimatedCostMicros, type Config } from '../lib/ai/provider
 import { RequestError } from '../lib/http';
 
 // Fictional nutrition preferences only, not a production user or health record.
-const profile = { dailyCalories: 2000, dailyProtein: 100, dailyCarbs: 260, dailyFat: 60,
+const standardProfile = { dailyCalories: 2000, dailyProtein: 100, dailyCarbs: 260, dailyFat: 60,
   allergies: [], dietaryPattern: 'omnivore', dislikedFoods: [], mealsPerDay: 3 };
+const profiles = {
+  standard: standardProfile,
+  vegan: { ...standardProfile, dailyProtein: 90, dailyCarbs: 270, dailyFat: 65, dietaryPattern: 'vegan' },
+  allergy: { ...standardProfile, allergies: ['milk', 'egg', 'gluten', 'peanuts', 'treeNuts'] },
+};
 
 async function main() {
   // This file is a CLI, not imported by Next.js or Flutter. No DB/client/session.
@@ -15,7 +20,10 @@ async function main() {
   const { key, model } = privateConfiguration(path.resolve('.env.gemini-development.local'));
   const operation = process.argv[2] ?? 'preflight';
   if (!['preflight', 'recipe', 'meal-plan', 'food', 'fridge'].includes(operation)) throw new DevelopmentStop('unsupported_development_operation');
-  const budget = new DevelopmentBudget(path.resolve('.gemini-development'), model, fetch, process.argv[3] === '--approve-model-change');
+  const profileName = process.argv.slice(3).find(arg => arg.startsWith('--profile='))?.slice('--profile='.length) ?? 'standard';
+  if (!Object.hasOwn(profiles, profileName)) throw new DevelopmentStop('unsupported_fictional_profile');
+  const profile = profiles[profileName as keyof typeof profiles];
+  const budget = new DevelopmentBudget(path.resolve('.gemini-development'), model, fetch, process.argv.includes('--approve-model-change'));
   try {
     await checkModel(key, budget);
     if (operation === 'preflight') {
@@ -38,7 +46,7 @@ async function main() {
     let data: Record<string, any> | undefined, validationError: string | undefined;
     try { data = validateOutput(parsed.operation, response.result, parsed.input, profile); }
     catch (error) { validationError = error instanceof RequestError ? error.message : 'Output rejected'; }
-    const summary = { operation, model, validated: !!data, validationError, totalHttpAttempts: budget.requests, cap: 20,
+    const summary = { operation, model, profileName, validated: !!data, validationError, totalHttpAttempts: budget.requests, cap: 20,
       inputTokens: response.inputTokens, outputTokens: response.outputTokens,
       paidEquivalentEstimateMicros: estimatedCostMicros(response.inputTokens, response.outputTokens, config),
       backendProviderAndContractOnly: true, authenticatedDatabaseAndFlutterEndToEnd: false };
