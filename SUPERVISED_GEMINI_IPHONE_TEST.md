@@ -74,6 +74,31 @@ passed. The real local HTTPS/DB mock integration passed authentication,
 Premium/consent enforcement, all four mock AI operations, cache/revocation,
 error/rate-limit/quota handling and persistence with the Google ledger unchanged.
 
-Live scan: **not yet performed**. Actual ledger remains 19 and permission remains
-unarmed at preparation time. Native installation and supervised scan results
-must be recorded after device verification; this document does not claim success.
+## Completed supervised run
+
+On 2026-10-20 the owner initiated one scan of the prepared, nonprivate egg photo
+in BNYAD Dev on the iPhone 15. The backend recorded exactly two successful
+Google HTTP responses: `countTokens` attempt 20 (200) and `generateContent`
+attempt 21 (200). The final ledger is **21/21**. The owner reported the scan
+worked in the app.
+
+The API validated this response and sent it with `google-live` provenance:
+
+- Food: **Whole Egg** / بيضة كاملة / هێلکە.
+- Image description: one fresh whole egg visible in the image.
+- Estimated nutrition: **155 kcal, 11 g protein, 1.1 g carbohydrate, 11 g fat
+  per 100 g**. The catalog's 50 g portion corresponds to **77.5 kcal, 5.5 g
+  protein, 0.55 g carbohydrate, 5.5 g fat**. These are estimates, not a
+  laboratory measurement.
+- The result sets `confirmation_required: true` because identification and
+  portion size are estimates.
+- The validated Sorani text was `هێلکەیەکی تەواوی تازە کە لە وێنەکەدا دەردەکەوێت.`
+  The app displayed the result; no screenshot was captured, so visual RTL
+  typography was not independently reviewed from an image.
+
+Both calls were successful, so the no-retry-on-failure condition was not
+triggered. The one-use approval was then explicitly disarmed. Readiness now
+reports `aiMode: mock`, `liveGoogleAllowed: false`,
+`supervisedFoodArmed: false`, and `supervisedFoodState: disarmed`. Further live
+requests are blocked by the exhausted ledger and closed approval. Billing,
+production, Android and App Store publishing were not involved.
