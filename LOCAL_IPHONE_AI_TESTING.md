@@ -158,6 +158,10 @@ The final signed build was installed/launched on iPhone 15. Its private HTTPS
 readiness request returned 200 after handling this runtime's certificate parser.
 This confirms the native client can establish TLS to the local backend, not yet
 that every screen has completed manual device review.
+The owner subsequently confirmed the dashboard and four-slot daily plan. The
+matching iPhone requests show successful normal login, consent persistence and
+POST /api/ai/generate for meal-plan with simulated=true. Remaining recipe/photo/
+fridge visual checks and native Health/restart confirmation are separate checks.
 
 After login using the private fictional account, accept the AI consent when
 prompted, generate one daily plan/recipe, test food/fridge UI with nonprivate
