@@ -7,8 +7,13 @@ import 'package:http/http.dart' as http;
 /// Production and ordinary staging keep their existing configuration unchanged.
 class LocalBackendConfig {
   final Uri api;
-  LocalBackendConfig._(this.api);
-  factory LocalBackendConfig.parse(String value) {
+  final bool allowSupervisedFood;
+  final ValueNotifier<String> foodTestStatus = ValueNotifier('waiting');
+  LocalBackendConfig._(this.api, this.allowSupervisedFood);
+  factory LocalBackendConfig.parse(
+    String value, {
+    bool allowSupervisedFood = false,
+  }) {
     final uri = Uri.tryParse(value);
     final p = uri?.host.split('.').map(int.tryParse).toList() ?? [];
     final private =
@@ -29,7 +34,7 @@ class LocalBackendConfig {
         'A private-network HTTPS test API is required.',
       );
     }
-    return LocalBackendConfig._(uri);
+    return LocalBackendConfig._(uri, allowSupervisedFood);
   }
   Future<void> authorize() async {
     if (kIsWeb ||
@@ -53,9 +58,11 @@ class LocalBackendConfig {
     final response = await (() async => http.Response.fromStream(
       await client.send(request),
     ))().timeout(const Duration(seconds: 15));
+    final mode = response.headers['x-bnyad-test-mode'];
     if (response.statusCode != 200 ||
         response.body.length > 4096 ||
-        response.headers['x-bnyad-test-mode'] != 'mock-no-google') {
+        !(mode == 'mock-no-google' ||
+            (allowSupervisedFood && mode == 'mock-with-one-use-food'))) {
       throw StateError('Local backend unavailable.');
     }
     // Decoding is intentionally below, not based only on a caller-controlled URL.
@@ -64,15 +71,29 @@ class LocalBackendConfig {
 
   void verifyReadiness(String body) {
     final data = jsonDecode(body) as Map<String, dynamic>;
+    final mocksOnly =
+        data['aiMode'] == 'mock' && data['liveGoogleAllowed'] == false;
+    final approvedFood =
+        allowSupervisedFood &&
+        data['aiMode'] == 'mock-with-one-use-food' &&
+        data['liveGoogleAllowed'] == true &&
+        data['supervisedFoodArmed'] == true;
     if (data['environment'] != 'local-iphone' ||
         data['environmentId'] != 'bnyad-local-iphone-v1' ||
         data['databaseReady'] != true ||
-        data['aiMode'] != 'mock' ||
-        data['liveGoogleAllowed'] != false ||
+        !(mocksOnly || approvedFood) ||
         data['contractVersion'] != 1) {
       throw StateError(
         'Local backend identity or mock safeguards did not match.',
       );
+    }
+    if (allowSupervisedFood &&
+        [
+          'finished',
+          'failed',
+          'disarmed',
+        ].contains(data['supervisedFoodState'])) {
+      foodTestStatus.value = 'closed';
     }
   }
 }
@@ -84,13 +105,43 @@ class LocalBackendClient extends http.BaseClient {
   final http.Client inner;
   LocalBackendClient(this.config, this.inner);
   @override
-  Future<http.StreamedResponse> send(http.BaseRequest request) {
+  Future<http.StreamedResponse> send(http.BaseRequest request) async {
     if (request.url.origin != config.api.origin ||
         !request.url.path.startsWith('/api/')) {
       throw StateError('Request outside the local test API was blocked.');
     }
     request.followRedirects = false;
-    return inner.send(request);
+    final supervisedFood =
+        config.allowSupervisedFood &&
+        request is http.Request &&
+        request.method == 'POST' &&
+        request.url.path == '/api/ai/generate' &&
+        (jsonDecode(request.body) as Map)['operation'] == 'food';
+    if (supervisedFood) {
+      request.headers['X-Bnyad-Supervised-Food'] = 'one-use-v1';
+    }
+    final http.StreamedResponse response;
+    try {
+      response = await inner.send(request);
+    } catch (_) {
+      if (supervisedFood) config.foodTestStatus.value = 'failed-closed';
+      rethrow;
+    }
+    if (supervisedFood) {
+      if (response.statusCode == 200 &&
+          response.headers['x-bnyad-ai-source'] == 'google-live') {
+        config.foodTestStatus.value = 'real-closed';
+      } else {
+        config.foodTestStatus.value = 'failed-closed';
+        if (response.statusCode == 200) {
+          await response.stream.drain<void>();
+          throw StateError(
+            'An unverified or simulated result cannot satisfy the supervised food test.',
+          );
+        }
+      }
+    }
+    return response;
   }
 
   @override

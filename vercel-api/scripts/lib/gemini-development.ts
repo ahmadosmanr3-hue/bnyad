@@ -32,7 +32,10 @@ export class DevelopmentBudget {
   private ledgerPath: string;
   private lockPath: string;
   readonly modelUrl: string;
-  constructor(directory: string, readonly model = TEST_MODEL, private transport: typeof fetch = fetch, approveModelChange = false) {
+  constructor(directory: string, readonly model = TEST_MODEL, private transport: typeof fetch = fetch, approveModelChange = false, readonly requestCap = REQUEST_CAP) {
+    // Default CLI allowance stays 20. Only the explicitly approved one-use
+    // backend path may opt into the cumulative 21-attempt ceiling.
+    if (![20, 21].includes(requestCap)) throw new DevelopmentStop('unapproved_request_cap');
     if (!allowedModels.includes(model)) throw new DevelopmentStop('requested_model_must_be_reviewed');
     this.modelUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}`;
     fs.mkdirSync(directory, { recursive: true, mode: 0o700 });
@@ -44,7 +47,7 @@ export class DevelopmentBudget {
       this.ledger = fs.existsSync(this.ledgerPath)
         ? JSON.parse(fs.readFileSync(this.ledgerPath, 'utf8'))
         : { version: 1, requests: 0, model };
-      if (this.ledger.version !== 1 || !Number.isInteger(this.ledger.requests) || this.ledger.requests < 0 || this.ledger.requests > REQUEST_CAP ||
+      if (this.ledger.version !== 1 || !Number.isInteger(this.ledger.requests) || this.ledger.requests < 0 || this.ledger.requests > requestCap ||
           (this.ledger.blocked !== undefined && typeof this.ledger.blocked !== 'string')) throw new Error();
     } catch { this.close(); throw new DevelopmentStop('invalid_request_ledger_do_not_reset'); }
     this.ledger.model ??= TEST_MODEL;
@@ -75,7 +78,7 @@ export class DevelopmentBudget {
     if (![this.modelUrl, `${this.modelUrl}:countTokens`, `${this.modelUrl}:generateContent`].includes(url) ||
         (url === this.modelUrl ? init?.method !== 'GET' : init?.method !== 'POST')) throw new DevelopmentStop('unexpected_provider_request');
     if (this.ledger.blocked) throw new DevelopmentStop(this.ledger.blocked);
-    if (this.ledger.requests >= REQUEST_CAP) throw new DevelopmentStop('twenty_request_cap_reached');
+    if (this.ledger.requests >= this.requestCap) throw new DevelopmentStop(this.requestCap === 20 ? 'twenty_request_cap_reached' : 'twenty_one_request_cap_reached');
     this.ledger.requests++;
     this.persist(); // Count BEFORE IO; never refund a timeout/uncertain request.
     let response: Response;

@@ -24,6 +24,9 @@ Future<void> main() async {
   try {
     final config = LocalBackendConfig.parse(
       const String.fromEnvironment('LOCAL_API_BASE_URL'),
+      allowSupervisedFood: const bool.fromEnvironment(
+        'LOCAL_ONE_USE_FOOD_TEST',
+      ),
     );
     stage = 'native-development-authorization';
     await config.authorize();
@@ -103,6 +106,7 @@ Future<void> main() async {
       ChangeNotifierProvider.value(
         value: state,
         child: _LocalShell(
+          config: config,
           onProfile: (context) async {
             final result = await showDialog<UserProfile>(
               context: context,
@@ -148,58 +152,83 @@ Future<void> main() async {
 }
 
 class _LocalShell extends StatelessWidget {
+  final LocalBackendConfig config;
   final Future<void> Function(BuildContext) onProfile;
-  const _LocalShell({required this.onProfile});
+  const _LocalShell({required this.onProfile, required this.config});
   @override
   Widget build(BuildContext context) {
     final lang = context.watch<AppState>().lang;
-    final label = lang == 'ar'
+    final mockLabel = lang == 'ar'
         ? 'اختبار محلي • ذكاء اصطناعي محاكى • لا اتصال بغوغل'
         : ['ku', 'ckb'].contains(lang)
         ? 'تاقیکردنەوەی ناوخۆیی • زیرەکی دەستکردی تاقیکردنەوە • گووگڵ ناچالاکە'
         : 'LOCAL TEST • SIMULATED AI • NO GOOGLE';
-    return MaterialApp(
-      home: Scaffold(
-        body: SafeArea(
-          child: Column(
-            children: [
-              Material(
-                color: const Color(0xFFFFE8A3),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 4,
-                  ),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          label,
-                          style: const TextStyle(
-                            color: Colors.black,
-                            fontSize: 12,
-                          ),
-                        ),
+    return ValueListenableBuilder<String>(
+      valueListenable: config.foodTestStatus,
+      builder: (_, status, _) {
+        final label = !config.allowSupervisedFood
+            ? mockLabel
+            : status == 'real-closed'
+            ? (lang == 'ar'
+                  ? 'نتيجة طعام حقيقية من جيميني • الاتصال المباشر مغلق'
+                  : ['ku', 'ckb'].contains(lang)
+                  ? 'ئەنجامی خواردنی ڕاستەقینەی جێمینای • دەستگەیشتنی ڕاستەوخۆ داخراوە'
+                  : 'REAL GEMINI FOOD RESULT • LIVE ACCESS CLOSED')
+            : ['failed-closed', 'closed'].contains(status)
+            ? (lang == 'ar'
+                  ? 'انتهى اختبار الطعام • لا إعادة محاولة • البقية محاكاة'
+                  : ['ku', 'ckb'].contains(lang)
+                  ? 'تاقیکردنەوەی خواردن کۆتایی هات • دووبارە مەکەرەوە • ئەوانی تر دەستکردن'
+                  : 'FOOD TEST CLOSED • NO RETRY • OTHER AI SIMULATED')
+            : (lang == 'ar'
+                  ? 'اختبار طعام واحد بإشراف • بقية الذكاء الاصطناعي محاكاة'
+                  : ['ku', 'ckb'].contains(lang)
+                  ? 'یەک تاقیکردنەوەی خواردن بە چاودێری • زیرەکییەکانی تر دەستکردن'
+                  : 'ONE SUPERVISED FOOD TEST • OTHER AI SIMULATED');
+        return MaterialApp(
+          home: Scaffold(
+            body: SafeArea(
+              child: Column(
+                children: [
+                  Material(
+                    color: const Color(0xFFFFE8A3),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 4,
                       ),
-                      Builder(
-                        builder: (ctx) => IconButton(
-                          tooltip: 'Health profile — device only',
-                          onPressed: () => onProfile(ctx),
-                          icon: const Icon(
-                            Icons.directions_walk,
-                            color: Colors.black,
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              label,
+                              style: const TextStyle(
+                                color: Colors.black,
+                                fontSize: 12,
+                              ),
+                            ),
                           ),
-                        ),
+                          Builder(
+                            builder: (ctx) => IconButton(
+                              tooltip: 'Health profile — device only',
+                              onPressed: () => onProfile(ctx),
+                              icon: const Icon(
+                                Icons.directions_walk,
+                                color: Colors.black,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
-                ),
+                  const Expanded(child: BnyadApp()),
+                ],
               ),
-              const Expanded(child: BnyadApp()),
-            ],
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }

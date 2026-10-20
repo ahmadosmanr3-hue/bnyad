@@ -62,7 +62,7 @@ test('actual local endpoint provider blocks live configuration and insufficient 
 });
 test('missing, reset, public-readable or corrupt shared ledger fails closed', async () => {
   local(); const file = '.gemini-development/requests.json';
-  for (const value of ['{}','bad',JSON.stringify({ version:1, requests:0 }),JSON.stringify({ version:1, requests:21 })]) {
+  for (const value of ['{}','bad',JSON.stringify({ version:1, requests:0 }),JSON.stringify({ version:1, requests:22 })]) {
     fs.writeFileSync(file, value); await assert.rejects(generateWithLocalGuard('food', buildPrompt('food', {}, profile), {}, config));
   }
   fs.writeFileSync(file, JSON.stringify({ version:1, requests:19 })); fs.chmodSync(file, 0o644);

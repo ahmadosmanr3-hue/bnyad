@@ -127,4 +127,131 @@ void main() {
       await expectLater(config.verify(client), throwsStateError);
     }
   });
+  test(
+    'only explicitly supervised builds accept the narrowly armed backend',
+    () {
+      final mixed = jsonEncode({
+        ...jsonDecode(body) as Map<String, dynamic>,
+        'aiMode': 'mock-with-one-use-food',
+        'liveGoogleAllowed': true,
+        'supervisedFoodArmed': true,
+      });
+      expect(
+        () => LocalBackendConfig.parse(url).verifyReadiness(mixed),
+        throwsStateError,
+      );
+      final config = LocalBackendConfig.parse(url, allowSupervisedFood: true);
+      config.verifyReadiness(mixed);
+      expect(
+        () => config.verifyReadiness(
+          mixed.replaceFirst(
+            '"supervisedFoodArmed":true',
+            '"supervisedFoodArmed":false',
+          ),
+        ),
+        throwsStateError,
+      );
+      config.verifyReadiness(
+        jsonEncode({
+          ...jsonDecode(body) as Map<String, dynamic>,
+          'supervisedFoodState': 'finished',
+        }),
+      );
+      expect(config.foodTestStatus.value, 'closed');
+    },
+  );
+  test(
+    'intent marker is food-only, opt-in, and preserves authentication',
+    () async {
+      for (final optedIn in [false, true]) {
+        final config = LocalBackendConfig.parse(
+          url,
+          allowSupervisedFood: optedIn,
+        );
+        final client = LocalBackendClient(
+          config,
+          MockClient((request) async {
+            final operation = (jsonDecode(request.body) as Map)['operation'];
+            expect(
+              request.headers['authorization'],
+              'Bearer fictional-test-token',
+            );
+            expect(
+              request.headers['x-bnyad-supervised-food'],
+              optedIn && operation == 'food' ? 'one-use-v1' : null,
+            );
+            return http.Response(
+              '{}',
+              200,
+              headers: {'x-bnyad-ai-source': 'google-live'},
+            );
+          }),
+        );
+        for (final operation in ['recipe', 'fridge', 'food']) {
+          await client.post(
+            Uri.parse('$url/ai/generate'),
+            headers: {'Authorization': 'Bearer fictional-test-token'},
+            body: jsonEncode({'operation': operation}),
+          );
+        }
+        expect(
+          config.foodTestStatus.value,
+          optedIn ? 'real-closed' : 'waiting',
+        );
+        client.close();
+      }
+    },
+  );
+  test(
+    'supervised food rejects mock success and closes on errors without retry',
+    () async {
+      for (final status in [200, 429, 503]) {
+        var calls = 0;
+        final config = LocalBackendConfig.parse(url, allowSupervisedFood: true);
+        final client = LocalBackendClient(
+          config,
+          MockClient((_) async {
+            calls++;
+            return http.Response('{"simulated":true}', status);
+          }),
+        );
+        final result = client.post(
+          Uri.parse('$url/ai/generate'),
+          body: '{"operation":"food"}',
+        );
+        if (status == 200) {
+          await expectLater(result, throwsStateError);
+        } else {
+          expect((await result).statusCode, status);
+        }
+        expect(calls, 1);
+        expect(config.foodTestStatus.value, 'failed-closed');
+        client.close();
+      }
+    },
+  );
+  test(
+    'supervised transport failure is closed, not silently mocked or retried',
+    () async {
+      var calls = 0;
+      final config = LocalBackendConfig.parse(url, allowSupervisedFood: true);
+      final client = LocalBackendClient(
+        config,
+        MockClient((_) async {
+          calls++;
+          throw http.ClientException('fictional offline failure');
+        }),
+      );
+      await expectLater(
+        client.post(
+          Uri.parse('$url/ai/generate'),
+          body: '{"operation":"food"}',
+        ),
+        throwsA(isA<http.ClientException>()),
+      );
+      expect(calls, 1);
+      expect(config.foodTestStatus.value, 'failed-closed');
+      client.close();
+    },
+  );
 }

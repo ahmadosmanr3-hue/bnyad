@@ -3,6 +3,7 @@ import { assertLocalDevelopment, localLedgerDirectory } from '../local-developme
 import { DevelopmentBudget, DevelopmentStop } from '../../scripts/lib/gemini-development';
 import { callGemini, type Config } from './provider';
 import type { Input, Operation } from './contract';
+import { supervisedFood } from './supervised-food';
 
 /** Used only after normal authentication, Premium, consent and quota admission.
  * Mock output passes the SAME provider parser and final nutrition validators.
@@ -29,10 +30,14 @@ export function mockProvider(operation: Operation, prompt: string, scenario = ''
   }) as typeof fetch;
 }
 
-export async function generateWithLocalGuard(operation: Operation, prompt: string, input: Input, config: Config, scenario?: string) {
+export async function generateWithLocalGuard(operation: Operation, prompt: string, input: Input, config: Config, scenario?: string, supervisedUserId?: number) {
   if (process.env.APP_ENV !== 'local-iphone') return callGemini(operation, prompt, input, config);
   assertLocalDevelopment();
   localLedgerDirectory();
+  if (supervisedUserId !== undefined) {
+    if (operation !== 'food') throw new RequestError('Only the supervised food scan is approved.', 422);
+    return supervisedFood(prompt, input, config, supervisedUserId);
+  }
   if (process.env.BNYAD_LOCAL_AI_MODE === 'mock') return callGemini(operation, prompt, input, config, mockProvider(operation, prompt, scenario));
   // A separate approval and source change are required. This build cannot make
   // any live Google request, even by editing environment variables.
