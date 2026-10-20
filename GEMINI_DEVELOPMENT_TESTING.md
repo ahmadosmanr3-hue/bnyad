@@ -2,6 +2,10 @@
 
 ## Daily-plan repair follow-up — current status
 
+For the subsequent authenticated local iPhone setup, see
+[LOCAL_IPHONE_AI_TESTING.md](LOCAL_IPHONE_AI_TESTING.md). That test environment
+uses simulated responses and blocks Google IO; the live ledger remains 19/20.
+
 The daily-planning failure and 13-request total below describe the earlier test
 phase. They are retained as historical evidence, not the current result.
 After the daily-plan repair, three additional real generations passed the

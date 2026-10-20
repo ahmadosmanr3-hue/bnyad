@@ -1,5 +1,9 @@
 # Isolated iPhone development build
 
+For the separately approved local PostgreSQL + private HTTPS + simulated AI
+entry point, use [LOCAL_IPHONE_AI_TESTING.md](LOCAL_IPHONE_AI_TESTING.md).
+The original staging procedure below remains AI-disabled and unchanged.
+
 Start from branch `codex/bnyad-stability-2026-10-13`. The `dev` scheme uses
 `com.nutrify.bnyad.dev` and the display name **BNYAD Dev**. Production's Runner
 scheme, bundle identifier, team and push entitlements are retained. Never install

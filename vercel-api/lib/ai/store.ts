@@ -16,7 +16,7 @@ export async function consent(userId: number) {
 }
 export async function setConsent(userId: number, enabled: boolean) {
   return prisma.$transaction(async tx => {
-    await tx.$executeRaw`SELECT pg_advisory_xact_lock(8141, ${userId})`;
+    await tx.$executeRaw`SELECT pg_advisory_xact_lock(8141, ${userId}::integer)`;
     await tx.$executeRaw`INSERT INTO ai_consents(user_id, version, enabled) VALUES (${userId}, ${CONSENT_VERSION}, ${enabled}) ON CONFLICT(user_id) DO UPDATE SET version = EXCLUDED.version, enabled = EXCLUDED.enabled, updated_at = NOW()`;
     // Revoke immediately removes reusable results. Usage metadata remains for budget
     // accounting; no prompt, image, health details or raw provider response is logged.
@@ -29,7 +29,7 @@ export async function reserve(userId: number, operation: Operation, key: string,
   return prisma.$transaction(async tx => {
     // Global budget and per-user admission are serialized across all instances.
     await tx.$executeRaw`SELECT pg_advisory_xact_lock(8140, 0)`;
-    await tx.$executeRaw`SELECT pg_advisory_xact_lock(8141, ${userId})`;
+    await tx.$executeRaw`SELECT pg_advisory_xact_lock(8141, ${userId}::integer)`;
     const c = await tx.$queryRaw<{ enabled: boolean; version: string }[]>`SELECT enabled, version FROM ai_consents WHERE user_id = ${userId}`;
     if (!c[0]?.enabled || c[0].version !== CONSENT_VERSION) throw new RequestError('AI data-sharing consent is required.', 403);
     const cached = await tx.$queryRaw<{ response: Record<string, any> }[]>`SELECT response FROM ai_cache WHERE user_id = ${userId} AND key = ${key} AND expires_at > NOW()`;
@@ -47,7 +47,7 @@ export async function reserve(userId: number, operation: Operation, key: string,
 export async function complete(userId: number, id: string, key: string, response: Record<string, any>, tokens: { inputTokens: number; outputTokens: number }, config: Config) {
   const cost = estimatedCostMicros(tokens.inputTokens, tokens.outputTokens, config);
   return prisma.$transaction(async tx => {
-    await tx.$executeRaw`SELECT pg_advisory_xact_lock(8141, ${userId})`;
+    await tx.$executeRaw`SELECT pg_advisory_xact_lock(8141, ${userId}::integer)`;
     await tx.$executeRaw`UPDATE ai_usage SET charged_micros = ${cost}, input_tokens = ${tokens.inputTokens}, output_tokens = ${tokens.outputTokens}, status = 'succeeded' WHERE id = ${id} AND user_id = ${userId}`;
     const c = await tx.$queryRaw<{ enabled: boolean; version: string }[]>`SELECT enabled, version FROM ai_consents WHERE user_id = ${userId}`;
     if (!c[0]?.enabled || c[0].version !== CONSENT_VERSION) return false;

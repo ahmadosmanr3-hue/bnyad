@@ -108,6 +108,13 @@ private final class BnyadStepBridge {
       #else
       result(false)
       #endif
+    case "localBackendAllowed":
+      #if BNYAD_DEVELOPMENT
+      result(Bundle.main.bundleIdentifier == "com.nutrify.bnyad.dev" &&
+        Bundle.main.object(forInfoDictionaryKey: "BNYADLocalBackend") as? Bool == true)
+      #else
+      result(false)
+      #endif
     case "healthDiagnosticAllowed":
       // A separate development bundle only. Production has no diagnostic route.
       #if BNYAD_DEVELOPMENT

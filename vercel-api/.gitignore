@@ -8,3 +8,4 @@ tsconfig.tsbuildinfo
 scratch
 .env*
 .gemini-development/
+.local-development/

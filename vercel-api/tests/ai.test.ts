@@ -203,6 +203,7 @@ test('cache keys isolate model, operation, profile/preferences and images', () =
 });
 test('shared reservation acquires database locks and reserves conservative spend before provider call', async () => {
   const statements=db(); const r=await reserve(1,'recipe','key',config()); assert.ok(r.reservation>0);
+  assert.ok(statements.some(s=>s.includes('pg_advisory_xact_lock(8141, ?::integer)')));
   assert.match(statements[0],/pg_advisory_xact_lock/); assert.ok(statements.some(s=>s.includes('INSERT INTO ai_usage')));
 });
 test('missing/revoked consent and in-flight work prevent admission', async () => {
@@ -216,7 +217,9 @@ test('cache reuse still records a rate-limit event without paid reservation', as
 });
 test('revocation deletes cache; in-flight completion cannot recreate cache or release results', async () => {
   let statements=db(); await setConsent(1,false); assert.ok(statements.some(s=>s.includes('DELETE FROM ai_cache')));
+  assert.ok(statements.some(s=>s.includes('pg_advisory_xact_lock(8141, ?::integer)')));
   statements=db({enabled:false}); assert.equal(await complete(1,'id','key',recipe(),{inputTokens:10,outputTokens:10},config()),false);
+  assert.ok(statements.some(s=>s.includes('pg_advisory_xact_lock(8141, ?::integer)')));
   assert.ok(!statements.some(s=>s.includes('INSERT INTO ai_cache')));
 });
 test('unknown/failed spending is retained rather than refunded', async () => {

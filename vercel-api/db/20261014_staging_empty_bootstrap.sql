@@ -1,6 +1,7 @@
--- MANUAL STAGING ONLY. Generated offline from prisma/schema.prisma.
+-- MANUAL EMPTY ISOLATED DATABASE ONLY. Generated from prisma/schema.prisma.
 -- Requires explicit owner migration approval and independently verified empty
--- isolated Neon project/host. Never run against production or an existing schema.
+-- isolated Neon project/host OR the explicitly approved new local test cluster.
+-- Never run against production or an existing schema.
 -- Covers the full current schema, INCLUDING auth-rate-limit and AI tables.
 BEGIN;
 DO $$
@@ -358,16 +359,4 @@ ALTER TABLE "ai_usage" ADD CONSTRAINT "ai_usage_user_id_fkey" FOREIGN KEY ("user
 
 -- AddForeignKey
 ALTER TABLE "ai_cache" ADD CONSTRAINT "ai_cache_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-┌─────────────────────────────────────────────────────────┐
-│  Update available 6.12.0 -> 8.0.0-rc.22                 │
-│                                                         │
-│  This is a major update - please follow the guide at    │
-│  https://pris.ly/d/major-version-upgrade                │
-│                                                         │
-│  Run the following to update                            │
-│    npm i --save-dev prisma@latest                       │
-│    npm i @prisma/client@latest                          │
-└─────────────────────────────────────────────────────────┘
-
-
 COMMIT;

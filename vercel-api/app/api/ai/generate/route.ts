@@ -3,8 +3,9 @@ import { prisma } from '@/lib/db';
 import { verifiedStoreEntitlement } from '@/lib/subscription';
 import { error, json, options, RequestError, safeRoute } from '@/lib/http';
 import { buildPrompt, validateInput, validateOutput, validateReplacement, type MealTarget } from '@/lib/ai/contract';
-import { aiConfig, callGemini, estimatedCostMicros } from '@/lib/ai/provider';
+import { aiConfig, estimatedCostMicros } from '@/lib/ai/provider';
 import { cacheKey, complete, failed, reserve } from '@/lib/ai/store';
+import { generateWithLocalGuard } from '@/lib/ai/local-provider';
 export const runtime = 'nodejs';
 export const maxDuration = 60;
 export const OPTIONS = options;
@@ -41,21 +42,23 @@ export const POST = safeRoute(async (req: Request) => {
   const prompt = buildPrompt(operation,input,user.profile,mealTarget);
   // Include all restrictions in the cache identity without transmitting health
   // flags/allergy categories to Google; equal eligible lists alone are insufficient.
-  const privateContext = JSON.stringify({ image: input.image?.data, allergies: user.profile.allergies, pregnancyStatus: user.profile.pregnancyStatus, planItems });
+  const simulated = process.env.APP_ENV === 'local-iphone' && process.env.BNYAD_LOCAL_AI_MODE === 'mock';
+  const scenario = simulated ? req.headers.get('x-bnyad-mock-scenario') ?? '' : '';
+  const privateContext = JSON.stringify({ image: input.image?.data, allergies: user.profile.allergies, pregnancyStatus: user.profile.pregnancyStatus, planItems, ...(simulated ? { simulated, scenario } : {}) });
   const key = cacheKey(config.model,operation,prompt,privateContext);
   const admission = await reserve(user.id,operation,key,config);
-  if (admission.cached) return json({ data: admission.cached, cached: true, estimated: true });
+  if (admission.cached) return json({ data: admission.cached, cached: true, estimated: true, ...(simulated ? { simulated: true } : {}) });
   let tokens: { inputTokens: number; outputTokens: number } | undefined;
   try {
-    const result = await callGemini(operation,prompt,input,config);
+    const result = await generateWithLocalGuard(operation,prompt,input,config,scenario);
     tokens = result;
     const data = validateOutput(operation,result.result,input,user.profile);
     if (mealTarget) validateReplacement(data,mealTarget,planItems,input.slot!,user.profile);
     const permitted = await complete(user.id,admission.id,key,data,result,config);
     if (!permitted) return error('AI consent was revoked. The result was discarded.',403);
     // No prompts, photos, profile, provider error body, credentials, or names.
-    console.info('ai_usage', { requestId: admission.id, operation, model: config.model, inputTokens: result.inputTokens, outputTokens: result.outputTokens, estimatedCostMicros: estimatedCostMicros(result.inputTokens,result.outputTokens,config) });
-    return json({ data, cached: false, estimated: true });
+    console.info('ai_usage', { requestId: admission.id, operation, model: config.model, inputTokens: result.inputTokens, outputTokens: result.outputTokens, estimatedCostMicros: estimatedCostMicros(result.inputTokens,result.outputTokens,config), ...(simulated ? { simulated: true } : {}) });
+    return json({ data, cached: false, estimated: true, ...(simulated ? { simulated: true } : {}) });
   } catch (e) {
     await failed(user.id,admission.id,tokens);
     if (e instanceof RequestError) throw e;
