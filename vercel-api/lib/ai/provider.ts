@@ -22,8 +22,12 @@ export const estimatedCostMicros = (input: number, output: number, config: Pick<
 export function geminiRequest(operation: Operation, prompt: string, input: Input, config: Config) {
   const parts: Record<string, unknown>[] = [{ text: prompt }];
   if (input.image) parts.push({ inlineData: { mimeType: input.image.mimeType, data: input.image.data } });
+  // Gemini 2.5 Flash-Lite uses token budgets, not Gemini 3 thinking levels.
+  // Keep thinking off for inexpensive development tests; never send both knobs.
+  const thinkingConfig = /^gemini-2\.5-flash(?:-|$)/.test(config.model)
+    ? { thinkingBudget: 0 } : { thinkingLevel: 'minimal' };
   return { systemInstruction: { parts: [{ text: SYSTEM_INSTRUCTION }] }, contents: [{ role: 'user', parts }],
-    generationConfig: { temperature: 0.2, maxOutputTokens: config.outputLimit, responseMimeType: 'application/json', responseJsonSchema: schemaFor(operation), thinkingConfig: { thinkingLevel: 'minimal' } } };
+    generationConfig: { temperature: 0.2, maxOutputTokens: config.outputLimit, responseMimeType: 'application/json', responseJsonSchema: schemaFor(operation), thinkingConfig } };
 }
 async function limitedJson(response: Response) {
   if (!response.body) throw new RequestError('AI provider returned no response.', 502);

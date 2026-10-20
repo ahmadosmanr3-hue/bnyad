@@ -40,10 +40,22 @@ test('both requested configurable models construct JSON + image Gemini requests 
   for (const model of ['gemini-3.1-flash-lite','gemini-3.5-flash-lite']) {
     const c = { ...config(), model }, input = { image: { mimeType:'image/jpeg',data:'/9j/AAAAAAAAAAAA' } };
     const b = geminiRequest('food','fixture',input,c);
-    assert.equal(b.generationConfig.maxOutputTokens,4096); assert.equal(b.generationConfig.thinkingConfig.thinkingLevel,'minimal');
+    assert.equal(b.generationConfig.maxOutputTokens,4096); assert.deepEqual(b.generationConfig.thinkingConfig,{ thinkingLevel: 'minimal' });
     assert.equal(b.generationConfig.responseMimeType,'application/json'); assert.ok(b.generationConfig.responseJsonSchema);
     assert.deepEqual(b.contents[0].parts[1],{ inlineData:input.image });
     assert.ok(!JSON.stringify(b).includes(c.key));
+  }
+});
+test('2.5 Flash-Lite uses thinkingBudget and preserves structured multimodal input', () => {
+  const c = { ...config(), model: 'gemini-2.5-flash-lite' };
+  const image = { mimeType:'image/png', data:'fixture' };
+  for (const operation of ['food', 'fridge', 'recipe', 'meal-plan'] as const) {
+    const request = geminiRequest(operation, 'fixture', { image }, c);
+    assert.deepEqual(request.generationConfig.thinkingConfig, { thinkingBudget: 0 });
+    assert.equal(request.generationConfig.responseMimeType, 'application/json');
+    assert.deepEqual(request.generationConfig.responseJsonSchema, schemaFor(operation));
+    assert.deepEqual(request.contents[0].parts[1], { inlineData:image });
+    assert.ok(!JSON.stringify(request).includes(c.key));
   }
 });
 test('retired models, zero budget, missing prices and invalid limits fail closed', () => {
@@ -98,6 +110,19 @@ test('daily plan requires all four slots and validates all calorie/macro totals'
   assert.throws(() => validateOutput('meal-plan',{ breakfast:recipe() },{},profile));
   assert.throws(() => validateOutput('meal-plan',plan(),{}, {...profile,dailyProtein:120}));
   assert.throws(() => validateOutput('meal-plan',plan(),{}, {...profile,dailyCalories:2000}));
+});
+test('daily plan prompt explains existing bounds without changing profile, catalog or validator', () => {
+  const p = { ...profile, dailyCalories: 2000, dailyProtein: 100, dailyCarbs: 260, dailyFat: 60 };
+  const before = JSON.stringify(p), prompt = JSON.parse(buildPrompt('meal-plan', {}, p));
+  assert.equal(JSON.stringify(p), before);
+  assert.deepEqual(prompt.dailyNutritionBounds.calories, { minimum: 1600, target: 2000, maximum: 2400 });
+  assert.deepEqual(prompt.dailyNutritionBounds.protein, { minimum: 70, target: 100, maximum: 130 });
+  assert.deepEqual(prompt.dailyNutritionBounds.carbs, { minimum: 182, target: 260, maximum: 338 });
+  assert.deepEqual(prompt.dailyNutritionBounds.fat, { minimum: 42, target: 60, maximum: 78 });
+  assert.match(prompt.mealPlanningGuide.instruction, /grams\/referenceGrams/);
+  assert.deepEqual(prompt.allowedIngredients.map((f: any) => f.id), allowedCatalog(p).map(f => f.external_id));
+  assert.equal(JSON.parse(buildPrompt('recipe', { ingredients: ['rice'] }, p)).dailyNutritionBounds, undefined);
+  assert.throws(() => validateOutput('meal-plan', plan(), {}, p));
 });
 test('individual regeneration preserves both saved meal and whole-day targets', () => {
   const meal={calories:130,protein:3,carbs:28,fat:0}, items=['breakfast','lunch','dinner','snacks'].map(slot=>({slot,...meal}));

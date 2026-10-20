@@ -7,3 +7,4 @@ node_modules
 tsconfig.tsbuildinfo
 scratch
 .env*
+.gemini-development/
