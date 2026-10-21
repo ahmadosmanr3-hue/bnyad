@@ -24,7 +24,7 @@ export function localLedgerDirectory(env: Env = process.env) {
   const stat = fs.lstatSync(file);
   if (!stat.isFile() || stat.isSymbolicLink() || (stat.mode & 0o077)) throw new Error('Private existing request ledger required.');
   const ledger = JSON.parse(fs.readFileSync(file, 'utf8'));
-  if (ledger.version !== 1 || !Number.isInteger(ledger.requests) || ledger.requests < 19 || ledger.requests > 21) throw new Error('Request ledger needs review; never reset it.');
+  if (ledger.version !== 1 || !Number.isInteger(ledger.requests) || ledger.requests < 19 || ledger.requests > 20) throw new Error('Request ledger needs review; never reset it.');
   return directory;
 }
 export function privateLanAddress(value: string) {
