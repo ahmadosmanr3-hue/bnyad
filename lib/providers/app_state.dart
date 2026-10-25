@@ -729,7 +729,9 @@ class AppState extends ChangeNotifier {
     if (_lang == newLang) return;
     _lang = newLang;
     notifyListeners();
-    _languagePersistence = _languagePersistence.then((_) => _persistLang(newLang));
+    _languagePersistence = _languagePersistence.then(
+      (_) => _persistLang(newLang),
+    );
     await _languagePersistence;
   }
 
@@ -929,6 +931,7 @@ class AppState extends ChangeNotifier {
       return;
     }
     if (supportsOptionalDeviceServices) {
+      await PushService.instance.unregisterForUser(_apiService);
       unawaited(Purchases.logOut());
     }
     await _authService.signOut();

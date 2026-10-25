@@ -199,6 +199,66 @@ void main() {
     delayed.complete(http.Response('{"data":{"calories":130}}', 200));
     expect(await pending, null);
   });
+  test('missing deployed AI route is distinct from declined consent', () async {
+    var posts = 0;
+    final api = ApiService(
+      baseUrl: 'https://example.test/api',
+      client: MockClient((r) async {
+        if (r.method == 'POST') posts++;
+        return http.Response('{}', 404);
+      }),
+    );
+    await api.loadToken();
+    expect(
+      await api.generateAi('recipe', {
+        'ingredients': ['rice'],
+      }),
+      isNull,
+    );
+    expect(api.aiErrorCode, 'serviceUpdate');
+    expect(posts, 0);
+  });
+  test('server operational failures remain distinct and localized', () async {
+    for (final entry in {
+      'ai_disabled': 'disabled',
+      'ai_not_configured': 'configuration',
+      'ai_provider_access': 'configuration',
+      'ai_model_unavailable': 'configuration',
+      'ai_provider_quota': 'providerQuota',
+    }.entries) {
+      final api = ApiService(
+        baseUrl: 'https://example.test/api',
+        client: MockClient(
+          (r) async => r.method == 'GET'
+              ? http.Response(
+                  jsonEncode({
+                    'enabled': true,
+                    'version': ApiService.aiConsentVersion,
+                  }),
+                  200,
+                )
+              : http.Response(
+                  jsonEncode({'code': entry.key}),
+                  entry.key == 'ai_provider_quota' ? 429 : 503,
+                ),
+        ),
+      );
+      await api.loadToken();
+      expect(
+        await api.generateAi('recipe', {
+          'ingredients': ['rice'],
+        }),
+        isNull,
+      );
+      expect(api.aiErrorCode, entry.value);
+      for (final language in ['en', 'ar', 'ku']) {
+        expect(
+          AiStrings.get(language, entry.value),
+          isNot(AiStrings.get(language, 'failed')),
+        );
+      }
+    }
+  });
   test(
     'all AI consent/error keys have English, Arabic and Sorani coverage',
     () {

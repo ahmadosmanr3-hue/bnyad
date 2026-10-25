@@ -15,7 +15,7 @@ Future<bool> ensureAiConsent(BuildContext context, AppState state) async {
   if (consent == true) return true;
   if (consent == null) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(AiStrings.get(state.lang, 'unavailable'))),
+      SnackBar(content: Text(AiStrings.get(state.lang, state.aiErrorCode))),
     );
     return false;
   }

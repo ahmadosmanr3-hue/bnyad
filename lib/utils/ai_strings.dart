@@ -2,6 +2,14 @@
 class AiStrings {
   static const translations = {
     'en': {
+      'disabled':
+          'AI features are currently paused by BNYAD. Basic tracking remains available.',
+      'configuration':
+          'BNYAD AI needs a service configuration update. Please contact support.',
+      'serviceUpdate':
+          'The AI service needs an update. Please contact BNYAD support.',
+      'providerQuota':
+          'The AI provider has reached its current request allowance. Please try later.',
       'rateLimit': 'Too many AI requests. Wait a minute before trying again.',
       'dailyLimit':
           'Your daily AI allowance is used up. It resets at midnight UTC.',
@@ -34,6 +42,14 @@ class AiStrings {
           'AI is not enabled or is temporarily unavailable. Your saved data is unchanged.',
     },
     'ar': {
+      'disabled':
+          'أوقف بنياد ميزات الذكاء الاصطناعي مؤقتاً. يبقى التتبع الأساسي متاحاً.',
+      'configuration':
+          'تحتاج خدمة الذكاء الاصطناعي في بنياد إلى تحديث إعداداتها. يرجى التواصل مع الدعم.',
+      'serviceUpdate':
+          'تحتاج خدمة الذكاء الاصطناعي إلى تحديث. يرجى التواصل مع دعم بنياد.',
+      'providerQuota':
+          'بلغ مزود الذكاء الاصطناعي الحد المتاح للطلبات حالياً. حاول لاحقاً.',
       'rateLimit': 'طلبات الذكاء الاصطناعي كثيرة. انتظر دقيقة ثم حاول مجدداً.',
       'dailyLimit':
           'استهلكت الحد اليومي للذكاء الاصطناعي. يتجدد عند منتصف الليل بتوقيت UTC.',
@@ -67,6 +83,14 @@ class AiStrings {
           'الذكاء الاصطناعي غير مفعل أو غير متاح مؤقتاً. لم تتغير بياناتك المحفوظة.',
     },
     'ku': {
+      'disabled':
+          'بنیاد تایبەتمەندییەکانی زیرەکیی دەستکردی کاتی ڕاگرتووە. تۆمارکردنی ئاسایی بەردەستە.',
+      'configuration':
+          'خزمەتگوزاریی زیرەکیی دەستکردی بنیاد پێویستی بە نوێکردنەوەی ڕێکخستنەکانە. پەیوەندی بە پشتگیرییەوە بکە.',
+      'serviceUpdate':
+          'خزمەتگوزاریی زیرەکیی دەستکرد پێویستی بە نوێکردنەوەیە. پەیوەندی بە پشتگیریی بنیادەوە بکە.',
+      'providerQuota':
+          'دابینکەری زیرەکیی دەستکرد گەیشتووەتە سنووری ئێستای داواکارییەکان. دواتر هەوڵ بدەوە.',
       'rateLimit':
           'داواکارییەکانی زیرەکیی دەستکرد زۆرن. خولەکێک چاوەڕێ بکە و دووبارە هەوڵ بدەوە.',
       'dailyLimit':

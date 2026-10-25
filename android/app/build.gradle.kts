@@ -12,7 +12,10 @@ val firebaseConfigured = file("google-services.json").exists()
 val offlinePreview = providers.gradleProperty("bnyadOfflinePreview").orNull == "true"
 if (firebaseConfigured && !offlinePreview) apply(plugin = "com.google.gms.google-services")
 val releaseProperties = Properties()
-val releasePropertiesFile = rootProject.file("key.properties")
+// Existing signing files may stay outside the repository. Overrides are local
+// paths only; passwords are read from the private properties file at build time.
+val releasePropertiesFile = providers.environmentVariable("BNYAD_ANDROID_SIGNING_PROPERTIES").orNull
+    ?.let { file(it) } ?: rootProject.file("key.properties")
 if (releasePropertiesFile.exists()) releasePropertiesFile.inputStream().use { releaseProperties.load(it) }
 
 gradle.taskGraph.whenReady {
@@ -65,7 +68,8 @@ android {
             create("release") {
                 keyAlias = releaseProperties.getProperty("keyAlias")
                 keyPassword = releaseProperties.getProperty("keyPassword")
-                storeFile = file(releaseProperties.getProperty("storeFile"))
+                storeFile = file(providers.environmentVariable("BNYAD_ANDROID_KEYSTORE").orNull
+                    ?: releaseProperties.getProperty("storeFile"))
                 storePassword = releaseProperties.getProperty("storePassword")
             }
         }

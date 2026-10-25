@@ -28,10 +28,17 @@ class ApiService {
         Uri.parse('$baseUrl/ai/consent'),
         headers: _headers,
       );
-      if (_token != owner || response.statusCode != 200) return null;
+      if (_token != owner) return null;
+      if (response.statusCode != 200) {
+        aiErrorCode = response.statusCode == 404
+            ? 'serviceUpdate'
+            : 'unavailable';
+        return null;
+      }
       final body = jsonDecode(response.body) as Map<String, dynamic>;
       return body['enabled'] == true && body['version'] == aiConsentVersion;
     } catch (_) {
+      aiErrorCode = 'unavailable';
       return null;
     }
   }
@@ -65,8 +72,9 @@ class ApiService {
       aiErrorCode = 'signIn';
       return null;
     }
-    if (await getAiConsent() != true || owner != _token) {
-      aiErrorCode = 'consentRequired';
+    final consent = await getAiConsent();
+    if (consent != true || owner != _token) {
+      if (consent == false) aiErrorCode = 'consentRequired';
       return null;
     }
     try {
@@ -92,12 +100,19 @@ class ApiService {
           'ai_rate_limit' => 'rateLimit',
           'ai_daily_limit' => 'dailyLimit',
           'ai_budget_limit' => 'budgetLimit',
+          'ai_provider_quota' => 'providerQuota',
           _ => 'quota',
         },
         413 => 'tooLarge',
         422 => 'invalidResult',
         502 => 'invalidResult',
-        503 => 'unavailable',
+        503 => switch (body['code']) {
+          'ai_disabled' => 'disabled',
+          'ai_not_configured' ||
+          'ai_provider_access' ||
+          'ai_model_unavailable' => 'configuration',
+          _ => 'unavailable',
+        },
         _ => 'failed',
       };
     } catch (_) {
@@ -729,16 +744,35 @@ class ApiService {
     return false;
   }
 
-  Future<void> registerFcmToken(String token) async {
+  Future<bool> registerFcmToken(String token) async {
+    final owner = _token;
+    if (!hasToken) return false;
     try {
-      await _http.post(
+      final response = await _http.post(
+        Uri.parse('$baseUrl/fcm-token'),
+        headers: _headers,
+        body: jsonEncode({
+          'token': token,
+          'platform': defaultTargetPlatform == TargetPlatform.iOS
+              ? 'ios'
+              : 'android',
+        }),
+      );
+      return owner == _token && response.statusCode == 200;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  Future<void> unregisterFcmToken(String token) async {
+    if (!hasToken) return;
+    try {
+      await _http.delete(
         Uri.parse('$baseUrl/fcm-token'),
         headers: _headers,
         body: jsonEncode({'token': token}),
       );
-    } catch (e) {
-      debugPrint('registerFcmToken error: $e');
-    }
+    } catch (_) {}
   }
 
   // ─── Subscription ─────────────────────────────────

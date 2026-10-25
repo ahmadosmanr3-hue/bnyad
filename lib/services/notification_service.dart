@@ -14,6 +14,7 @@ class NotificationService {
       FlutterLocalNotificationsPlugin();
   bool _initialized = false;
   bool get isInitialized => _initialized;
+  VoidCallback? onServerNotificationOpened;
 
   /// v2 channel so Android picks up the custom sound (channels are immutable).
   static const _channelId = 'meal_reminders_v2';
@@ -67,9 +68,9 @@ class NotificationService {
     await _plugin.initialize(
       const InitializationSettings(android: androidInit, iOS: darwinInit),
       onDidReceiveNotificationResponse: (response) {
-        debugPrint(
-          'Local Notification tapped: id=${response.id}, payload=${response.payload}',
-        );
+        if (response.payload == 'server-notifications') {
+          onServerNotificationOpened?.call();
+        }
       },
     );
 
@@ -462,6 +463,7 @@ class NotificationService {
         ),
         iOS: _darwinDetails,
       ),
+      payload: 'server-notifications',
     );
   }
 
