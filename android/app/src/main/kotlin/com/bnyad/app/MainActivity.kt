@@ -9,6 +9,9 @@ import io.flutter.plugin.common.MethodChannel
 internal fun offlinePreviewAllowed(context: android.content.Context): Boolean =
     BuildConfig.DEBUG && BuildConfig.BNYAD_OFFLINE_PREVIEW && context.packageName == "com.bnyad.app.dev"
 
+internal fun localBackendAllowed(context: android.content.Context): Boolean =
+    BuildConfig.DEBUG && BuildConfig.BNYAD_LOCAL_BACKEND && context.packageName == "com.bnyad.app.dev"
+
 class MainActivity : FlutterFragmentActivity() {
     private var localeChannel: MethodChannel? = null
     private var healthBridge: HealthStepBridge? = null
@@ -33,6 +36,7 @@ class MainActivity : FlutterFragmentActivity() {
             unsupportedChannel?.setMethodCallHandler { call, result ->
                 when (call.method) {
                     "offlinePreviewAllowed" -> result.success(offlinePreviewAllowed(this))
+                    "localBackendAllowed" -> result.success(localBackendAllowed(this))
                     "access" -> result.success(mapOf("availability" to "unavailable", "permission" to "unknown"))
                     "requestAccess" -> result.success(false)
                     "readDays" -> result.success(emptyList<Any>())

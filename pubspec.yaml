@@ -1,7 +1,7 @@
 name: nutrify
 description: "BNYAD — AI-powered nutrition tracking app with trilingual support"
 publish_to: 'none'
-version: 1.0.0+1
+version: 1.0.2+14
 
 environment:
   sdk: ^3.9.2
@@ -20,7 +20,7 @@ dependencies:
   timezone: ^0.10.0
   flutter_timezone: ^4.1.0
   connectivity_plus: ^6.1.4
-  mobile_scanner: ^6.0.2
+  mobile_scanner: ^7.4.2
   permission_handler: ^11.4.0
   firebase_core: ^3.8.1
   firebase_messaging: ^15.1.6
@@ -29,6 +29,7 @@ dependencies:
   url_launcher: ^6.3.1
   # Lets the isolated browser demo disable external navigation.
   url_launcher_platform_interface: ^2.3.2
+  package_info_plus: ^10.2.2
 
 dev_dependencies:
   flutter_test:

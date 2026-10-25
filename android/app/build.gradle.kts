@@ -10,7 +10,10 @@ plugins {
 
 val firebaseConfigured = file("google-services.json").exists()
 val offlinePreview = providers.gradleProperty("bnyadOfflinePreview").orNull == "true"
-if (firebaseConfigured && !offlinePreview) apply(plugin = "com.google.gms.google-services")
+val localBackend = providers.gradleProperty("bnyadLocalBackend").orNull == "true"
+require(!(offlinePreview && localBackend)) { "Choose offline fixtures or authenticated private backend testing, never both." }
+val developmentBuild = offlinePreview || localBackend
+if (firebaseConfigured && !developmentBuild) apply(plugin = "com.google.gms.google-services")
 val releaseProperties = Properties()
 // Existing signing files may stay outside the repository. Overrides are local
 // paths only; passwords are read from the private properties file at build time.
@@ -19,12 +22,12 @@ val releasePropertiesFile = providers.environmentVariable("BNYAD_ANDROID_SIGNING
 if (releasePropertiesFile.exists()) releasePropertiesFile.inputStream().use { releaseProperties.load(it) }
 
 gradle.taskGraph.whenReady {
-    if (offlinePreview) {
+    if (developmentBuild) {
         val unsafeTasks = allTasks.filter { it.project.path == ":app" &&
             (it.name.endsWith("Release", ignoreCase = true) || it.name.endsWith("Profile", ignoreCase = true) ||
              it.name.contains("ReleaseResources") || it.name.contains("ProfileResources")) }
         require(unsafeTasks.isEmpty()) {
-            "Offline Android preview is restricted to debug builds: ${unsafeTasks.map { it.path }}"
+            "Android development testing is restricted to debug builds: ${unsafeTasks.map { it.path }}"
         }
     }
     if (allTasks.any { it.name.contains("Release", ignoreCase = true) }) {
@@ -40,6 +43,9 @@ android {
     buildFeatures { buildConfig = true }
     if (offlinePreview) {
         sourceSets.getByName("debug").manifest.srcFile("src/offlinePreview/AndroidManifest.xml")
+    }
+    if (localBackend) {
+        sourceSets.getByName("debug").manifest.srcFile("src/localBackend/AndroidManifest.xml")
     }
 
     compileOptions {
@@ -76,11 +82,13 @@ android {
     }
     buildTypes {
         debug {
-            if (offlinePreview) applicationIdSuffix = ".dev"
+            if (developmentBuild) applicationIdSuffix = ".dev"
             buildConfigField("boolean", "BNYAD_OFFLINE_PREVIEW", offlinePreview.toString())
+            buildConfigField("boolean", "BNYAD_LOCAL_BACKEND", localBackend.toString())
         }
         release {
             buildConfigField("boolean", "BNYAD_OFFLINE_PREVIEW", "false")
+            buildConfigField("boolean", "BNYAD_LOCAL_BACKEND", "false")
             signingConfig = signingConfigs.findByName("release")
         }
     }
@@ -88,6 +96,7 @@ android {
     buildTypes.configureEach {
         if (name != "debug" && name != "release") {
             buildConfigField("boolean", "BNYAD_OFFLINE_PREVIEW", "false")
+            buildConfigField("boolean", "BNYAD_LOCAL_BACKEND", "false")
         }
     }
 }

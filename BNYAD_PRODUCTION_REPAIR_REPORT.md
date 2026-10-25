@@ -2,8 +2,8 @@
 
 ## Current status
 
-Implementation and local validation are complete. Production deployment and
-store release are **not complete**. Do not infer a release from a Git push or a
+Source repairs and automated validation are substantially complete. Final
+physical-device regression, production deployment and store release are **not complete**. Do not infer a release from a Git push or a
 successful local build. This report will be updated after external verification.
 
 Both repositories use `codex/bnyad-production-repair-2026-10-25`, based on the
@@ -32,9 +32,15 @@ version while adding RevenueCat configuration. This is **not** a deployment of
 the new repair branch. Public `/api/up` returned 200; `/api/ai/consent` returned
 404. These checks did not sign in or write customer data.
 
-Before promotion, record the final current deployment again, positively match
-the target Neon database, capture a recoverable backup/PITR point, and apply only
-the reviewed additive SQL. Do not run `prisma db push`, a seed or the empty
+The production database mapping was verified without reading secrets or customer
+rows: nonexistent-token authentication probes returned 401 and increased the
+Neon api_tokens table scan counter by exactly 3, then exactly 5. This positively
+matched project `small-frog-96915412`, main branch `br-cold-heart-awt4ozzt`,
+database `neondb`. A recovery branch `backup-before-prod-repair-20261025`
+(`br-dawn-darkness-awr9l47b`) was created within the existing Free limits, with
+expiry 1 November 2026 at 21:00 GMT+3. Existing PITR is six hours. No production
+schema migration has been applied. Before promotion, record the final current
+deployment again and apply only the reviewed additive SQL to the main branch. Do not run `prisma db push`, a seed or the empty
 staging bootstrap against production. Promote only a checked candidate.
 
 Rolling back the old backend after new authentication code has hashed sessions
@@ -112,7 +118,8 @@ Source fixes:
 No visible FCM/APNs delivery has yet been verified on either physical device in
 this repair. The local BNYAD Dev build deliberately disables optional production
 Firebase services, so its working dashboard is not a push test. Samsung was not
-connected. Verify foreground, background, locked and normally closed states,
+connected at that earlier check; the Samsung is now connected and its local
+login/scanner are owner-confirmed. Verify foreground, background, locked and normally closed states,
 record timestamps and inspect the tap destination before release. Force-stopped
 OS states do not carry a delivery guarantee.
 
@@ -175,7 +182,8 @@ steps/calories and saved goal work. Existing App Store and Health Test apps were
 not removed. The Mac's LAN address change was corrected using the existing local
 CA; no health tracking or nutrition formula was changed.
 
-App Store Connect is currently signed out, and owner sign-in was requested.
+The owner signed into App Store Connect and reported resolving the updated Paid
+Applications agreement. The last observed iOS live version was 1.0.1, build 13.
 Only an Apple Development identity was available at inspection. A production
 archive/export, signing validation, latest editable version/build check, upload,
 review and release remain outstanding. Do not treat a development installation
@@ -183,8 +191,8 @@ as an App Store release.
 
 ## Tests and dependency changes
 
-- Flutter analysis: no issues; 321 tests pass.
-- Backend: 124 tests pass; TypeScript passes; Next.js production build passes.
+- Flutter: analysis has no issues; all 365 tests pass after the critical fixes.
+- Backend: 135 tests pass; TypeScript passes; Next.js production build passes.
 - Next.js patched to 15.5.28, including its matching lockfile packages, for
   GHSA-2464-fhr4-w9xw / GHSA-p3m5-59mp-jv5r. Production npm audit: zero advisories.
 - Real isolated local PostgreSQL integration passed auth, Premium, consent,
@@ -192,19 +200,92 @@ as an App Store release.
   This did not call Google or use production customer data.
 - Local preview uses separate build output directories so it cannot overwrite
   the running local iPhone backend's Next output.
-- No changes to native HealthKit/Health Connect implementation, nutrition targets
-  or the walking-calorie formula.
+- HealthKit/Health Connect reading logic, nutrition targets and the walking-calorie
+  formula are preserved. Android adds only a debug-local-backend authorization
+  method; it does not alter step queries or grant production access.
+
+## Barcode, Camera Permissions & Android Distribution
+
+### Confirmed causes and repairs
+
+- The iOS permission-handler Camera implementation lacked its required CocoaPods
+  `PERMISSION_CAMERA=1` compile flag. This can return denied without a native
+  prompt, even when Info.plist usage descriptions exist. The flag is now verified
+  in all six generated configurations. Shared permission handling distinguishes
+  first request, granted, denied and restricted access, with localized Settings
+  guidance. No microphone or photo-library permission is newly requested.
+- `mobile_scanner` is updated from 6.0.11 to 7.4.2: maintained native Android
+  CameraX/ML Kit and iOS AVFoundation/Apple Vision integration, tap focus, frame,
+  torch state, bounded duplicate handling and manual entry. Detection and food
+  lookup do not require Gemini.
+- Previous client-side product guessing is replaced with authenticated exact-GTIN
+  backend lookup. Checksums, leading zeros, UPC-E expansion and exact GS1 (01)
+  are validated. Open Food Facts is first; USDA branded-food exact matches are an
+  optional server-key fallback. Incomplete or inconsistent label values are
+  rejected; a similar product name never supplies nutrition automatically.
+- Public label cache is separate from private logs/catalog: seven-day positive
+  and one-hour negative cache; outages are not negatively cached. Shared database
+  provider limits are conservative (OFF 7/minute, USDA 8/minute), with per-user
+  20/minute limits and no provider retries. A fixed-window boundary can double a
+  burst, so the provider ceilings deliberately leave headroom. Cache expiration
+  cleanup is bounded. See backend `BARCODE_DATA_SOURCES.md` for licensing and
+  configuration limitations.
+- Label basis, quantities and logs now distinguish grams from milliliters.
+  Liters normalize only to milliliters; no density or 1L=1kg assumption. Verified
+  serving sizes scale every macro consistently. Ambiguous OFF label metadata
+  requires explicit label-basis confirmation; product/label values can be
+  corrected before logging. Manual and catalog fallback remain available.
+- Settings displays the actual installed version/build, avoiding hardcoded text.
+
+### Evidence and actual coverage
+
+Google Play production is versionCode 8 (1.0.0), fully rolled out across 178/178
+regions. The purported newer code 13 (1.0.1) is **still a draft**, not a published
+update. The connected Samsung SM-G990B2 has Play-installed `com.bnyad.app` code 8,
+matching production exactly. This establishes the cause for this phone; it does
+not prove the state of every other Android model. The existing draft is preserved.
+Country-specific eligibility, managed publishing and device exclusions still need
+final console verification. Candidate code 14 is higher than the last observed
+uploaded code 13; recheck before upload.
+
+The complete authenticated local-backend Samsung Dev app `com.bnyad.app.dev`
+1.0.2+14 was installed and launched separately. The owner confirmed login and
+barcode scanning work. It uses fictional QA data, real Health Connect and simulated
+AI; no production app/data was replaced and no Google request was made. The
+Android entry point and application suffix are guarded to debug only; release
+and profile builds cannot enable this diagnostic configuration.
+
+Real local HTTPS/backend integration passed normal login, unauthenticated 401,
+OFF lookup and repeat cache hits for Coca-Cola Original, Nutella and an existing
+SKYR product. An apparently random valid barcode was an actual OFF record, so it
+was not misreported as a missing-product test. Missing-product behavior, malformed
+responses, exact identity, UPC/EAN, dense liquids and unit arithmetic are covered
+by mocks. USDA is mocked only because no server key is configured. No claim is
+made of universal Iraq/Kurdistan product coverage or verified crowd-sourced labels.
+A fictional 250mL milk log persisted with its unit, then was removed normally;
+food targets and the cumulative Gemini ledger remained unchanged.
+
+Flutter includes 18 confirmation-layout cases (English, Arabic, Sorani; 320/390/430
+widths; light/dark), plus localized 0.25L logging and duplicate-save tests. All
+365 Flutter tests pass. Camera authorization states and native-local-build guards
+have automated coverage. The latest complete iPhone Dev upgrade was installed and launched successfully.
+The owner confirmed barcode, food-photo and fridge-photo cameras all open, with
+real steps/calories and the saved goal preserved after reopening. A clean camera
+permission-state test, physical solid/liquid entry, Samsung step/persistence
+regression for this specific build and visible push on both platforms remain
+release gates. Successful
+mock AI screens do not establish real image recognition.
 
 ## Required rollout gates
 
-1. Confirm the exact production Neon target and recoverable backup. The inspected
-   Neon project has the original 13-table schema; new tables/notification column
-   are absent. Vercel's sensitive DB URL cannot be read through this connection,
-   so do not assume project identity from its name alone.
-2. Review/apply, in order, only these additive migrations to the verified target:
+1. Production Neon mapping and recovery branch are verified as recorded above.
+   Inspect the selected main branch/database immediately before any SQL operation.
+2. Review/apply, in order, only these additive migrations to that verified target:
    `db/20261013_auth_rate_limits.sql`, `db/20261013_ai_safeguards.sql`,
-   `prisma/notification_translations.sql`, `db/20261025_push_delivery.sql`.
-   They have been tested locally; **no production migration has been applied**.
+   `prisma/notification_translations.sql`, `db/20261025_push_delivery.sql`,
+   `db/20261025_barcode_units.sql`.
+   All have been tested on isolated local PostgreSQL;
+   **no production migration has been applied**.
 3. Verify the existing Firebase service-account project and permissions, and the
    RevenueCat V1 secret/entitlement mapping. Never replace live store entitlements
    or grant client-claimed Premium as a shortcut.

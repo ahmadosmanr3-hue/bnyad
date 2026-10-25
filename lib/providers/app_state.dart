@@ -9,6 +9,7 @@ import 'dart:convert';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:nutrify/services/food_barcode_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:nutrify/services/auth_service.dart';
@@ -44,6 +45,7 @@ Map<String, dynamic> _logEntryToJson(LogEntry e) => {
   'foodId': e.foodId,
   'name': e.name,
   'amount': e.amount,
+  'amountUnit': e.amountUnit,
   'calories': e.calories,
   'protein': e.protein,
   'carbs': e.carbs,
@@ -60,6 +62,7 @@ LogEntry _logEntryFromJson(Map<String, dynamic> m) {
     foodId: m['foodId']?.toString() ?? '',
     name: m['name']?.toString() ?? '',
     amount: (m['amount'] as num?)?.toDouble() ?? 0,
+    amountUnit: m['amountUnit'] == 'ml' ? 'ml' : 'g',
     calories: (m['calories'] as num?)?.toDouble() ?? 0,
     protein: (m['protein'] as num?)?.toDouble() ?? 0,
     carbs: (m['carbs'] as num?)?.toDouble() ?? 0,
@@ -293,6 +296,7 @@ class AppState extends ChangeNotifier {
       keys.map((k) => t.getAllergy(k)).join(', ');
   bool get isRTL => _lang == 'ar' || (_lang == 'ku' || _lang == 'ckb');
   AiService get ai => AiService(api: _apiService);
+  FoodBarcodeService get barcodes => FoodBarcodeService(api: _apiService);
   String get aiErrorCode => _apiService.aiErrorCode;
   int? get sessionAccountId => _apiService.userId;
   Future<bool?> getAiConsent() => _apiService.getAiConsent();

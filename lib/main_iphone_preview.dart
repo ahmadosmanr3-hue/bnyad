@@ -19,7 +19,6 @@ import 'models/user_profile.dart';
 import 'providers/app_state.dart';
 import 'services/api_service.dart';
 import 'services/auth_service.dart';
-import 'services/food_barcode_service.dart';
 
 /// Defense in depth: even an accidentally constructed Dart network client
 /// cannot send a request in this isolated entry point. MockClient does no IO.
@@ -54,7 +53,6 @@ Future<void> runNativeOfflinePreview() async {
     final healthProfile = NativePreviewHealthProfile(LocalStepSettingsStore());
     await healthProfile.restore();
     UrlLauncherPlatform.instance = DemoUrlLauncher();
-    FoodBarcodeService.clientOverride = backend.client;
     final api = ApiService(
       baseUrl: DemoBackend.baseUrl,
       aiEnabled: false,

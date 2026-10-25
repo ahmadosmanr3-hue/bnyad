@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:nutrify/l10n/localized_numbers.dart';
 import 'package:provider/provider.dart';
 import 'package:nutrify/providers/app_state.dart';
 import 'package:nutrify/models/log_entry.dart';
@@ -265,7 +266,7 @@ class _FoodLogScreenState extends State<FoodLogScreen> {
                                     ),
                                   ),
                                   Text(
-                                    '${entry.amount.round()} ${t.grams} • ${entry.calories.round()} ${t.kcal}',
+                                    '${entry.amountUnit == 'ml' ? ltrFragment(entry.amount >= 1000 ? '${(entry.amount / 1000).toStringAsFixed(2)} L' : '${entry.amount.round()} mL') : '${entry.amount.round()} ${t.grams}'} • ${entry.calories.round()} ${t.kcal}',
                                     style: const TextStyle(
                                       fontSize: 10,
                                       color: Color(0xFF64748B),

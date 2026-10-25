@@ -602,6 +602,7 @@ class ApiService {
           if (entry.foodId.isNotEmpty) 'external_food_id': entry.foodId,
           'name': entry.name,
           'amount': entry.amount,
+          'amount_unit': entry.amountUnit,
           'calories': entry.calories,
           'protein': entry.protein,
           'carbs': entry.carbs,
@@ -776,6 +777,14 @@ class ApiService {
   }
 
   // ─── Subscription ─────────────────────────────────
+  Future<http_pkg.Response> getBarcodeProduct(String code) => _http
+      .get(
+        Uri.parse(
+          '$baseUrl/foods/barcode',
+        ).replace(queryParameters: {'code': code}),
+        headers: _headers,
+      )
+      .timeout(const Duration(seconds: 15));
 
   /// Returns the current user's premium status from the server, or `null` on error.
   /// Shape: `{ isPremium: bool, expiresAt: String?, daysLeft: int, plan: String? }`.

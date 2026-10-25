@@ -15,9 +15,9 @@ import 'models/user_profile.dart';
 import 'providers/app_state.dart';
 import 'services/api_service.dart';
 import 'services/auth_service.dart';
-import 'services/food_barcode_service.dart';
 
-/// Separate entry point. Never imported by production, staging or Android.
+/// Separate entry point. Never imported by production or staging. The Android
+/// wrapper requires its own debug-only native guard and cannot arm real AI.
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   var stage = 'configuration';
@@ -65,7 +65,6 @@ Future<void> main() async {
     );
     stage = 'private-https-verification';
     await config.verify(client);
-    FoodBarcodeService.clientOverride = client; // No external barcode HTTP.
     stage = 'local-session-storage';
     SharedPreferences.setPrefix('bnyad_local_iphone_backend.');
     // API credentials/caches get a separate Keychain account, not the offline

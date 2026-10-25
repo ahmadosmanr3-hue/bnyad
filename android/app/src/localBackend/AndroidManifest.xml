@@ -1,0 +1,5 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+    <!-- Private authenticated HTTPS testing only; never selected for release. -->
+    <application android:label="BNYAD Dev" tools:replace="android:label" />
+</manifest>
