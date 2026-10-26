@@ -529,3 +529,56 @@ The upload omitted the internal-only restriction so the tested candidate can be
 used for a later authorized store submission. Upload is not App Review submission,
 processing approval, a TestFlight installation or public release. The existing
 five-person internal group configuration was preserved.
+
+## Store candidate checks and Android permission repair
+
+Apple processed release-eligible build 16 (build ID
+`165908c3-c46e-45ab-a79e-d8d62803f69f`). The owner personally saved export
+compliance. The existing internal group automatically received the build, and the
+owner confirmed dashboard, barcode camera, real steps/saved goal and Premium/
+Restore with the AI-disabled notice. The App Store 1.0.2 draft now selects build
+16; name `BNYAD: Calorie & Macro Tracker`, subtitle, Health & Fitness category and
+accurate AI-disabled English description/release notes were saved. No App Review
+submission is implied by those draft changes.
+
+The exported IPA was independently signature-verified: production APNs,
+HealthKit enabled, get-task-allow false, existing production bundle ID, version 16.
+IPA SHA-256: `b72cf2dbf10832eaa7ea0af52162591dcb31dca35bc1c29dceba5b1b972068c2`.
+
+After the owner accepted Google's Device Catalog agreement personally, inspection
+showed 19,420 supported models and zero excluded models/rule exclusions. Both
+S21 FE variants are supported. Play's build-16 review showed no lost supported
+phone/tablet models versus code 8, but blocked submission on existing broad-photo
+and restricted exact-alarm declarations. The Android manifest unnecessarily
+requested READ_MEDIA_IMAGES, READ_EXTERNAL_STORAGE and USE_EXACT_ALARM.
+
+Android code 17 removes those permissions. The existing image_picker system
+picker/GET_CONTENT grant supplies selected images without broad library access.
+CAMERA remains. SCHEDULE_EXACT_ALARM and its existing user-approval flow remain
+for optional meal reminders, rather than claiming alarm-clock/calendar core use.
+No notification scheduling code, iOS code, health permission or nutrition logic
+was changed. Android's platform-only repair does not replace the tested iOS 16.
+Primary guidance: https://support.google.com/googleplay/android-developer/answer/16558241 ,
+https://pub.dev/packages/image_picker and
+https://developer.android.com/reference/android/Manifest.permission#SCHEDULE_EXACT_ALARM .
+
+Flutter analysis and all 410 tests passed again. Signed AAB 17 passed bundletool,
+jarsigner and existing upload-certificate checks. An automated check of its actual
+bundle manifest confirmed code 17, com.bnyad.app, absence of broad photo/storage
+and USE_EXACT_ALARM, with camera, SCHEDULE_EXACT_ALARM, notifications and Health
+steps preserved. AAB SHA-256:
+`43ec1de05298df695bca17d292ac65d47d5c85009f3c2a0c9a267c75c11abac2`.
+Samsung is unavailable; no new physical Android result is claimed.
+
+The owner approved replacing the unpublished Play draft while preserving notes.
+Code 16 was uploaded and saved in that draft; original code-13 notes were backed
+up privately. Code 17 is the corrected candidate for re-upload. Google Play's
+English name and accurate description were saved as a listing draft. Final
+validation/review submission still needs verification.
+
+The owner chose to defer the Vercel paid-plan purchase until 29 October but
+explicitly requested submission of tested store updates today. Checkout was
+cancelled without payment; Hobby and the existing backend remain unchanged. The
+commercial-hosting policy issue was disclosed, not technically resolved. No plan,
+trial, paid overages or Gemini billing was activated. Store review timing remains
+controlled by Apple/Google; no same-day public availability is promised.

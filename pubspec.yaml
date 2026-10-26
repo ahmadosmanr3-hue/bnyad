@@ -1,7 +1,7 @@
 name: nutrify
 description: "BNYAD — AI-powered nutrition tracking app with trilingual support"
 publish_to: 'none'
-version: 1.0.2+16
+version: 1.0.2+17
 
 environment:
   sdk: ^3.9.2
