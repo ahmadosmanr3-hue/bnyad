@@ -21,7 +21,9 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   try {
     await NotificationService.instance.init();
     await NotificationService.instance.showServerNotification(
-      id: message.hashCode.abs() % 100000,
+      id:
+          int.tryParse(message.data['notificationId'] ?? '') ??
+          message.hashCode.abs() % 100000,
       title: title,
       body: body,
     );
@@ -41,6 +43,8 @@ class PushService {
   ApiService? _api;
   String? _registeredToken;
   VoidCallback? onNotificationOpened;
+  VoidCallback? onEntitlementsChanged;
+  String? openedRoute;
 
   Future<void> init() async {
     if (kIsWeb || _ready) return;
@@ -48,6 +52,7 @@ class PushService {
       await Firebase.initializeApp();
       FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
       NotificationService.instance.onServerNotificationOpened = () {
+        openedRoute = NotificationService.instance.lastServerRoute;
         onNotificationOpened?.call();
       };
       _ready = true;
@@ -111,26 +116,36 @@ class PushService {
       },
     );
     FirebaseMessaging.onMessage.listen((message) async {
+      if (message.data['route'] == 'premium-gifts') {
+        onEntitlementsChanged?.call();
+      }
       final title =
           message.notification?.title ?? message.data['title'] ?? 'BNYAD';
       final body = message.notification?.body ?? message.data['body'] ?? '';
       if (body.isEmpty) return;
       await NotificationService.instance.init();
       await NotificationService.instance.showServerNotification(
-        id: message.hashCode.abs() % 100000,
+        id:
+            int.tryParse(message.data['notificationId'] ?? '') ??
+            message.hashCode.abs() % 100000,
         title: title,
         body: body,
+        route: message.data['route'] == 'premium-gifts'
+            ? 'premium-gifts'
+            : 'server-notifications',
       );
     });
 
     // Handle notification taps when the app is in the background
     FirebaseMessaging.onMessageOpenedApp.listen((message) {
+      openedRoute = message.data['route'];
       onNotificationOpened?.call();
     });
 
     // Handle notification taps when the app is opened from a terminated state
     FirebaseMessaging.instance.getInitialMessage().then((message) {
       if (message != null) {
+        openedRoute = message.data['route'];
         onNotificationOpened?.call();
       }
     });

@@ -15,6 +15,7 @@ class NotificationService {
   bool _initialized = false;
   bool get isInitialized => _initialized;
   VoidCallback? onServerNotificationOpened;
+  String? lastServerRoute;
 
   /// v2 channel so Android picks up the custom sound (channels are immutable).
   static const _channelId = 'meal_reminders_v2';
@@ -68,12 +69,21 @@ class NotificationService {
     await _plugin.initialize(
       const InitializationSettings(android: androidInit, iOS: darwinInit),
       onDidReceiveNotificationResponse: (response) {
-        if (response.payload == 'server-notifications') {
+        if (response.payload == 'server-notifications' ||
+            response.payload == 'premium-gifts') {
+          lastServerRoute = response.payload;
           onServerNotificationOpened?.call();
         }
       },
     );
 
+    final launch = await _plugin.getNotificationAppLaunchDetails();
+    final payload = launch?.notificationResponse?.payload;
+    if (launch?.didNotificationLaunchApp == true &&
+        (payload == 'server-notifications' || payload == 'premium-gifts')) {
+      lastServerRoute = payload;
+      onServerNotificationOpened?.call();
+    }
     await _requestPermissions();
 
     _initialized = true;
@@ -434,6 +444,7 @@ class NotificationService {
 
   /// Shows a notification pushed from the admin panel / server.
   Future<void> showServerNotification({
+    String route = 'server-notifications',
     required int id,
     required String title,
     required String body,
@@ -463,7 +474,7 @@ class NotificationService {
         ),
         iOS: _darwinDetails,
       ),
-      payload: 'server-notifications',
+      payload: route,
     );
   }
 

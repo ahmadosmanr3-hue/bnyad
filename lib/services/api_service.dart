@@ -838,11 +838,14 @@ class ApiService {
   /// Fetches notifications for the current user (their own + broadcasts).
   /// Pass [since] (ISO 8601) to only get newer ones.
   Future<List<Map<String, dynamic>>> getNotifications({String? since}) async {
+    final owner = _token;
+    if (!hasToken) return [];
     try {
       final uri = Uri.parse(
         '$baseUrl/notifications${since != null ? '?since=${Uri.encodeComponent(since)}' : ''}',
       );
       final response = await _http.get(uri, headers: _headers);
+      if (_token != owner) return [];
       if (response.statusCode == 200) {
         final body = jsonDecode(response.body) as Map<String, dynamic>;
         final data = (body['data'] ?? []) as List;

@@ -1,3 +1,4 @@
+import 'premium_gifts_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
@@ -197,6 +198,19 @@ class _PremiumPaywallSheetState extends State<_PremiumPaywallSheet> {
                             isDark: isDark,
                           ),
                         ),
+                      if (state.premiumGifts.isNotEmpty) ...[
+                        const SizedBox(height: 12),
+                        ListTile(
+                          leading: const Icon(Icons.card_giftcard),
+                          title: Text(t.premiumGifts),
+                          subtitle: Text(t.giftDatesMayChange),
+                          onTap: () => Navigator.of(context).push(
+                            MaterialPageRoute<void>(
+                              builder: (_) => const PremiumGiftsScreen(),
+                            ),
+                          ),
+                        ),
+                      ],
                       const SizedBox(height: 18),
                       Text(
                         t.premiumFooterNote,
@@ -645,10 +659,20 @@ class _ActivateButton extends StatelessWidget {
     final t = state.t;
 
     return ElevatedButton.icon(
-      onPressed: loading
+      onPressed:
+          loading ||
+              (isPremium &&
+                  !state.storeManagedPremium &&
+                  state.premiumGifts.isEmpty)
           ? null
           : () async {
-              if (isPremium) {
+              if (isPremium && !state.storeManagedPremium) {
+                await Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => const PremiumGiftsScreen(),
+                  ),
+                );
+              } else if (isPremium) {
                 onLoadingChanged(true);
                 await launchUrl(
                   Uri.parse(
@@ -698,7 +722,15 @@ class _ActivateButton extends StatelessWidget {
                   : Icons.workspace_premium_rounded,
               size: 18,
             ),
-      label: Text(isPremium ? t.manageSubscription : t.premiumActivate),
+      label: Text(
+        isPremium
+            ? (state.storeManagedPremium
+                  ? t.manageSubscription
+                  : state.premiumGifts.isNotEmpty
+                  ? t.premiumGifts
+                  : t.premiumActive)
+            : t.premiumActivate,
+      ),
       style: ElevatedButton.styleFrom(
         backgroundColor: AppTheme.indigo,
         foregroundColor: Colors.white,

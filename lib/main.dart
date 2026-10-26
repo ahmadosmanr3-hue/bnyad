@@ -1,3 +1,4 @@
+import 'screens/premium_gifts_screen.dart';
 import 'dart:async';
 import 'package:nutrify/l10n/framework_localizations.dart';
 import 'dart:io' show Platform;
@@ -113,6 +114,10 @@ class _BnyadAppState extends State<BnyadApp> with WidgetsBindingObserver {
         WidgetsBinding.instance.lifecycleState == AppLifecycleState.resumed,
       );
     });
+    _pendingNotification = PushService.instance.openedRoute != null;
+    PushService.instance.onEntitlementsChanged = () {
+      if (mounted) context.read<AppState>().syncPremiumFromServer();
+    };
     PushService.instance.onNotificationOpened = () {
       _pendingNotification = true;
       _openPendingNotification();
@@ -128,8 +133,14 @@ class _BnyadAppState extends State<BnyadApp> with WidgetsBindingObserver {
       return;
     }
     _pendingNotification = false;
+    final gifts = PushService.instance.openedRoute == 'premium-gifts';
+    PushService.instance.openedRoute = null;
+    state.syncPremiumFromServer();
     _navigatorKey.currentState?.push(
-      MaterialPageRoute<void>(builder: (_) => const NotificationsScreen()),
+      MaterialPageRoute<void>(
+        builder: (_) =>
+            gifts ? const PremiumGiftsScreen() : const NotificationsScreen(),
+      ),
     );
   }
 
@@ -137,6 +148,7 @@ class _BnyadAppState extends State<BnyadApp> with WidgetsBindingObserver {
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     PushService.instance.onNotificationOpened = null;
+    PushService.instance.onEntitlementsChanged = null;
     super.dispose();
   }
 

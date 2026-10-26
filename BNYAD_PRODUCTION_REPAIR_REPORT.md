@@ -433,3 +433,33 @@ The change is not yet installed in a new TestFlight binary.
 Global Premium Gifts is newly requested and under implementation. No campaign
 has been created or executed against production. Public mobile release remains
 paused until the expanded requirements pass.
+
+## Global Premium Gifts — implementation and isolated verification
+
+Added server-authoritative promotional credit support to the full mobile app,
+without altering billing, nutrition targets, activity formulas or native health
+permissions. Gifts have localized details, FIFO/paid-pause explanations, dates and
+remaining credit. Store management is shown only for store-managed access.
+Foreground push/resume/polling refreshes access; account switches clear gift
+metadata. Campaign history does not replay its push alert as a second local alert.
+
+The backend implementation is in the official backend repository: durable
+Workflow, fixed recipient snapshots, explicit confirmation, 25-recipient/device
+batches, transactional idempotency, separate notification outbox, cancellation,
+per-recipient unused-credit remediation, history and audit. Lifetime credits are
+banked; paid renewals defer unused gift duration. Five additive tables are
+prepared, with the feature disabled unless explicitly configured.
+
+Isolated PostgreSQL tests passed for 10,000 fictional recipients, duplicate and
+concurrent execution, forced transaction failure/retry, paid/lifetime/overlapping
+credits, missing/invalid devices, safe push retry, cancellation and remediation.
+A separate five-user local HTTP/durable-worker flow and browser confirmation flow
+completed correctly. Admin layouts were inspected at desktop, 768 and 320px.
+Flutter analysis and 410 tests pass; backend 150 tests, types and production build
+pass; patched dependency audit reports zero vulnerabilities. No production gift,
+broadcast or new Google request was made.
+
+Release candidate is now 1.0.2 (16). This is source/build preparation, not a claim
+that build 16 has been uploaded or installed. Backend activation, physical gift
+verification and store release gates remain outstanding. See
+`PREMIUM_GIFTS_HANDOFF.md` and backend `PREMIUM_GIFT_CAMPAIGNS.md`.

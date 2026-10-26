@@ -72,6 +72,66 @@ class AppLocalizations {
       : isRTL
       ? 'کڕینەکە تەواو نەبوو یان هەڵوەشێندرایەوە.'
       : 'Purchase failed or cancelled.';
+  String get premiumGifts => locale == 'ar'
+      ? 'هدايا Premium'
+      : isRTL
+      ? 'دیارییەکانی Premium'
+      : 'Premium gifts';
+  String get giftPolicy => locale == 'ar'
+      ? 'الهدايا رصيد إضافي منفصل عن مشترياتك. يتوقف استهلاكه أثناء وجود وصول Premium آخر، ثم يُستخدم بالترتيب. لا يغير أهدافك الغذائية ولا يفعّل الذكاء الاصطناعي المتوقف.'
+      : isRTL
+      ? 'دیارییەکان باڵانسی زیادەن و لە کڕینەکانت جیاوازن. کاتێک دەستگەیشتنی دیکەی Premium هەیە بەکارهێنانیان ڕادەگیرێت، پاشان بە ڕیز بەکاردێن. ئامانجە خۆراکییەکانت ناگۆڕن و زیرەکیی دەستکردی ڕاگیراو چالاک ناکەن.'
+      : 'Gifts are bonus credit separate from purchases. Consumption pauses while you hold other Premium access, then gifts are used in order. They do not change nutrition targets or enable paused AI.';
+  String get giftNotScheduled => locale == 'ar'
+      ? 'لم يُحدد بعد'
+      : isRTL
+      ? 'هێشتا دیاری نەکراوە'
+      : 'Not scheduled yet';
+  String get giftEmpty => locale == 'ar'
+      ? 'لا توجد هدايا محمّلة. اسحب للتحديث عند الاتصال.'
+      : isRTL
+      ? 'هیچ دیارییەک بار نەکراوە. کاتێک پەیوەستیت خوارەوە ڕابکێشە بۆ نوێکردنەوە.'
+      : 'No gifts loaded. Pull to refresh when connected.';
+  String get giftActive => locale == 'ar'
+      ? 'رصيد الهدية نشط'
+      : isRTL
+      ? 'باڵانسی دیاری چالاکە'
+      : 'Gift credit active';
+  String get giftBanked => locale == 'ar'
+      ? 'الرصيد محفوظ للاستخدام لاحقاً'
+      : isRTL
+      ? 'باڵانسەکە بۆ دواتر پارێزراوە'
+      : 'Credit saved for later';
+  String get giftRevoked => locale == 'ar'
+      ? 'أُلغي الرصيد غير المستخدم'
+      : isRTL
+      ? 'باڵانسی بەکارنەهاتوو هەڵوەشێندراوەتەوە'
+      : 'Unused credit revoked';
+  String get giftExpired => locale == 'ar'
+      ? 'انتهى رصيد الهدية'
+      : isRTL
+      ? 'باڵانسی دیاری کۆتایی هاتووە'
+      : 'Gift credit used';
+  String get giftStarts => locale == 'ar'
+      ? 'البداية'
+      : isRTL
+      ? 'دەستپێک'
+      : 'Starts';
+  String get giftExpires => locale == 'ar'
+      ? 'النهاية'
+      : isRTL
+      ? 'کۆتایی'
+      : 'Expires';
+  String get giftDatesMayChange => locale == 'ar'
+      ? 'التواريخ حسب الرصيد المعروف حالياً وقد تتغير عند تجديد Premium المدفوع. يحتفظ أصحاب الوصول الدائم برصيد الهدية دون تاريخ انتهاء مضلل. قرارات الوصول يصدرها الخادم.'
+      : isRTL
+      ? 'بەروارەکان بەپێی باڵانسی ئێستان و لە کاتی نوێکردنەوەی Premium ـی کڕدراو دەکرێت بگۆڕێن. خاوەن دەستگەیشتنی هەمیشەیی باڵانسی دیارییەکەیان دەپارێزن بەبێ بەرواری کۆتایی هەڵە. بڕیاری دەستگەیشتن لە ڕاژەکارەوەیە.'
+      : 'Dates reflect currently known access and may move after paid Premium renews. Lifetime members keep gift credit without a misleading expiry. Access decisions come from the server.';
+  String giftDays(int total, int remaining) => locale == 'ar'
+      ? 'هدية $total أيام · $remaining أيام متبقية من الرصيد'
+      : isRTL
+      ? 'دیاریی $total ڕۆژ · $remaining ڕۆژ لە باڵانس ماوە'
+      : '$total days gifted · $remaining bonus days remaining';
   String get purchaseVerificationPending => locale == 'ar'
       ? 'اكتملت خطوة المتجر، لكن التحقق من الاشتراك لم يكتمل بعد. لا تشترِ مرة أخرى. تحقق من الاتصال واستخدم استعادة المشتريات.'
       : isRTL

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:nutrify/l10n/notification_text.dart';
 import 'package:nutrify/l10n/native_locale.dart';
 import '../activity/step_tracker.dart';
+import '../models/premium_gift.dart';
 import '../activity/step_health_provider.dart';
 import '../activity/step_models.dart';
 import 'dart:convert';
@@ -633,6 +634,10 @@ class AppState extends ChangeNotifier {
     _isPremium = false;
     _premiumUntil = null;
     _purchaseVerificationPending = false;
+    _premiumGifts = [];
+    _storeManagedPremium = false;
+    _premiumRefreshTimer?.cancel();
+    _premiumRefreshTimer = null;
     _notifications = [];
     _nutritionHistory.clear();
     _weightHistory.clear();
@@ -654,6 +659,7 @@ class AppState extends ChangeNotifier {
 
     // Re-fetch data from API if logged in.
     if (_isLoggedIn && !_isMockUser) {
+      unawaited(syncPremiumFromServer());
       unawaited(_fetchUserData());
     }
 
@@ -826,6 +832,10 @@ class AppState extends ChangeNotifier {
 
   /// Completes API sign-in after OTP verification.
   Future<void> finishPhoneLogin(Map<String, dynamic> userData) async {
+    _premiumGifts = [];
+    _storeManagedPremium = false;
+    _premiumRefreshTimer?.cancel();
+    _premiumRefreshTimer = null;
     if (_isMockUser) {
       await clearMockUser();
     }
@@ -1539,6 +1549,21 @@ class AppState extends ChangeNotifier {
 
   // ─── Premium ────────────────────────────────────────
 
+  bool _storeManagedPremium = false;
+  bool get storeManagedPremium => _storeManagedPremium;
+  List<PremiumGift> _premiumGifts = [];
+  List<PremiumGift> get premiumGifts => List.unmodifiable(_premiumGifts);
+  Timer? _premiumRefreshTimer;
+  void _startPremiumRefresh() {
+    if (!supportsOptionalDeviceServices || !isAuthenticated) return;
+    _premiumRefreshTimer ??= Timer.periodic(const Duration(seconds: 60), (_) {
+      if (isAuthenticated &&
+          WidgetsBinding.instance.lifecycleState == AppLifecycleState.resumed) {
+        unawaited(syncPremiumFromServer());
+      }
+    });
+  }
+
   bool _purchaseVerificationPending = false;
   bool get purchaseVerificationPending => _purchaseVerificationPending;
 
@@ -1578,6 +1603,11 @@ class AppState extends ChangeNotifier {
     final userId = _apiService.userId;
     final sub = await _apiService.getSubscription();
     if (!_samePremiumAccount(userId) || sub == null) return;
+    _premiumGifts = PremiumGift.parse(sub['gifts']);
+    _storeManagedPremium =
+        sub['storeManaged'] == true || sub['plan'] == 'store_verified';
+    _startPremiumRefresh();
+    notifyListeners();
     if (sub['isPremium'] == true) {
       _purchaseVerificationPending = false;
       await setPremium(
@@ -1614,6 +1644,9 @@ class AppState extends ChangeNotifier {
     if (!_samePremiumAccount(userId) || !verified) return false;
     final sub = await _apiService.getSubscription();
     if (!_samePremiumAccount(userId) || sub?['isPremium'] != true) return false;
+    _premiumGifts = PremiumGift.parse(sub?['gifts']);
+    _storeManagedPremium =
+        sub?['storeManaged'] == true || sub?['plan'] == 'store_verified';
     await setPremium(
       true,
       until: DateTime.tryParse(sub!['expiresAt']?.toString() ?? ''),
@@ -1727,6 +1760,7 @@ class AppState extends ChangeNotifier {
               'translations': n['translations'],
               'body': n['body']?.toString() ?? '',
               'createdAt': n['createdAt']?.toString() ?? '',
+              'campaignId': n['campaignId'],
             },
           )
           .toList();
@@ -1745,6 +1779,9 @@ class AppState extends ChangeNotifier {
 
       if (supportsOptionalDeviceServices) {
         for (final n in fresh) {
+          // Campaign alerts are delivered by FCM. Polling only records their
+          // history, so reopening cannot display the same gift a second time.
+          if (n['campaignId'] != null) continue;
           try {
             await NotificationService.instance.showServerNotification(
               id: n['id'] as int,
@@ -1752,6 +1789,9 @@ class AppState extends ChangeNotifier {
                   ? 'BNYAD'
                   : notificationText(n, 'title', _lang),
               body: notificationText(n, 'body', _lang),
+              route: n['campaignId'] != null
+                  ? 'premium-gifts'
+                  : 'server-notifications',
             );
           } catch (e) {
             debugPrint('show server notification error: $e');
@@ -2253,6 +2293,7 @@ class AppState extends ChangeNotifier {
 
   @override
   void dispose() {
+    _premiumRefreshTimer?.cancel();
     steps.removeListener(notifyListeners);
     steps.dispose();
     _connectivitySub?.cancel();
