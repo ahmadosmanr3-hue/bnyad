@@ -62,6 +62,19 @@ can log migrated users out. Retain the new dual-format authentication reader in
 an application rollback; leave additive tables in place. Do not restore an old
 database snapshot over newer customer writes as a routine deployment rollback.
 
+
+Final availability/configuration deployment: `dpl_C9Z87f4d1ANLULjjYw4DrW8dKRAW`,
+https://nutrify-i789bhf9v-ahmads-projects-67e04419.vercel.app, source
+`0b0726f61349887b33e3134b9662a182c95943c0`. Public readiness returned 200 with
+that revision. Authenticated admin reports model `gemini-3.5-flash-lite`, only
+`ai disabled` as the AI blocker, 3/day, 1/minute and $1/month safeguards; production
+AI accounting remains zero. The old `APP_ENV` value incorrectly labeled this
+Production target as development; it was corrected to `production` and deployed.
+`NODE_ENV=production` had already enforced production authentication; no auth
+protection was bypassed by that old display label. Secret type/scope is verified;
+provider access/quota is not claimed tested by configuration alone.
+Evidence: backend `docs/evidence/production-ai-disabled-settings.png`.
+
 ## AI: confirmed causes, repair and limits
 
 The old production deployment lacked the consent endpoint and AI configuration.
@@ -69,7 +82,8 @@ The repaired endpoint is now deployed. The owner approved keeping live AI off
 for this release on 26 October. Vercel now explicitly has `AI_ENABLED=false`,
 `GEMINI_MODEL=gemini-3.5-flash-lite`, prepared model prices, a $1 monthly
 application safeguard, 3 requests/user/day and 1 request/user/minute. This does
-not activate billing. Production key entry is handled privately through Vercel.
+not activate billing. The owner saved `GEMINI_API_KEY` privately as a Production Secret. Only metadata
+was inspected; its value was not read, printed or committed.
 No new Google request is authorized or made; the development ledger stays 21/21.
 The inspected Google project is still Free Tier, unsuitable under Google’s unpaid
 terms for BNYAD’s personal nutrition information. Keep AI off until the owner
@@ -216,14 +230,15 @@ Applications agreement. The last observed iOS live version was 1.0.1, build 13.
 The production 1.0.2+14 archive and IPA export succeeded using Cloud Managed
 Apple Distribution and the existing team store profile. Exported bundle identity,
 HealthKit, production APNs entitlement, strict signature verification and disabled
-debug entitlement passed. The final AI-availability notice requires refreshed
-binaries from the final source. Latest editable store version/build checks,
+debug entitlement passed. Both final binaries were rebuilt with the AI-availability notice and signed
+validation passed. Artifact SHA-256 values and source commits are recorded in
+`RELEASE_CANDIDATE_1.0.2_14.json`; artifacts remain local and are not committed. Latest editable store version/build checks,
 upload, review and release remain outstanding. Do not treat a development installation
 as an App Store release.
 
 ## Tests and dependency changes
 
-- Flutter: analysis has no issues; all 375 tests pass after the critical fixes.
+- Flutter: analysis has no issues; all 378 tests pass after the critical fixes.
 - Backend: 136 tests pass; TypeScript passes; Next.js production build passes.
 - Next.js patched to 15.5.28, including its matching lockfile packages, for
   GHSA-2464-fhr4-w9xw / GHSA-p3m5-59mp-jv5r. Production npm audit: zero advisories.
@@ -299,7 +314,7 @@ food targets and the cumulative Gemini ledger remained unchanged.
 
 Flutter includes 18 confirmation-layout cases (English, Arabic, Sorani; 320/390/430
 widths; light/dark), plus localized 0.25L logging and duplicate-save tests. All
-375 Flutter tests pass. Camera authorization states and native-local-build guards
+378 Flutter tests pass. Camera authorization states and native-local-build guards
 have automated coverage. The latest complete iPhone Dev upgrade was installed and launched successfully.
 The owner confirmed barcode, food-photo and fridge-photo cameras all open, with
 real steps/calories and the saved goal preserved after reopening. A clean camera
@@ -335,3 +350,35 @@ made and no mobile release submitted. Production changes consist of the approved
 additive schema, backend deployment, configuration and two owner-targeted test
 notification records. Customer nutrition/subscription values were not rewritten.
 New auth may migrate existing sessions to hashed storage during normal use.
+
+## Internal TestFlight validation — 26 October
+
+The owner explicitly approved internal-only TestFlight upload and temporary
+replacement of their iPhone's App Store copy for no-charge sandbox testing.
+No App Review submission or public release is authorized until remaining checks
+pass. The existing Dev and Health Test apps must remain separate.
+
+Build 1.0.2 (14) uploaded through Xcode with `testFlightInternalTestingOnly=true`,
+but Apple rejected ingestion for missing `NSHealthUpdateUsageDescription`.
+It is **not** available in TestFlight; the phone's installed production app was
+still 1.0.1 (13). No replacement or deletion has occurred.
+
+All five native plist configurations and English/Arabic/Sorani locales now include
+an accurate health-update explanation: BNYAD does not request permission to add or
+change Health data. The authorization code is unchanged (`toShare: []`). No
+HealthKit entitlement was removed and no write permission added. Plist validation,
+Flutter analysis and all **378 tests** pass, including privacy metadata/read-only
+regressions. Build 15 is being prepared to avoid ambiguity with the rejected
+upload. Its internal-only flag will prevent external TestFlight/App Store use;
+a subsequent production-eligible iOS build is required after QA passes.
+
+The owner confirmed their current Premium is an admin grant, not a store purchase;
+it remains intact and does not count as purchase/restore verification. Basic
+TestFlight purchases use Apple's sandbox without real payment; do not purchase
+through the published app or sign out of the owner's main Apple Account merely
+to perform the basic test. Separate sandbox controls may require further setup.
+
+Play Console additionally confirms Iraq is Targeted and managed publishing is
+off. Production is code 8 at 100%; code 13 remains an unmodified draft, and
+Create new release is disabled while that draft exists. Do not silently discard
+or replace another developer's draft to upload the new candidate.
