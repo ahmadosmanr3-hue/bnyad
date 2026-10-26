@@ -632,6 +632,7 @@ class AppState extends ChangeNotifier {
     _isLoggedIn = false;
     _isPremium = false;
     _premiumUntil = null;
+    _purchaseVerificationPending = false;
     _notifications = [];
     _nutritionHistory.clear();
     _weightHistory.clear();
@@ -1538,6 +1539,15 @@ class AppState extends ChangeNotifier {
 
   // ─── Premium ────────────────────────────────────────
 
+  bool _purchaseVerificationPending = false;
+  bool get purchaseVerificationPending => _purchaseVerificationPending;
+
+  bool _samePremiumAccount(int? userId) =>
+      isAuthenticated &&
+      _apiService.hasToken &&
+      userId != null &&
+      _apiService.userId == userId;
+
   void _loadPremium(SharedPreferences prefs) {
     _isPremium = prefs.getBool('is_premium') ?? false;
     final untilMs = prefs.getInt('premium_until_ms');
@@ -1565,9 +1575,11 @@ class AppState extends ChangeNotifier {
 
   Future<void> syncPremiumFromServer() async {
     if (_isMockUser || !_isLoggedIn) return;
+    final userId = _apiService.userId;
     final sub = await _apiService.getSubscription();
-    if (sub == null) return;
+    if (!_samePremiumAccount(userId) || sub == null) return;
     if (sub['isPremium'] == true) {
+      _purchaseVerificationPending = false;
       await setPremium(
         true,
         until: DateTime.tryParse(sub['expiresAt']?.toString() ?? ''),
@@ -1576,33 +1588,48 @@ class AppState extends ChangeNotifier {
     }
     if (supportsOptionalDeviceServices) {
       try {
-        if (await _applyStoreEntitlement(await Purchases.getCustomerInfo())) {
+        if (await _applyStoreEntitlement(
+          await Purchases.getCustomerInfo(),
+          userId,
+        )) {
           return;
         }
       } catch (_) {
         return;
       }
     }
-    await setPremium(false);
+    if (_samePremiumAccount(userId)) await setPremium(false);
   }
 
-  Future<bool> _applyStoreEntitlement(CustomerInfo info) async {
+  Future<bool> _applyStoreEntitlement(CustomerInfo info, int? userId) async {
+    if (!_samePremiumAccount(userId)) return false;
     final entitlement = info.entitlements.all['all_feature'];
     if (entitlement?.isActive != true) return false;
     final expiration = DateTime.tryParse(entitlement?.expirationDate ?? '');
     if (expiration != null && !expiration.isAfter(DateTime.now())) return false;
-    await setPremium(true, until: expiration);
-    if (_isLoggedIn && !_isMockUser) {
-      unawaited(_apiService.postSubscription());
-    }
+    // StoreKit completion is not backend authorization. Await verification
+    // and a trusted access snapshot before reporting success to the user.
+    _purchaseVerificationPending = true;
+    final verified = await _apiService.postSubscription();
+    if (!_samePremiumAccount(userId) || !verified) return false;
+    final sub = await _apiService.getSubscription();
+    if (!_samePremiumAccount(userId) || sub?['isPremium'] != true) return false;
+    await setPremium(
+      true,
+      until: DateTime.tryParse(sub!['expiresAt']?.toString() ?? ''),
+    );
+    _purchaseVerificationPending = false;
     return true;
   }
 
   Future<void> syncPremiumFromRevenueCat() async {
-    if (!supportsOptionalDeviceServices) return;
+    if (!supportsOptionalDeviceServices || !isAuthenticated) return;
+    final userId = _apiService.userId;
     try {
       final info = await Purchases.getCustomerInfo();
-      if (!await _applyStoreEntitlement(info) && _isLoggedIn && !_isMockUser) {
+      if (!_samePremiumAccount(userId)) return;
+      if (!await _applyStoreEntitlement(info, userId) &&
+          _samePremiumAccount(userId)) {
         await syncPremiumFromServer();
       }
     } catch (_) {}
@@ -1610,23 +1637,26 @@ class AppState extends ChangeNotifier {
 
   Future<bool> purchasePremium({String? productId}) async {
     if (!supportsOptionalDeviceServices || !isAuthenticated) return false;
+    _purchaseVerificationPending = false;
+    final userId = _apiService.userId;
     try {
-      await Purchases.logIn(_apiService.userId!.toString());
+      await Purchases.logIn(userId!.toString());
+      if (!_samePremiumAccount(userId)) return false;
       if (productId != null) {
         final products = await Purchases.getProducts([productId]);
-        if (products.isEmpty) return false;
+        if (!_samePremiumAccount(userId) || products.isEmpty) return false;
         final result = await Purchases.purchase(
           PurchaseParams.storeProduct(products.first),
         );
-        return await _applyStoreEntitlement(result.customerInfo);
+        return await _applyStoreEntitlement(result.customerInfo, userId);
       }
       final offerings = await Purchases.getOfferings();
       final packages = offerings.current?.availablePackages ?? [];
-      if (packages.isEmpty) return false;
+      if (!_samePremiumAccount(userId) || packages.isEmpty) return false;
       final result = await Purchases.purchase(
         PurchaseParams.package(packages.first),
       );
-      return await _applyStoreEntitlement(result.customerInfo);
+      return await _applyStoreEntitlement(result.customerInfo, userId);
     } catch (_) {
       return false;
     }
@@ -1634,18 +1664,25 @@ class AppState extends ChangeNotifier {
 
   Future<bool> restorePurchases() async {
     if (!isAuthenticated) return false;
+    _purchaseVerificationPending = false;
+    final userId = _apiService.userId;
     if (!supportsOptionalDeviceServices) {
       await syncPremiumFromServer();
-      return isPremium;
+      return _samePremiumAccount(userId) && isPremium;
     }
     try {
-      await Purchases.logIn(_apiService.userId!.toString());
-      if (await _applyStoreEntitlement(await Purchases.restorePurchases())) {
+      await Purchases.logIn(userId!.toString());
+      if (!_samePremiumAccount(userId)) return false;
+      if (await _applyStoreEntitlement(
+        await Purchases.restorePurchases(),
+        userId,
+      )) {
         return true;
       }
+      if (!_samePremiumAccount(userId)) return false;
       await syncPremiumFromServer();
     } catch (_) {}
-    return isPremium;
+    return _samePremiumAccount(userId) && isPremium;
   }
 
   // ─── Notifications inbox ─────────────────────────────

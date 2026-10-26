@@ -232,6 +232,8 @@ class _PremiumPaywallSheetState extends State<_PremiumPaywallSheet> {
                                       content: Text(
                                         success
                                             ? t.restoreSuccess
+                                            : state.purchaseVerificationPending
+                                            ? t.purchaseVerificationPending
                                             : t.restoreNotFound,
                                       ),
                                     ),
@@ -667,7 +669,13 @@ class _ActivateButton extends StatelessWidget {
                 if (context.mounted) {
                   if (!success) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(state.t.purchaseFailed)),
+                      SnackBar(
+                        content: Text(
+                          state.purchaseVerificationPending
+                              ? state.t.purchaseVerificationPending
+                              : state.t.purchaseFailed,
+                        ),
+                      ),
                     );
                   } else {
                     Navigator.of(context).pop();

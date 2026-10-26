@@ -663,8 +663,10 @@ class _PremiumStatusCard extends StatelessWidget {
                                   SnackBar(
                                     content: Text(
                                       success
-                                          ? 'Premium restored successfully!'
-                                          : 'No active premium subscription found.',
+                                          ? t.restoreSuccess
+                                          : state.purchaseVerificationPending
+                                          ? t.purchaseVerificationPending
+                                          : t.restoreNotFound,
                                     ),
                                   ),
                                 );

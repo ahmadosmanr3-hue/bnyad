@@ -798,29 +798,36 @@ class ApiService {
   /// Returns the current user's premium status from the server, or `null` on error.
   /// Shape: `{ isPremium: bool, expiresAt: String?, daysLeft: int, plan: String? }`.
   Future<Map<String, dynamic>?> getSubscription() async {
+    final owner = _token;
+    if (!hasToken) return null;
     try {
-      final response = await _http.get(
-        Uri.parse('$baseUrl/subscription'),
-        headers: _headers,
-      );
+      final response = await _http
+          .get(Uri.parse('$baseUrl/subscription'), headers: _headers)
+          .timeout(const Duration(seconds: 15));
+      if (_token != owner) return null;
       if (response.statusCode == 200) {
         return jsonDecode(response.body) as Map<String, dynamic>;
       }
-    } catch (e) {
-      debugPrint('getSubscription error: $e');
+    } catch (_) {
+      // Keep existing access on a temporary verification/network failure.
     }
     return null;
   }
 
-  /// Records a successful in-app purchase to the server database.
+  /// Asks the backend to verify the authenticated user's store entitlement.
   Future<bool> postSubscription() async {
+    final owner = _token;
+    if (!hasToken) return false;
     try {
-      final response = await _http.post(
-        Uri.parse('$baseUrl/subscription'),
-        headers: _headers,
-        body: '{}',
-      );
-      return response.statusCode == 200 || response.statusCode == 201;
+      final response = await _http
+          .post(
+            Uri.parse('$baseUrl/subscription'),
+            headers: _headers,
+            body: '{}',
+          )
+          .timeout(const Duration(seconds: 15));
+      return _token == owner &&
+          (response.statusCode == 200 || response.statusCode == 201);
     } catch (_) {
       return false;
     }

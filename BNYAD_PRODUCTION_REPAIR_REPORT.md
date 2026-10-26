@@ -382,3 +382,54 @@ Play Console additionally confirms Iraq is Targeted and managed publishing is
 off. Production is code 8 at 100%; code 13 remains an unmodified draft, and
 Create new release is disabled while that draft exists. Do not silently discard
 or replace another developer's draft to upload the new candidate.
+
+## Internal TestFlight result — build 15
+
+Corrected iOS source `3680f05c7451753f7eb963b7d4acf7ae59016b5f` built and signed
+successfully as 1.0.2 (15). Xcode reported Upload succeeded, and App Store Connect
+Build Uploads reports Complete, build ID `675e0540-dc61-4901-98dc-c3c542366830`.
+The owner completed Apple's encryption declaration in the browser; the missing
+compliance prompt is gone. No legal declaration was selected/submitted by the
+agent. Internal testing remains restricted by the upload flag; this build cannot
+be used for an external/public release.
+
+The owner explicitly approved preserving automatic distribution to the existing
+five-member internal group `ahmed test`; no group/tester was deleted or changed.
+Although the build page initially displayed Groups (0) and manual group selection
+was disabled, the owner obtained it in TestFlight. A fresh device query confirms
+installed production bundle `com.nutrify.bnyad` is now **1.0.2 (15)**, and launch
+succeeded. The temporary replacement was specifically approved; no uninstall was
+performed. BNYAD Dev remains separate. The owner confirms dashboard, first-use
+native Camera prompt, barcode camera, both store prices and AI-disabled notice.
+AI photo/fridge capture is intentionally gated by the disabled service; real
+recognition is not being claimed. Their capture flow was exercised previously
+in the isolated simulated-AI Dev build.
+
+The existing account's admin Premium grant is preserved and is not store-purchase
+proof. A separate free fictional QA account was created through the normal admin
+flow with a password entered privately by the owner. The owner completed a
+no-charge TestFlight sandbox purchase. Fresh admin evidence confirms Premium
+with plan `store_verified`; Restore succeeds and access survives restart.
+An earlier Free/new UI result was stale, not evidence of verification failure.
+No real-money purchase or new Gemini call occurred. Public App Store/
+Play submission and release remain paused for the remaining regression gates.
+
+## Purchase verification hardening — 26 October
+
+The SDK previously set cached Premium immediately, then posted backend
+verification without waiting. Although the supervised sandbox purchase did reach
+the backend successfully, that ordering could falsely report success during a
+verification outage. Purchase/restore now await authenticated verification and a
+trusted server access snapshot. Stale session results are discarded, requests
+have bounded timeouts, and existing grants are preserved during temporary
+verification failure. English/Arabic/Sorani messages explain pending verification
+and advise Restore without purchasing again. Settings restore messages also use
+the existing localization layer. Nutrition, HealthKit and subscription records
+are unchanged. Flutter analysis and all 390 tests pass; backend 136 tests pass.
+The added 12 tests cover awaited verification, 403/503, server denial, expiry,
+manual-grant preservation, logout at each async boundary and localized messages.
+The change is not yet installed in a new TestFlight binary.
+
+Global Premium Gifts is newly requested and under implementation. No campaign
+has been created or executed against production. Public mobile release remains
+paused until the expanded requirements pass.

@@ -72,6 +72,11 @@ class AppLocalizations {
       : isRTL
       ? 'کڕینەکە تەواو نەبوو یان هەڵوەشێندرایەوە.'
       : 'Purchase failed or cancelled.';
+  String get purchaseVerificationPending => locale == 'ar'
+      ? 'اكتملت خطوة المتجر، لكن التحقق من الاشتراك لم يكتمل بعد. لا تشترِ مرة أخرى. تحقق من الاتصال واستخدم استعادة المشتريات.'
+      : isRTL
+      ? 'هەنگاوی فرۆشگاکە تەواو بوو، بەڵام پشتڕاستکردنەوەی بەشداریکردنەکە هێشتا تەواو نەبووە. دووبارە مەیکڕەوە. پەیوەندییەکەت بپشکنە و گەڕاندنەوەی کڕینەکان بەکاربهێنە.'
+      : 'The store step completed, but subscription verification is still pending. Do not purchase again. Check your connection and use Restore Purchases.';
   String get linkFailed => locale == 'ar'
       ? 'تعذر فتح الرابط. حاول مرة أخرى.'
       : isRTL
