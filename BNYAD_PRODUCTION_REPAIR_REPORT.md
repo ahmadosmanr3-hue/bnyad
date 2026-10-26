@@ -5,8 +5,10 @@
 The repaired production backend is deployed and its schema is ready. Final
 physical-device/purchase regression and store release are **not complete**.
 The owner explicitly approved the mobile release with AI disabled for everyone.
-No mobile update has been submitted. Do not infer a release from a Git push or a
-successful local build. This report will be updated after external verification.
+Internal TestFlight build 15 is installed and verified. Candidate build 16 was
+uploaded successfully to Apple; processing/TestFlight checks remain pending.
+It has not been submitted for App Review or Google Play.
+Do not infer a public release from a Git push, upload or successful local build.
 
 Both repositories use `codex/bnyad-production-repair-2026-10-25`, based on the
 latest fetched `codex/bnyad-stability-2026-10-13`:
@@ -455,7 +457,7 @@ concurrent execution, forced transaction failure/retry, paid/lifetime/overlappin
 credits, missing/invalid devices, safe push retry, cancellation and remediation.
 A separate five-user local HTTP/durable-worker flow and browser confirmation flow
 completed correctly. Admin layouts were inspected at desktop, 768 and 320px.
-Flutter analysis and 410 tests pass; backend 150 tests, types and production build
+Flutter analysis and 410 tests pass; backend 151 tests, types and production build
 pass; patched dependency audit reports zero vulnerabilities. No production gift,
 broadcast or new Google request was made.
 
@@ -463,3 +465,67 @@ Release candidate is now 1.0.2 (16). This is source/build preparation, not a cla
 that build 16 has been uploaded or installed. Backend activation, physical gift
 verification and store release gates remain outstanding. See
 `PREMIUM_GIFTS_HANDOFF.md` and backend `PREMIUM_GIFT_CAMPAIGNS.md`.
+
+
+## Gift rollout and signed candidate verification — 26 October
+
+Backend source `1e9e577e8acff94cd248fe25f6714a8ae4f81aad` is now deployed:
+https://nutrify-dxa3lx2ui-ahmads-projects-67e04419.vercel.app
+(`dpl_3h4qG97wYbZ6EHxVUL8MnYdRJL78`), serving the existing production alias.
+Public readiness returned 200 with that exact revision. Gift/subscription/admin
+endpoints return 401 without authentication; local/staging readiness remains 404.
+No error/fatal runtime logs were returned for this deployment during the initial
+post-deploy check; this is a bounded observation, not a guarantee of future uptime.
+
+The five gift tables were applied to the previously identified Neon main/neondb
+in an explicit transaction with 3-second lock and 30-second statement timeouts,
+a database-name guard and a precondition that no gift tables already existed.
+The preflight showed neondb/neondb_owner and zero existing gift tables. COMMIT
+succeeded, followed by a production campaign count of zero. System environment
+variables are enabled for the managed Workflow build/runtime, and Production
+`PREMIUM_GIFTS_ENABLED=true` is configured. The authenticated production admin
+loads Global Premium Gifts, multilingual previews and empty campaign history.
+No campaign was created, confirmed or executed in production. Cloud-worker
+execution is intentionally untested against production recipients; local durable
+execution passed. Repaired backend `0b0726f...` remains the rollback baseline;
+leave additive tables in place and never restore old customer data routinely.
+
+Main application source for candidate 16:
+`53a23c0f7baf3ea4396f0e84e7183ae54eaaa00b`.
+Android release AAB 1.0.2 (16) built, passed bundletool validation and jarsigner
+verification, and matches the existing Play upload certificate documented above.
+AAB SHA-256: `4225475e6c0a6c502c1892f65c27ed70cb730023ed06f4328b7744ba27e8c0c8`.
+iOS archive 16 built with the production bundle identifier and HealthKit. Its
+store export/upload is separate from the development-signed archive; verify the
+exported production APNs entitlement before claiming a store-ready artifact.
+
+Separate BNYAD Dev 1.0.2 (16) was installed/launched on the connected iPhone,
+using the dedicated authenticated local PostgreSQL/HTTPS backend. A guarded local
+fixture gave only its one fictional QA account a seven-day credit using the real
+server entitlement transactions. Subscription rows and the 21/21 Gemini ledger
+were verified unchanged; no FCM send was attempted. The owner confirmed gift
+details/dates/remaining credit, readable Kurdish layout, and steps/saved-goal
+persistence after reopening. This is real native display against fictional local
+data, not a production grant or production push test. Samsung is not currently
+detected, so the new gift feature is not yet physically verified there.
+
+Hosting gate discovered through the authenticated Vercel account context:
+the existing team is on Hobby. Vercel limits Hobby to non-commercial personal use;
+BNYAD sells subscriptions. Owner review of a commercial hosting plan or explicit
+Vercel arrangement is required before expanding public production use. No billing,
+trial or paid overages were enabled. See https://vercel.com/docs/plans/hobby and
+https://vercel.com/docs/limits/fair-use-guidelines . Confirm remaining Workflow
+allowance before the first real campaign; no production campaign was used to
+consume or test that allowance.
+
+Public releases remain pending: new TestFlight candidate processing/regression,
+Android device regression, existing Play draft 13 handling, store metadata/privacy
+review and outstanding push-state coverage. The previous Play draft is preserved.
+AI stays disabled for everyone and Google request count stays 21/21.
+
+
+Apple upload of 1.0.2 (16) completed successfully through Xcode on 26 October.
+The upload omitted the internal-only restriction so the tested candidate can be
+used for a later authorized store submission. Upload is not App Review submission,
+processing approval, a TestFlight installation or public release. The existing
+five-person internal group configuration was preserved.

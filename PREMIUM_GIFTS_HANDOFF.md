@@ -26,8 +26,12 @@ local durable-workflow/browser confirmation flow with five fictional recipients.
 No real global grant, production broadcast, Google request, billing activation or
 production subscription change was made for these tests.
 
-Remaining gates: backend migration/configuration/deployment verification, physical
-device gift refresh/navigation and new signed builds. Previously supervised
+Backend gift schema/configuration and deployment are verified on production,
+with zero campaigns. The owner verified gift details/Kurdish/restart/steps in
+separate iPhone Dev build 16 against a fictional local entitlement. Android AAB 16
+and iOS archive 16 built. Remaining gates: cloud-worker execution (no production
+grant authorized), Samsung gift regression, store candidate verification and
+commercial hosting review (the existing Vercel team reports Hobby). Previously supervised
 TestFlight purchase, Restore and restart persistence succeeded with a trusted
 server `store_verified` record. Existing admin grants were preserved. Public store
 submission stays subject to the main production-repair checklist and owner review.
