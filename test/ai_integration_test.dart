@@ -22,6 +22,50 @@ void main() {
     });
   });
   test(
+    'server switch blocks generation and can enable it later in the same client',
+    () async {
+      var available = false;
+      var posts = 0;
+      final api = ApiService(
+        baseUrl: 'https://example.test/api',
+        client: MockClient((request) async {
+          if (request.method == 'POST') {
+            posts++;
+            return http.Response('{"data":{"fixture":true}}', 200);
+          }
+          return http.Response(
+            jsonEncode({
+              'available': available,
+              'enabled': true,
+              'version': ApiService.aiConsentVersion,
+            }),
+            200,
+          );
+        }),
+      );
+      addTearDown(api.dispose);
+      await api.loadToken();
+      expect(
+        await api.generateAi('recipe', {
+          'ingredients': ['rice'],
+        }),
+        isNull,
+      );
+      expect(api.aiServiceAvailable, false);
+      expect(api.aiErrorCode, 'disabled');
+      expect(posts, 0);
+      available = true;
+      expect(
+        await api.generateAi('recipe', {
+          'ingredients': ['rice'],
+        }),
+        {'fixture': true},
+      );
+      expect(api.aiServiceAvailable, true);
+      expect(posts, 1);
+    },
+  );
+  test(
     'food scan uses authenticated backend, never sends a provider key or client health profile',
     () async {
       final requests = <http.Request>[];

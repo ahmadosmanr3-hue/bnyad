@@ -300,6 +300,7 @@ class AppState extends ChangeNotifier {
   String get aiErrorCode => _apiService.aiErrorCode;
   int? get sessionAccountId => _apiService.userId;
   Future<bool?> getAiConsent() => _apiService.getAiConsent();
+  bool? get aiServiceAvailable => _apiService.aiServiceAvailable;
   Future<bool> setAiConsent(bool enabled) async {
     final saved = await _apiService.setAiConsent(enabled);
     if (saved && !enabled) {

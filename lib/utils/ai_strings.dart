@@ -2,6 +2,11 @@
 class AiStrings {
   static const translations = {
     'en': {
+      'availabilityChecking': 'Checking AI service availability…',
+      'premiumAiPaused':
+          'AI features are currently disabled for everyone. A Premium subscription does not enable AI while the service is paused. Other available features remain unchanged.',
+      'availabilityUnknown':
+          'AI availability could not be checked. A Premium subscription does not guarantee that AI services are available.',
       'disabled':
           'AI features are currently paused by BNYAD. Basic tracking remains available.',
       'configuration':
@@ -42,6 +47,11 @@ class AiStrings {
           'AI is not enabled or is temporarily unavailable. Your saved data is unchanged.',
     },
     'ar': {
+      'availabilityChecking': 'جارٍ التحقق من توفر خدمة الذكاء الاصطناعي…',
+      'premiumAiPaused':
+          'ميزات الذكاء الاصطناعي معطلة للجميع حالياً. لا يؤدي اشتراك Premium إلى تفعيلها أثناء إيقاف الخدمة. تبقى الميزات الأخرى المتاحة دون تغيير.',
+      'availabilityUnknown':
+          'تعذر التحقق من توفر الذكاء الاصطناعي. لا يضمن اشتراك Premium توفر خدمات الذكاء الاصطناعي.',
       'disabled':
           'أوقف بنياد ميزات الذكاء الاصطناعي مؤقتاً. يبقى التتبع الأساسي متاحاً.',
       'configuration':
@@ -83,6 +93,12 @@ class AiStrings {
           'الذكاء الاصطناعي غير مفعل أو غير متاح مؤقتاً. لم تتغير بياناتك المحفوظة.',
     },
     'ku': {
+      'availabilityChecking':
+          'بەردەستبوونی خزمەتگوزاریی زیرەکی دەستکرد دەپشکنرێت…',
+      'premiumAiPaused':
+          'تایبەتمەندییەکانی زیرەکی دەستکرد ئێستا بۆ هەمووان ناچالاکن. بەشداریی Premium لە کاتی ڕاگرتنی خزمەتگوزارییەکەدا چالاکیان ناکات. تایبەتمەندییە بەردەستەکانی تر وەک خۆیان دەمێننەوە.',
+      'availabilityUnknown':
+          'بەردەستبوونی زیرەکی دەستکرد نەپشکنرا. بەشداریی Premium بەڵێنی بەردەستبوونی خزمەتگوزارییەکانی زیرەکی دەستکرد نادات.',
       'disabled':
           'بنیاد تایبەتمەندییەکانی زیرەکیی دەستکردی کاتی ڕاگرتووە. تۆمارکردنی ئاسایی بەردەستە.',
       'configuration':

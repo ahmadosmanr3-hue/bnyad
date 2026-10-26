@@ -151,6 +151,7 @@ class DemoBackend {
         return _reply({'data': []});
       case ('GET', '/ai/consent'):
         return _reply({
+          'available': true, // Simulated fixtures only; never a Google request.
           'enabled': data['consent'],
           'version': ApiService.aiConsentVersion,
         });

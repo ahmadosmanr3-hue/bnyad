@@ -19,8 +19,10 @@ class ApiService {
   VoidCallback? onSessionInvalidated;
   static const aiConsentVersion = 'google-ai-2026-10-13-v1';
   String aiErrorCode = 'failed';
+  bool? aiServiceAvailable;
 
   Future<bool?> getAiConsent() async {
+    aiServiceAvailable = null;
     final owner = _token;
     if (!hasToken) return false;
     try {
@@ -36,6 +38,13 @@ class ApiService {
         return null;
       }
       final body = jsonDecode(response.body) as Map<String, dynamic>;
+      aiServiceAvailable = body['available'] is bool
+          ? body['available'] as bool
+          : null;
+      if (aiServiceAvailable == false) {
+        aiErrorCode = 'disabled';
+        return null;
+      }
       return body['enabled'] == true && body['version'] == aiConsentVersion;
     } catch (_) {
       aiErrorCode = 'unavailable';

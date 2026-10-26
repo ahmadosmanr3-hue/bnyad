@@ -7,6 +7,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:nutrify/providers/app_state.dart';
 import 'package:nutrify/screens/medical_citations_screen.dart';
 import 'package:nutrify/theme/app_theme.dart';
+import 'package:nutrify/utils/ai_strings.dart';
 
 /// Opens the premium paywall as a modal bottom sheet.
 Future<void> showPremiumPaywall(BuildContext context) {
@@ -29,10 +30,23 @@ class _PremiumPaywallSheetState extends State<_PremiumPaywallSheet> {
   String _selectedProductId = 'BNYAD_Y1';
   bool _loading = false;
   final Map<String, String> _prices = {};
+  bool _aiAvailabilityChecked = false;
+  bool? _aiAvailable;
   @override
   void initState() {
     super.initState();
     _loadPrices();
+    _checkAiAvailability();
+  }
+
+  Future<void> _checkAiAvailability() async {
+    final state = context.read<AppState>();
+    await state.getAiConsent();
+    if (!mounted) return;
+    setState(() {
+      _aiAvailable = state.aiServiceAvailable;
+      _aiAvailabilityChecked = true;
+    });
   }
 
   Future<void> _loadPrices() async {
@@ -128,6 +142,30 @@ class _PremiumPaywallSheetState extends State<_PremiumPaywallSheet> {
                         ),
                       ),
                       const SizedBox(height: 24),
+
+                      if (_aiAvailable != true) ...[
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: isDark
+                                ? AppTheme.slate800
+                                : AppTheme.slate100,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            AiStrings.get(
+                              state.lang,
+                              !_aiAvailabilityChecked
+                                  ? 'availabilityChecking'
+                                  : _aiAvailable == false
+                                  ? 'premiumAiPaused'
+                                  : 'availabilityUnknown',
+                            ),
+                            style: TextStyle(color: title, height: 1.5),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                      ],
 
                       // Plan Selection Cards
                       _buildPlanCard(
@@ -658,8 +696,8 @@ class _ActivateButton extends StatelessWidget {
         foregroundColor: Colors.white,
         padding: const EdgeInsets.symmetric(vertical: 18),
         textStyle: const TextStyle(
-                      fontFamily: AppTheme.fontFamily,
-                      fontFamilyFallback: AppTheme.fontFamilyFallback,
+          fontFamily: AppTheme.fontFamily,
+          fontFamilyFallback: AppTheme.fontFamilyFallback,
           fontSize: 15,
           fontWeight: FontWeight.w800,
           letterSpacing: 0.2,

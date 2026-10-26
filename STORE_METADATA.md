@@ -1,4 +1,4 @@
-# BNYAD store metadata — release draft, 25 October 2026
+# BNYAD store metadata — release draft, 26 October 2026
 
 These are prepared values, not evidence of a saved or published store listing.
 Preserve the existing Apple bundle `com.nutrify.bnyad`, Android package
@@ -9,8 +9,8 @@ Preserve the existing Apple bundle `com.nutrify.bnyad`, Android package
 Name: **BNYAD: Calorie & Macro Tracker** (30 characters).
 
 Recommended category: Health & Fitness. Keep existing privacy/support URLs only
-after checking that they are reachable and accurate. Do not advertise working
-production AI while activation and live verification are outstanding.
+after checking that they are reachable and accurate. The owner approved this release with AI disabled for everyone. Do not advertise
+working AI, food-photo recognition or AI meal generation in this release.
 
 ## English
 
@@ -37,7 +37,9 @@ Arabic and Kurdish Sorani.
 Health access is optional. Android steps require a source that writes steps to
 Health Connect. Walking calories are estimates and do not increase your food
 calorie allowance. Some features require an account or Premium subscription.
-BNYAD is a nutrition tracking tool and does not provide medical advice.
+AI features are currently disabled for everyone; Premium does not activate them
+while the service is paused. BNYAD is a nutrition tracking tool and does not
+provide medical advice.
 
 ## Arabic — owner wording review before saving
 
@@ -62,16 +64,32 @@ Description:
 الوصول إلى البيانات الصحية اختياري. تتطلب الخطوات على Android مصدراً يكتب
 البيانات في Health Connect. السعرات المحروقة تقديرية ولا تزيد الحد اليومي
 لسعرات الطعام. تتطلب بعض الميزات حساباً أو اشتراك Premium. التطبيق أداة
-لمتابعة التغذية ولا يقدم نصائح طبية.
+لمتابعة التغذية ولا يقدم نصائح طبية. ميزات الذكاء الاصطناعي معطلة للجميع حالياً،
+ولا يؤدي اشتراك Premium إلى تفعيلها أثناء إيقاف الخدمة.
 
 ## Release notes
 
-Improved push registration, notification handling, localized AI availability
-messages and server diagnostics. Existing nutrition calculations, original app
-design and read-only health step tracking are preserved.
+Improved barcode scanning, iPhone camera permissions, gram/mL quantity logging,
+version display, notifications and Kurdish/Arabic layouts. Existing nutrition
+calculations and real health step tracking are preserved. AI features are
+currently disabled for everyone, including Premium subscribers.
 
 Do not promise background notification delivery as verified until physical
 device checks pass. Use screenshots from the actual release candidate, with
 fictional data. Check AI/health privacy declarations against the final enabled
 features. Sorani app support does not imply that App Store Connect offers a
 Sorani store-localization option.
+
+## App review notes — draft
+
+This version intentionally keeps server-side AI disabled for every account.
+Attempting an AI feature shows a localized unavailable notice; Premium does not
+activate it. Do not use the local simulated-AI build as an app-review binary.
+The production app contains no Gemini API key. Later AI activation is controlled
+by the authenticated backend and will require suitable provider configuration,
+consent and separately approved testing. Account, tracking, barcode, settings and
+optional read-only health features are available independently of AI.
+
+Use only the existing private review account credentials in the store consoles;
+never place them in this file. Verify camera access, health declarations,
+subscription restoration and privacy answers against the submitted signed build.

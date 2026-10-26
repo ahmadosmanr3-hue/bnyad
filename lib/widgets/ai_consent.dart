@@ -6,19 +6,20 @@ import 'package:nutrify/screens/premium_paywall_screen.dart';
 Future<bool> ensureAiConsent(BuildContext context, AppState state) async {
   final owner = state.sessionAccountId;
   if (!state.isAuthenticated) return false;
-  if (!state.hasPremiumFeatures) {
-    await showPremiumPaywall(context);
-    return false;
-  }
   final consent = await state.getAiConsent();
   if (!context.mounted || state.sessionAccountId != owner) return false;
-  if (consent == true) return true;
   if (consent == null) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(AiStrings.get(state.lang, state.aiErrorCode))),
     );
     return false;
   }
+  // Do not upsell an AI feature while the server has disabled it.
+  if (!state.hasPremiumFeatures) {
+    await showPremiumPaywall(context);
+    return false;
+  }
+  if (consent == true) return true;
   final allowed = await showDialog<bool>(
     context: context,
     builder: (context) => AlertDialog(

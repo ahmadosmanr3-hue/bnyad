@@ -5,6 +5,8 @@ import 'package:nutrify/services/api_service.dart';
 import 'package:nutrify/services/auth_service.dart';
 import 'package:nutrify/utils/ai_strings.dart';
 import 'package:nutrify/widgets/ai_consent.dart';
+import 'package:nutrify/screens/premium_paywall_screen.dart';
+import 'package:provider/provider.dart';
 
 class ConsentState extends AppState {
   ConsentState(ApiService api)
@@ -29,7 +31,95 @@ class ConsentState extends AppState {
   }
 }
 
+class UnavailableConsentState extends ConsentState {
+  UnavailableConsentState(super.api, this.language);
+  final String language;
+  @override
+  String get lang => language;
+  @override
+  bool get hasPremiumFeatures => false;
+  @override
+  bool get supportsOptionalDeviceServices => false;
+  @override
+  bool? get aiServiceAvailable => false;
+  @override
+  String get aiErrorCode => 'disabled';
+  @override
+  Future<bool?> getAiConsent() async => null;
+}
+
 void main() {
+  for (final lang in ['en', 'ar', 'ku']) {
+    testWidgets('$lang disabled AI does not upsell or request consent', (
+      tester,
+    ) async {
+      final api = ApiService(baseUrl: 'https://example.test/api');
+      final state = UnavailableConsentState(api, lang);
+      addTearDown(state.dispose);
+      addTearDown(api.dispose);
+      bool? accepted;
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Builder(
+              builder: (context) => TextButton(
+                onPressed: () async {
+                  accepted = await ensureAiConsent(context, state);
+                },
+                child: const Text('Open AI'),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.text('Open AI'));
+      await tester.pumpAndSettle();
+      expect(accepted, false);
+      expect(find.text(AiStrings.get(lang, 'disabled')), findsOneWidget);
+      expect(find.byType(AlertDialog), findsNothing);
+      expect(state.changes, isEmpty);
+      expect(tester.takeException(), isNull);
+    });
+    for (final width in [320.0, 390.0]) {
+      testWidgets('$lang premium explains AI pause at $width', (tester) async {
+        tester.view.physicalSize = Size(width, 844);
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+        final api = ApiService(baseUrl: 'https://example.test/api');
+        final state = UnavailableConsentState(api, lang);
+        addTearDown(state.dispose);
+        addTearDown(api.dispose);
+        await tester.pumpWidget(
+          ChangeNotifierProvider<AppState>.value(
+            value: state,
+            child: MaterialApp(
+              home: Scaffold(
+                body: Directionality(
+                  textDirection: lang == 'en'
+                      ? TextDirection.ltr
+                      : TextDirection.rtl,
+                  child: Builder(
+                    builder: (context) => TextButton(
+                      onPressed: () => showPremiumPaywall(context),
+                      child: const Text('Premium'),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+        await tester.tap(find.text('Premium'));
+        await tester.pumpAndSettle();
+        expect(
+          find.text(AiStrings.get(lang, 'premiumAiPaused')),
+          findsOneWidget,
+        );
+        expect(tester.takeException(), isNull);
+      });
+    }
+  }
   testWidgets('declining consent does not persist permission', (tester) async {
     final state = ConsentState(ApiService(baseUrl: 'https://example.test/api'));
     bool? accepted;

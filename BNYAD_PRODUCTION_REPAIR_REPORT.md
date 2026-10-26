@@ -1,9 +1,11 @@
-# BNYAD production repair — 25 October 2026
+# BNYAD production repair — 26 October 2026
 
 ## Current status
 
-Source repairs and automated validation are substantially complete. Final
-physical-device regression, production deployment and store release are **not complete**. Do not infer a release from a Git push or a
+The repaired production backend is deployed and its schema is ready. Final
+physical-device/purchase regression and store release are **not complete**.
+The owner explicitly approved the mobile release with AI disabled for everyone.
+No mobile update has been submitted. Do not infer a release from a Git push or a
 successful local build. This report will be updated after external verification.
 
 Both repositories use `codex/bnyad-production-repair-2026-10-25`, based on the
@@ -24,13 +26,21 @@ deploy that stale mirror.
 Vercel project, `nutrify-api`, not the separate failed `vercel-api` project.
 Its configured Node runtime is 24. Git-triggered deployment is disabled.
 
-The latest observed ready production deployment is
+The pre-repair rollback baseline is
 `dpl_68Xg458MDRf6gTsSikCjkQfTxfhN`,
 https://nutrify-izgqgl9xs-ahmads-projects-67e04419.vercel.app, still built from
 old commit `873d26e93b62044bfbc3cb37ddce61210bd17338`. The owner redeployed that
-version while adding RevenueCat configuration. This is **not** a deployment of
-the new repair branch. Public `/api/up` returned 200; `/api/ai/consent` returned
-404. These checks did not sign in or write customer data.
+version while adding RevenueCat configuration. Its consent endpoint returned 404.
+
+On 26 October the repaired backend commit
+`8082a089f85ef294471ef9ff8c106e17dd437c33` deployed as
+`dpl_ApsWmfypScTPQJc94BCtED2Lmqjz` to the existing Production project.
+Public `/api/up` returned 200; `/api/up?readiness=1` returned ready with that
+revision. AI consent, barcode and admin diagnostic routes correctly returned
+401 without authentication; `/admin` returned its login page. The owner signed
+into the repaired admin and its authenticated settings reported schema Ready,
+push credentials Configured and store verification Configured. Credential
+presence alone is not functional purchase verification.
 
 The production database mapping was verified without reading secrets or customer
 rows: nonexistent-token authentication probes returned 401 and increased the
@@ -39,8 +49,12 @@ matched project `small-frog-96915412`, main branch `br-cold-heart-awt4ozzt`,
 database `neondb`. A recovery branch `backup-before-prod-repair-20261025`
 (`br-dawn-darkness-awr9l47b`) was created within the existing Free limits, with
 expiry 1 November 2026 at 21:00 GMT+3. Existing PITR is six hours. No production
-schema migration has been applied. Before promotion, record the final current
-deployment again and apply only the reviewed additive SQL to the main branch. Do not run `prisma db push`, a seed or the empty
+schema changes were made before that backup. The five reviewed additive SQL
+files were then applied in one explicit transaction on the verified main branch,
+with lock/statement timeouts. COMMIT succeeded; a separate read-only query verified
+all seven required tables and both new columns. No seed, reset, destructive SQL
+or subscription/nutrition-value update was performed. The recovery branch was
+not migrated. Schema-only evidence: backend `docs/evidence/production-schema-readiness.png`. Do not run `prisma db push`, a seed or the empty
 staging bootstrap against production. Promote only a checked candidate.
 
 Rolling back the old backend after new authentication code has hashed sessions
@@ -50,9 +64,16 @@ database snapshot over newer customer writes as a routine deployment rollback.
 
 ## AI: confirmed causes, repair and limits
 
-Production serves the pre-AI backend: its consent endpoint is missing. Production
-environment metadata also showed no `GEMINI_API_KEY`, `AI_ENABLED`, model or
-spending configuration. A local mock success cannot repair those conditions.
+The old production deployment lacked the consent endpoint and AI configuration.
+The repaired endpoint is now deployed. The owner approved keeping live AI off
+for this release on 26 October. Vercel now explicitly has `AI_ENABLED=false`,
+`GEMINI_MODEL=gemini-3.5-flash-lite`, prepared model prices, a $1 monthly
+application safeguard, 3 requests/user/day and 1 request/user/minute. This does
+not activate billing. Production key entry is handled privately through Vercel.
+No new Google request is authorized or made; the development ledger stays 21/21.
+The inspected Google project is still Free Tier, unsuitable under Google’s unpaid
+terms for BNYAD’s personal nutrition information. Keep AI off until the owner
+arranges a suitable project and separately approves testing/activation.
 
 Backend changes:
 
@@ -75,7 +96,11 @@ consent read no longer masquerades as the user declining consent.
 The cumulative supervised Gemini ledger remains **21/21**. No live Google call
 was made for these repairs. Production AI remains unverified and must stay off
 until the owner separately approves activation, limits and supervised testing.
-Do not advertise production AI as restored.
+Do not advertise production AI as restored. The app now rechecks server
+availability before an AI upsell and explicitly explains on Premium that a
+subscription does not enable paused AI. The same client can use later compatible
+backend activation without another store submission. See backend
+`vercel-api/GEMINI_PRODUCTION_ACTIVATION.md`.
 
 Before authorized activation, configure server-only variables from
 `AI_RELEASE_HANDOFF.md`: `GEMINI_API_KEY`, `GEMINI_MODEL`, `AI_ENABLED`,
@@ -88,7 +113,7 @@ are checked under a new authorization. Never put the key in Flutter.
 Production's `FIREBASE_SERVICE_ACCOUNT_JSON` was scoped to Preview only, so the
 production server had no configured Firebase credential. Its existing value has
 now been scoped to both Preview and Production without reading or exposing the
-secret. A new deployment is required for that change to take effect. The owner
+secret. The repaired Production deployment now includes that scope change. The owner
 also added `REVENUECAT_SECRET_API_KEY` to Production; existence is confirmed, but
 the key's project/API compatibility is not yet functionally verified.
 
@@ -115,13 +140,17 @@ Source fixes:
   registration-result checks, current-account token refresh, logout cleanup,
   duplicate background-alert prevention and local-notification tap navigation.
 
-No visible FCM/APNs delivery has yet been verified on either physical device in
-this repair. The local BNYAD Dev build deliberately disables optional production
-Firebase services, so its working dashboard is not a push test. Samsung was not
-connected at that earlier check; the Samsung is now connected and its local
-login/scanner are owner-confirmed. Verify foreground, background, locked and normally closed states,
-record timestamps and inspect the tap destination before release. Force-stopped
-OS states do not carry a delivery guarantee.
+The owner selected a single account they control for production push tests; no
+broadcast was sent. First test: one Firebase acceptance, zero failures; the owner
+reported alerts/tap-open on both phones, but the provider count establishes only
+one registered recipient and does not independently prove two-device delivery.
+Second, uniquely labeled `BNYAD LOCK-02`: one acceptance, zero failures; the owner
+specifically confirmed it appeared on the **locked iPhone** and opened BNYAD.
+Foreground/normal-closed state coverage and an unambiguous Samsung test remain.
+These tests used the existing published apps, so they do not prove every new
+Flutter client-registration path in the unreleased binary. Local Dev intentionally
+disables production Firebase; its working dashboard is not a push-delivery test.
+Force-stopped OS states do not carry a delivery guarantee.
 
 ## Admin dashboard
 
@@ -184,15 +213,18 @@ CA; no health tracking or nutrition formula was changed.
 
 The owner signed into App Store Connect and reported resolving the updated Paid
 Applications agreement. The last observed iOS live version was 1.0.1, build 13.
-Only an Apple Development identity was available at inspection. A production
-archive/export, signing validation, latest editable version/build check, upload,
-review and release remain outstanding. Do not treat a development installation
+The production 1.0.2+14 archive and IPA export succeeded using Cloud Managed
+Apple Distribution and the existing team store profile. Exported bundle identity,
+HealthKit, production APNs entitlement, strict signature verification and disabled
+debug entitlement passed. The final AI-availability notice requires refreshed
+binaries from the final source. Latest editable store version/build checks,
+upload, review and release remain outstanding. Do not treat a development installation
 as an App Store release.
 
 ## Tests and dependency changes
 
-- Flutter: analysis has no issues; all 365 tests pass after the critical fixes.
-- Backend: 135 tests pass; TypeScript passes; Next.js production build passes.
+- Flutter: analysis has no issues; all 375 tests pass after the critical fixes.
+- Backend: 136 tests pass; TypeScript passes; Next.js production build passes.
 - Next.js patched to 15.5.28, including its matching lockfile packages, for
   GHSA-2464-fhr4-w9xw / GHSA-p3m5-59mp-jv5r. Production npm audit: zero advisories.
 - Real isolated local PostgreSQL integration passed auth, Premium, consent,
@@ -267,7 +299,7 @@ food targets and the cumulative Gemini ledger remained unchanged.
 
 Flutter includes 18 confirmation-layout cases (English, Arabic, Sorani; 320/390/430
 widths; light/dark), plus localized 0.25L logging and duplicate-save tests. All
-365 Flutter tests pass. Camera authorization states and native-local-build guards
+375 Flutter tests pass. Camera authorization states and native-local-build guards
 have automated coverage. The latest complete iPhone Dev upgrade was installed and launched successfully.
 The owner confirmed barcode, food-photo and fridge-photo cameras all open, with
 real steps/calories and the saved goal preserved after reopening. A clean camera
@@ -285,13 +317,13 @@ mock AI screens do not establish real image recognition.
    `prisma/notification_translations.sql`, `db/20261025_push_delivery.sql`,
    `db/20261025_barcode_units.sql`.
    All have been tested on isolated local PostgreSQL;
-   **no production migration has been applied**.
+   **applied and schema-verified on 26 October 2026**.
 3. Verify the existing Firebase service-account project and permissions, and the
    RevenueCat V1 secret/entitlement mapping. Never replace live store entitlements
    or grant client-claimed Premium as a shortcut.
 4. Deploy the tested backend branch to the existing `nutrify-api` project with
    root `vercel-api`; check readiness, admin auth and existing-client compatibility
-   before promoting. Keep AI off pending separate authorization.
+   after deployment. Keep AI off as approved for this release.
 5. Verify actual push delivery on both phones, purchase/restore compatibility and
    existing account/session behavior. Then create only the necessary store
    binaries, tied to the final source commits and checked private configuration.
@@ -299,5 +331,7 @@ mock AI screens do not establish real image recognition.
    submit tested binaries, and report each store's actual review/release status.
 
 No billing was activated, no new paid resource purchased, no live Gemini request
-made, no customer data modified, and no store release submitted by these repairs
-so far. Environment scope edits are recorded above; they do not deploy code.
+made and no mobile release submitted. Production changes consist of the approved
+additive schema, backend deployment, configuration and two owner-targeted test
+notification records. Customer nutrition/subscription values were not rewritten.
+New auth may migrate existing sessions to hashed storage during normal use.
