@@ -582,3 +582,12 @@ cancelled without payment; Hobby and the existing backend remain unchanged. The
 commercial-hosting policy issue was disclosed, not technically resolved. No plan,
 trial, paid overages or Gemini billing was activated. Store review timing remains
 controlled by Apple/Google; no same-day public availability is promised.
+
+## Verified store submissions — 26 October 2026
+
+Read-only recheck after the owner's final submissions:
+
+- Apple submission `632812ba-6cb7-4b74-a4ca-4dc6c55f5d75` shows **Waiting for Review**, submitted 26 October at 4:29 PM as displayed in App Store Connect. iOS 1.0.2 uses verified build 16, source `53a23c0f7baf3ea4396f0e84e7183ae54eaaa00b`. The new name/category and accurate AI-disabled metadata were saved before submission.
+- Google Play submission **9** shows **In review**, submitted 26 October at 4:28 PM as displayed in Play Console. Its exact contents are Production **17 (1.0.2)** full rollout plus English default-listing name, short description and full description. The name is **BNYAD: Calorie & Macro Tracker**. Android source: `84d27c5860596de257d43921e9b5a68c844bdd6c`. The two permission validation errors cleared before submission; no supported phone/tablet models were lost versus code 8.
+- Neither review status means approved or publicly live. No submission was cancelled or duplicated during this verification.
+- Backend deployment remains `1e9e577e8acff94cd248fe25f6714a8ae4f81aad`; backend GitHub head `06bc00f43f3815da60699c69759145785ddb9ba5` adds local QA helpers/documentation only. AI stays off; Google request ledger is 21/21. No production campaign, hosting purchase or AI billing activation occurred.
