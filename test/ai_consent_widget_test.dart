@@ -48,6 +48,14 @@ class UnavailableConsentState extends ConsentState {
   Future<bool?> getAiConsent() async => null;
 }
 
+class AvailableConsentState extends UnavailableConsentState {
+  AvailableConsentState(super.api, super.language);
+  @override
+  bool? get aiServiceAvailable => true;
+  @override
+  Future<bool?> getAiConsent() async => false;
+}
+
 void main() {
   for (final lang in ['en', 'ar', 'ku']) {
     testWidgets('$lang disabled AI does not upsell or request consent', (
@@ -81,6 +89,50 @@ void main() {
       expect(tester.takeException(), isNull);
     });
     for (final width in [320.0, 390.0]) {
+      testWidgets(
+        '$lang available AI explains age, consent and shared limits at $width',
+        (tester) async {
+          tester.view.physicalSize = Size(width, 844);
+          tester.view.devicePixelRatio = 1;
+          addTearDown(tester.view.resetPhysicalSize);
+          addTearDown(tester.view.resetDevicePixelRatio);
+          final api = ApiService(baseUrl: 'https://example.test/api');
+          final state = AvailableConsentState(api, lang);
+          addTearDown(state.dispose);
+          addTearDown(api.dispose);
+          await tester.pumpWidget(
+            ChangeNotifierProvider<AppState>.value(
+              value: state,
+              child: MaterialApp(
+                home: Scaffold(
+                  body: Directionality(
+                    textDirection: lang == 'en'
+                        ? TextDirection.ltr
+                        : TextDirection.rtl,
+                    child: Builder(
+                      builder: (context) => TextButton(
+                        onPressed: () => showPremiumPaywall(context),
+                        child: const Text('Premium'),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          );
+          await tester.tap(find.text('Premium'));
+          await tester.pumpAndSettle();
+          expect(
+            find.text(AiStrings.get(lang, 'premiumAiConditions')),
+            findsOneWidget,
+          );
+          expect(
+            find.text(AiStrings.get(lang, 'premiumAiPaused')),
+            findsNothing,
+          );
+          expect(tester.takeException(), isNull);
+        },
+      );
       testWidgets('$lang premium explains AI pause at $width', (tester) async {
         tester.view.physicalSize = Size(width, 844);
         tester.view.devicePixelRatio = 1;

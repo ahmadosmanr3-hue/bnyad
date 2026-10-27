@@ -218,6 +218,49 @@ void main() {
       }
     },
   );
+  test(
+    'adult-profile rejection has its own localized message, not a Premium error',
+    () async {
+      final api = ApiService(
+        baseUrl: 'https://example.test/api',
+        client: MockClient(
+          (request) async => request.method == 'GET'
+              ? http.Response(
+                  jsonEncode({
+                    'enabled': true,
+                    'available': true,
+                    'version': ApiService.aiConsentVersion,
+                  }),
+                  200,
+                )
+              : http.Response(
+                  '{"code":"ai_age_restricted","message":"private server details"}',
+                  403,
+                ),
+        ),
+      );
+      addTearDown(api.dispose);
+      await api.loadToken();
+      expect(
+        await api.generateAi('recipe', {
+          'ingredients': ['rice'],
+        }),
+        isNull,
+      );
+      expect(api.aiErrorCode, 'adultProfile');
+      for (final lang in ['en', 'ar', 'ku']) {
+        expect(
+          AiStrings.get(lang, 'adultProfile'),
+          isNot(AiStrings.get(lang, 'notAuthorized')),
+        );
+        expect(
+          AiStrings.get(lang, 'adultProfile').contains('private server'),
+          false,
+        );
+        expect(AiStrings.get(lang, 'premiumAiConditions'), isNotEmpty);
+      }
+    },
+  );
   test('AI result arriving after logout is discarded', () async {
     final delayed = Completer<http.Response>();
     final api = ApiService(

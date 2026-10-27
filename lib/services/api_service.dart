@@ -104,7 +104,10 @@ class ApiService {
       }
       aiErrorCode = switch (response.statusCode) {
         401 => 'signIn',
-        403 => 'notAuthorized',
+        403 =>
+          body['code'] == 'ai_age_restricted'
+              ? 'adultProfile'
+              : 'notAuthorized',
         429 => switch (body['code']) {
           'ai_rate_limit' => 'rateLimit',
           'ai_daily_limit' => 'dailyLimit',

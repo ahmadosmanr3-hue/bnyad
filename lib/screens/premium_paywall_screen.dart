@@ -169,6 +169,17 @@ class _PremiumPaywallSheetState extends State<_PremiumPaywallSheet> {
                       ],
 
                       // Plan Selection Cards
+                      if (_aiAvailable == true) ...[
+                        Text(
+                          AiStrings.get(state.lang, 'premiumAiConditions'),
+                          style: TextStyle(
+                            color: muted,
+                            fontSize: 13,
+                            height: 1.5,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                      ],
                       _buildPlanCard(
                         productId: 'BNYAD_M1',
                         title: t.monthlyPlan,

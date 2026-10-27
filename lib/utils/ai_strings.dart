@@ -2,6 +2,10 @@
 class AiStrings {
   static const translations = {
     'en': {
+      'adultProfile':
+          'AI features are available only to users aged 18 or older. Your saved profile does not meet this requirement.',
+      'premiumAiConditions':
+          'AI requires age 18 or older and consent to Google data sharing. A shared daily allowance and service spending limits apply.',
       'availabilityChecking': 'Checking AI service availability…',
       'premiumAiPaused':
           'AI features are currently disabled for everyone. A Premium subscription does not enable AI while the service is paused. Other available features remain unchanged.',
@@ -47,6 +51,10 @@ class AiStrings {
           'AI is not enabled or is temporarily unavailable. Your saved data is unchanged.',
     },
     'ar': {
+      'adultProfile':
+          'ميزات الذكاء الاصطناعي متاحة فقط لمن أعمارهم ١٨ عاماً أو أكثر. ملفك المحفوظ لا يستوفي هذا الشرط.',
+      'premiumAiConditions':
+          'يتطلب الذكاء الاصطناعي عمراً لا يقل عن ١٨ عاماً وموافقة على مشاركة البيانات مع Google. جميع أدواته تشترك في حد يومي، وتخضع لحدود إنفاق الخدمة.',
       'availabilityChecking': 'جارٍ التحقق من توفر خدمة الذكاء الاصطناعي…',
       'premiumAiPaused':
           'ميزات الذكاء الاصطناعي معطلة للجميع حالياً. لا يؤدي اشتراك Premium إلى تفعيلها أثناء إيقاف الخدمة. تبقى الميزات الأخرى المتاحة دون تغيير.',
@@ -93,6 +101,10 @@ class AiStrings {
           'الذكاء الاصطناعي غير مفعل أو غير متاح مؤقتاً. لم تتغير بياناتك المحفوظة.',
     },
     'ku': {
+      'adultProfile':
+          'تایبەتمەندییەکانی زیرەکیی دەستکرد تەنها بۆ کەسانی تەمەن ١٨ ساڵ یان زیاتر بەردەستن. تەمەنە هەڵگیراوەکەت ئەم مەرجە پڕ ناکاتەوە.',
+      'premiumAiConditions':
+          'بۆ بەکارهێنانی زیرەکیی دەستکرد، تەمەنت دەبێت ١٨ ساڵ یان زیاتر بێت و ڕازی بیت بە هاوبەشکردنی داتا لەگەڵ Google. سنووری ڕۆژانە بۆ هەموو ئامرازەکان هاوبەشە؛ سنووری خەرجیش هەیە.',
       'availabilityChecking':
           'بەردەستبوونی خزمەتگوزاریی زیرەکی دەستکرد دەپشکنرێت…',
       'premiumAiPaused':
