@@ -1,5 +1,13 @@
 # Server AI allowance and monthly finances — 26 October 2026
 
+**Later verified update (27 October):** Production AI is now enabled at the owner's request. October's effective cap is $30, shared across all users, with 9 requests/user/day and 1/minute. Source is backend `c219f03d40a593174570dd4ee38fbf1981d8be42`, deployment `dpl_E6UTJ9nULYzkzc97dBeKsMGDNhVL`. [Monthly budget controls and activation evidence](https://github.com/ahmadosmanr3-hue/bnyad-backend/blob/codex/bnyad-production-repair-2026-10-25/AI_MONTHLY_BUDGET_CONTROL.md) supersede the earlier AI-off rollout notes below.
+
+Admin → Finances now lets the owner save an explicit cap for each UTC month, with confirmation, immediate server enforcement and no redeploy. Blank inherits the $1 deployment fallback; therefore other months need their own saved cap to use more than that default. Setting a cap does not purchase credit, change billing or turn AI on. No schema migration was needed for this addition. Old admin tabs preserve saved caps, archives freeze the effective cap, and AI requests require a saved adult (18+) profile under Google's API requirements.
+
+The owner confirmed daily meal generation and food scanning in the published app. Production logs confirm real `gemini-3.5-flash-lite` responses: $0.004370 and $0.003386 estimated respectively ($0.007756 combined). No automatic live calls/retries were made; the separate development HTTP ledger remains 21/21. All 174 backend tests, build/type checks, local PostgreSQL integration and 26 targeted Flutter AI tests passed. No Flutter/native source changed.
+
+Activation does not automatically update static store descriptions. The public Apple description still contains its older paused-AI sentence; a separate metadata correction remains needed. Deployment readiness is not a hosting billing receipt; the owner manages hosting payments separately. No store publication, payment retry, purchase or hosting plan change was performed here.
+
 No Flutter UI, nutrition formula, subscription, localization, HealthKit, Health Connect or native signing code changes are required for this work. Existing clients that call the authenticated backend inherit its quota after the backend rollout; no new mobile binary is needed for this policy/admin change.
 
 The implementation is in the official **backend repository**, not this repository's historical backend mirror:
