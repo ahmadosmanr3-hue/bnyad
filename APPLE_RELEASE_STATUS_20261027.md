@@ -17,8 +17,14 @@ The public Apple lookup for the Iraqi storefront also returned the same name, bu
 
 No submission, release setting, legal declaration, subscription price or Apple account configuration was changed during this check. The owner’s existing submission/release process produced this status. No Android release action was taken. AI remains server-disabled; this store approval does not enable it.
 
-## Later candidate: 1.0.3 (18)
+## Later update: 1.0.3 (18) submitted
 
-On 27 October, signed production build 18/version 1.0.3 was successfully uploaded through Xcode and appeared as **Processing** in App Store Connect. A separate 1.0.3 version draft contains corrected English AI copy, release notes and reviewer guidance. This upload/draft is not submission, approval or publication. Existing 1.0.2/build 16 remains the last verified public iOS release until a later status is recorded.
+On 27 October, signed production build 18/version 1.0.3 was successfully uploaded through Xcode. Apple completed processing, and the owner personally saved its export-compliance declaration. Build 18 was then selected in the 1.0.3 version draft with corrected English AI copy, release notes and reviewer guidance.
 
-See [candidate verification](RELEASE_1.0.3_18.md). Existing internal TestFlight distribution and app identifiers are preserved.
+App Store Connect confirmed **1 Item Submitted**. The final submission record shows **Waiting for Review**, with **iOS App 1.0.3 (18)**, submitted **27 October 2026 at 6:58 PM** as displayed by Apple. Submission ID: `86205567-eec4-4d4d-8e33-8f03d96961a4`; build ID: `8f7d451b-7f7a-446b-beaa-50e288294560`.
+
+[Apple submission record](https://appstoreconnect.apple.com/apps/6781387722/distribution/reviewsubmissions/details/86205567-eec4-4d4d-8e33-8f03d96961a4)
+
+This confirms submission, not approval or public availability of 1.0.3. Existing 1.0.2/build 16 remains the last verified public iOS release. The existing automatic post-review release setting, app identifiers, internal TestFlight groups and ratings are preserved. No new physical build-18 smoke test was claimed; the patch's localized error/display behavior passed automated tests, and signed production artifacts passed validation.
+
+See [candidate verification](RELEASE_1.0.3_18.md).

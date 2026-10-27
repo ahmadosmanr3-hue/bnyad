@@ -23,3 +23,10 @@ Prepared 27 October 2026 on `codex/bnyad-production-repair-2026-10-25`.
 AI remains backend-only, authenticated, Premium-authorized, adult-profile restricted and consent-gated. The current shared daily allowance is 9. Monthly spending controls are managed separately on the backend; releasing this binary does not change them. Do not embed provider keys or local development configuration in either release.
 
 Existing Apple bundle `com.nutrify.bnyad`, team `632WWWM8AH`, and HealthKit entitlements must remain unchanged. Use the existing internal TestFlight group and owner-confirmed export declaration as required. Store upload/review state will be recorded separately after actual verification; this document alone does not claim submission or approval.
+
+## Verified store delivery
+
+- Google Play: production 18 (1.0.3) and the corrected English default full description submitted together. Automated quick checks finished; Publishing overview states **Your changes are now in review**. Existing full rollout / managed publishing off settings were preserved.
+- Apple: production 1.0.3/build 18 submitted after owner-confirmed export compliance. Submission `86205567-eec4-4d4d-8e33-8f03d96961a4` shows **Waiting for Review**. Existing automatic post-review release is preserved.
+- Neither status means the new version is approved or publicly available yet. No backend rollout, migration, production account/subscription change, purchase or automated live Gemini request was made for this patch.
+- Main source fix commit: `490c8d4cfc03612ac3327a659d379b626ac2648c`. Backend remains unchanged at `44a636d6869cf53883a9abee54656482e462fd14` (documentation head; currently deployed runtime source remains `c219f03d40a593174570dd4ee38fbf1981d8be42`).

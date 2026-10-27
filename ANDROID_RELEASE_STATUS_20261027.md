@@ -16,6 +16,6 @@ Both this Android release and [Apple 1.0.2/build 16](APPLE_RELEASE_STATUS_202610
 
 ## Later update: 1.0.3 (18)
 
-On 27 October, the owner-authorized client clarification and English listing correction were submitted together. Google Play Publishing overview shows **Changes in review**, with production **18 (1.0.3)** / Start full rollout and the English default listing full-description change. Automated quick checks can still precede Google's review. This is submission evidence, not approval or publication of 1.0.3. The existing published 17 (1.0.2) remains the last verified public Android release.
+On 27 October, the owner-authorized client clarification and English listing correction were submitted together. Google Play Publishing overview shows **Changes in review**, with production **18 (1.0.3)** / Start full rollout and the English default listing full-description change. Google's automated quick checks subsequently completed; the console explicitly says the changes are now in review. This is submission evidence, not approval or publication of 1.0.3. The existing published 17 (1.0.2) remains the last verified public Android release.
 
 See [candidate verification](RELEASE_1.0.3_18.md). Source fix: `490c8d4cfc03612ac3327a659d379b626ac2648c`; artifact-verification commit: `4aa27d61798779dd222d2ccc55645fa8d30a610d`. No Samsung was connected for a new physical build-18 smoke check; automated tests and signed-bundle validation passed.
