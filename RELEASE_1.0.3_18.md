@@ -16,6 +16,8 @@ Prepared 27 October 2026 on `codex/bnyad-production-repair-2026-10-25`.
 - The owner confirmed food scans, daily meal plans, ingredient recipes and fridge results work in the published app. The new copy/error mapping is covered by mocks; body-photo analysis has not been newly tested live. No automated paid Gemini calls or retries were made.
 - Signed Android AAB: package `com.bnyad.app`, version 1.0.3/code 18, existing upload certificate verified; signature verified. SHA-256 `69a9f3736063ad0433b3ad3e0a7a7f0861cafcfffc4ba08fce6b782bca8ffe0c`. Read-only step/distance and camera permissions preserved; broad media permissions remain absent.
 
+- Signed iOS IPA: bundle `com.nutrify.bnyad`, version 1.0.3/build 18, distribution signature verified. Production push and HealthKit entitlements preserved; `get-task-allow` is false. SHA-256 `b6816093fa5e058490b71a9961892009511f8501dd64d41be4e77fd2d98d9e7c`. Flutter reports the existing default launch-image warning; the app icon and launch assets were not changed in this patch.
+
 ## Runtime and release constraints
 
 AI remains backend-only, authenticated, Premium-authorized, adult-profile restricted and consent-gated. The current shared daily allowance is 9. Monthly spending controls are managed separately on the backend; releasing this binary does not change them. Do not embed provider keys or local development configuration in either release.
