@@ -1,5 +1,7 @@
 # Apple release verified — 27 October 2026
 
+Later operational update: [production AI was separately enabled with the owner's $30 October cap](SERVER_AI_AND_FINANCE_HANDOFF.md), and [Google Play production 17 (1.0.2) is also verified Published](ANDROID_RELEASE_STATUS_20261027.md). The AI-off statement at the end below describes the initial Apple-release check, before that separately approved backend activation.
+
 Read-only verification in the owner's signed-in App Store Connect session:
 
 - App ID: `6781387722`; existing bundle identifier `com.nutrify.bnyad`.

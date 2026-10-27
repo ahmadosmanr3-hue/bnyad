@@ -1,6 +1,6 @@
 # BNYAD source delivery — 13 October 2026
 
-**Latest verified status (27 October):** [Apple 1.0.2/build 16 is Ready for Distribution and on the public Iraqi listing](APPLE_RELEASE_STATUS_20261027.md). [Production AI, the nine-request policy and admin monthly finances are live](SERVER_AI_AND_FINANCE_HANDOFF.md), with the owner's approved $30 October cap and confirmed real meal/food-scan responses. Static store-copy correction remains outstanding. The original 13 October source-delivery history below predates the subsequent approved production releases; use the dated handoffs for current state.
+**Latest verified status (27 October):** [Apple 1.0.2/build 16 is Ready for Distribution and on the public Iraqi listing](APPLE_RELEASE_STATUS_20261027.md). [Google Play production 17 (1.0.2) is Published](ANDROID_RELEASE_STATUS_20261027.md). [Production AI, the nine-request policy and admin monthly finances are live](SERVER_AI_AND_FINANCE_HANDOFF.md), with the owner's approved $30 October cap and confirmed real meal/food-scan responses. Static store-copy correction remains outstanding. The original 13 October source-delivery history below predates the subsequent approved production releases; use the dated handoffs for current state.
 
 **AI integration update:** Read [AI_RELEASE_HANDOFF.md](AI_RELEASE_HANDOFF.md) first. It supersedes the legacy direct-AI configuration below: Gemini access is server-only, disabled until approved configuration, and uses an additional manual migration.
 
