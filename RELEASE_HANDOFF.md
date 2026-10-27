@@ -1,5 +1,7 @@
 # BNYAD source delivery — 13 October 2026
 
+**Latest verified status (27 October):** [Apple 1.0.2/build 16 is Ready for Distribution and on the public Iraqi listing](APPLE_RELEASE_STATUS_20261027.md). [The backend nine-request policy and admin monthly finances are deployed](SERVER_AI_AND_FINANCE_HANDOFF.md); production AI remains disabled. The original 13 October source-delivery history below predates the subsequent approved production releases; use the dated handoffs for current state.
+
 **AI integration update:** Read [AI_RELEASE_HANDOFF.md](AI_RELEASE_HANDOFF.md) first. It supersedes the legacy direct-AI configuration below: Gemini access is server-only, disabled until approved configuration, and uses an additional manual migration.
 
 This branch is source delivery only. No production database migration, production deployment, App Store submission, or Google Play submission was performed.

@@ -1,0 +1,16 @@
+# Apple release verified — 27 October 2026
+
+Read-only verification in the owner's signed-in App Store Connect session:
+
+- App ID: `6781387722`; existing bundle identifier `com.nutrify.bnyad`.
+- Version **1.0.2**: **Ready for Distribution**.
+- Selected/released build: **16**, Apple build ID `165908c3-c46e-45ab-a79e-d8d62803f69f`.
+- Store name: **BNYAD: Calorie & Macro Tracker**.
+
+The public Apple lookup for the Iraqi storefront also returned the same name, bundle ID and version **1.0.2**. Apple reported current-version release time `2026-10-26T21:52:07Z`, which is **27 October 2026 at 00:52:07 Baghdad time**. This confirms the public Iraqi listing is updated, beyond the private review status. Other storefront propagation and updates on every installed device were not tested.
+
+[Public Iraqi App Store listing](https://apps.apple.com/iq/app/bnyad-calorie-macro-tracker/id6781387722)
+
+[App Store Connect version](https://appstoreconnect.apple.com/apps/6781387722/distribution/ios/version/deliverable)
+
+No submission, release setting, legal declaration, subscription price or Apple account configuration was changed during this check. The owner’s existing submission/release process produced this status. No Android release action was taken. AI remains server-disabled; this store approval does not enable it.

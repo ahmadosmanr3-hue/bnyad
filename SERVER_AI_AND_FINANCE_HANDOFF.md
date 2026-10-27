@@ -16,9 +16,13 @@ Admin → Finances stores monthly USD line items for sales, expenses, commission
 
 Saved months can be archived at any time. Immutable server-side snapshots preserve figures and assumptions even after later edits, with CSV/JSON exports and access to old months/archive pages. Tax rates are not guessed or filed; enter actual statements and accountant-confirmed amounts without duplicate deductions.
 
-## Rollout hold / configuration
+## Verified production rollout — 27 October 2026
 
-At verification time production still had `AI_ENABLED=false`, daily allowance **3**, one request/minute and a **$1 total monthly AI spending safeguard**. New code is pushed but not yet deployed. Production rollout needs approval for the two additive finance tables and backend deployment with `AI_DAILY_REQUEST_LIMIT=9`. Keep AI disabled and the existing global spending cap unchanged. Do not apply production migrations, enable Gemini, change billing or publish mobile updates as part of this handoff without the appropriate owner authorization.
+The owner explicitly approved the additive finance schema and backend rollout. The new tables were created in the verified existing production database without changing existing app/user/subscription data. Backend commit `702bd06fd96ee2dd1e67bfb5b48ff1c84aa81308` is live on `nutrify-api-lovat.vercel.app`, deployment `dpl_GnggrSr12m365cabiTmwyhSAKvSN` (READY).
+
+Production now has `AI_ENABLED=false`, shared daily allowance **9**, one request/minute and the unchanged **$1 total monthly AI spending safeguard**. Readiness returned 200 with the exact deployed revision; unauthenticated finance/AI/subscription access was rejected. Owner-authenticated Admin → Finances showed the new page, quota 9, AI off, $1 safeguard and saved revision 0. No financial entries or archives were created in production during verification.
+
+AI remains disabled; changing the spending budget or enabling it requires separate owner authorization. No new mobile binary, store upload, paid test, credit purchase or billing change was performed for this rollout. See [Apple's verified release status](APPLE_RELEASE_STATUS_20261027.md) for the separate existing iOS submission.
 
 ## Checks
 
