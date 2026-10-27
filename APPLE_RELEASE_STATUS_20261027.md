@@ -16,3 +16,9 @@ The public Apple lookup for the Iraqi storefront also returned the same name, bu
 [App Store Connect version](https://appstoreconnect.apple.com/apps/6781387722/distribution/ios/version/deliverable)
 
 No submission, release setting, legal declaration, subscription price or Apple account configuration was changed during this check. The owner’s existing submission/release process produced this status. No Android release action was taken. AI remains server-disabled; this store approval does not enable it.
+
+## Later candidate: 1.0.3 (18)
+
+On 27 October, signed production build 18/version 1.0.3 was successfully uploaded through Xcode and appeared as **Processing** in App Store Connect. A separate 1.0.3 version draft contains corrected English AI copy, release notes and reviewer guidance. This upload/draft is not submission, approval or publication. Existing 1.0.2/build 16 remains the last verified public iOS release until a later status is recorded.
+
+See [candidate verification](RELEASE_1.0.3_18.md). Existing internal TestFlight distribution and app identifiers are preserved.
