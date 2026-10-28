@@ -20,6 +20,17 @@ Build 18 was made without the existing ignored `release-config.json`, so its pub
 
 ## Physical and store verification
 
-Physical native-SDK regression, signed artifact validation and store delivery will be recorded after they actually complete. The isolated native harness is `test/device/startup_smoke.dart`; it is limited to the offline development bundle, uses fictional in-memory account/storage/HTTP fixtures, does not call Gemini or production APIs, and cannot be built as a store entry point. It deliberately leaves the real native subscription SDK unconfigured to exercise the reported failure path.
+On the connected iPhone, the isolated Profile-dev harness installed and launched successfully. Its native bridge recorded `startup_smoke_native_store_unconfigured` and then `startup_smoke_pass` after the restored fictional account/dashboard and resume checks. This uses the real iOS RevenueCat configuration query, not a mocked purchase SDK. No new crash report appeared during these checks. It does not claim a new production-account purchase/restore, Gemini or HealthKit-data test. The owner separately confirmed Android is working; no Android device was connected for an additional physical smoke test.
+
+Both signed production artifacts were also inspected directly: their appropriate existing PUBLIC RevenueCat key is present in the compiled app (values were not printed). iOS retains production push and HealthKit entitlements, with `get-task-allow=false`; distribution signature verified. Android retains package `com.bnyad.app`, existing upload certificate SHA-256 `5B:0F:D7:E9:83:16:75:5E:C1:35:97:BE:A5:34:F7:57:52:AD:46:28:6A:40:7F:0A:B0:97:86:E0:99:CC:57:5B`, and its JAR signature verifies.
+
+- iOS IPA SHA-256: `7d3533d411eb8d4c8498af54e7d57b0469f03b82dc9e7d49fc32787bd5e1d281`.
+- Android AAB SHA-256: `26ed1ee2a25327d0176ef8ccc9dd1953fee35debf01fd8b4e3140fae5af862e2`.
+
+Apple completed processing; the owner personally saved the required export declaration. iOS 1.0.4 (19) was submitted on 28 October 2026 at 3:07 PM (Apple display time). Submission `380ee937-1393-43dd-9caa-d27508911dd5` shows **Waiting for Review**; Apple build ID `a0d023c0-584c-4f95-9a88-4f1ff292f090`. Existing automatic release after approval is preserved.
+
+Google Play production 19 (1.0.4) was submitted with the existing full rollout settings and maintenance notes. Its console shows **Changes in review**. Neither submission status is a claim that the hotfix is already approved or available publicly.
+
+Runtime source fix: `93775fe` on `codex/bnyad-production-repair-2026-10-25`. The following documentation/native-harness update does not alter the uploaded production runtime. Backend source and deployment remain unchanged. The isolated native harness is `test/device/startup_smoke.dart`; it is limited to the offline development bundle, uses fictional in-memory account/storage/HTTP fixtures, does not call Gemini or production APIs, and cannot be built as a store entry point. It deliberately leaves the real native subscription SDK unconfigured to exercise the reported failure path.
 
 No backend change, migration, billing change or live Gemini test request is needed. The prior development request ledger remains unchanged.

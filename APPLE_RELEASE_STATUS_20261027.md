@@ -28,3 +28,9 @@ App Store Connect confirmed **1 Item Submitted**. The final submission record sh
 This confirms submission, not approval or public availability of 1.0.3. Existing 1.0.2/build 16 remains the last verified public iOS release. The existing automatic post-review release setting, app identifiers, internal TestFlight groups and ratings are preserved. No new physical build-18 smoke test was claimed; the patch's localized error/display behavior passed automated tests, and signed production artifacts passed validation.
 
 See [candidate verification](RELEASE_1.0.3_18.md).
+
+## 28 October: iOS startup-crash hotfix submitted
+
+Version **1.0.4 (19)** is **Waiting for Review**. Apple submission `380ee937-1393-43dd-9caa-d27508911dd5`, submitted 28 October 2026 at 3:07 PM (console display time); build `a0d023c0-584c-4f95-9a88-4f1ff292f090`. The owner personally saved its export declaration. This supersedes the prior release's submission status, without claiming public hotfix availability.
+
+[Submission](https://appstoreconnect.apple.com/apps/6781387722/distribution/reviewsubmissions/details/380ee937-1393-43dd-9caa-d27508911dd5) · [Confirmed cause and verification](CRASH_HOTFIX_1.0.4_19.md)

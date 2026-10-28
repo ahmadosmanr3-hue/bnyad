@@ -34,8 +34,29 @@ Future<void> main() async {
       'Startup smoke checks require the offline development bundle.',
     );
   }
-  if (await Purchases.isConfigured) {
-    throw StateError('Smoke check requires an unconfigured native SDK.');
+  // Mount a first frame before probing plugins on the scene-based iOS runner.
+  runApp(
+    const MaterialApp(
+      home: Scaffold(body: Center(child: Text('OFFLINE STARTUP QA · AI OFF'))),
+    ),
+  );
+  await WidgetsBinding.instance.endOfFrame;
+  Future<void> stage(String name) async {
+    // The existing development-only native bridge logs method names, never
+    // fixture/profile values. Unknown diagnostic methods have no side effects.
+    try {
+      await const MethodChannel('com.bnyad.app/steps').invokeMethod<void>(name);
+    } catch (_) {}
+  }
+
+  try {
+    if (await Purchases.isConfigured.timeout(const Duration(seconds: 8))) {
+      throw StateError('Smoke check requires an unconfigured native SDK.');
+    }
+    await stage('startup_smoke_native_store_unconfigured');
+  } catch (error) {
+    await stage('startup_smoke_probe_error_${error.runtimeType}');
+    rethrow;
   }
   const profile = {
     'onboarded': true,
@@ -104,6 +125,7 @@ Future<void> main() async {
       !unavailable) {
     throw StateError('Startup smoke check failed.');
   }
+  await stage('startup_smoke_pass');
   print(
     'BNYAD_STARTUP_SMOKE_PASS: restored fictional dashboard and resume survived with native store unconfigured; AI off, no production requests.',
   );
