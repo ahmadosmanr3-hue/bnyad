@@ -382,7 +382,8 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "/bin/sh \"$FLUTTER_ROOT/packages/flutter_tools/bin/xcode_backend.sh\" build";
+			shellScript = "set -e\n\"$FLUTTER_ROOT/bin/cache/dart-sdk/bin/dart\" \"$SRCROOT/../tool/validate_store_build.dart\" ios \"$CONFIGURATION\" \"$PRODUCT_BUNDLE_IDENTIFIER\"\n/bin/sh \"$FLUTTER_ROOT/packages/flutter_tools/bin/xcode_backend.sh\" build";
+			showEnvVarsInLog = 0;
 		};
 		B4389727CDB4E645F11AFF6D /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;

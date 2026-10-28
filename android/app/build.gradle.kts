@@ -33,6 +33,20 @@ gradle.taskGraph.whenReady {
     if (allTasks.any { it.name.contains("Release", ignoreCase = true) }) {
         require(releasePropertiesFile.exists()) { "Release signing requires android/key.properties from the release developer." }
         require(firebaseConfigured) { "Release builds require the existing android/app/google-services.json." }
+        val flutterProperties = Properties()
+        rootProject.file("local.properties").inputStream().use { flutterProperties.load(it) }
+        val flutterSdk = requireNotNull(flutterProperties.getProperty("flutter.sdk"))
+        val dartExecutable = if (System.getProperty("os.name").startsWith("Windows")) "dart.exe" else "dart"
+        val preflight = ProcessBuilder(
+            "$flutterSdk/bin/cache/dart-sdk/bin/$dartExecutable",
+            rootProject.file("../tool/validate_store_build.dart").absolutePath,
+            "android", "Release", "com.bnyad.app"
+        ).redirectErrorStream(true)
+        preflight.environment()["DART_DEFINES"] = project.findProperty("dart-defines")?.toString() ?: ""
+        preflight.environment()["FLUTTER_TARGET"] = project.findProperty("target")?.toString() ?: "lib/main.dart"
+        val validation = preflight.start()
+        val validationOutput = validation.inputStream.bufferedReader().readText()
+        require(validation.waitFor() == 0) { validationOutput }
     }
 }
 

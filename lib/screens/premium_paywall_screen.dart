@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'package:nutrify/providers/app_state.dart';
+import 'package:nutrify/services/purchases_bootstrap.dart';
 import 'package:nutrify/screens/medical_citations_screen.dart';
 import 'package:nutrify/theme/app_theme.dart';
 import 'package:nutrify/utils/ai_strings.dart';
@@ -55,6 +56,9 @@ class _PremiumPaywallSheetState extends State<_PremiumPaywallSheet> {
       return;
     }
     try {
+      if (!await PurchasesBootstrap.instance.ensureConfigured() || !mounted) {
+        return;
+      }
       final products = await Purchases.getProducts(['BNYAD_M1', 'BNYAD_Y1']);
       if (!mounted) return;
       setState(() {

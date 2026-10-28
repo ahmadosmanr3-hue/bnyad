@@ -19,6 +19,7 @@ import 'package:nutrify/services/local_account_cache.dart';
 import 'package:nutrify/services/ai_service.dart';
 import 'package:nutrify/services/notification_service.dart';
 import 'package:nutrify/services/push_service.dart';
+import 'package:nutrify/services/purchases_bootstrap.dart';
 import 'package:nutrify/models/user_profile.dart';
 import 'package:nutrify/models/log_entry.dart';
 import 'package:nutrify/models/meal.dart';
@@ -595,7 +596,11 @@ class AppState extends ChangeNotifier {
 
       if (supportsOptionalDeviceServices && _apiService.userId != null) {
         try {
-          await Purchases.logIn(_apiService.userId!.toString());
+          if (await PurchasesBootstrap.instance.ensureConfigured() &&
+              _apiService.hasToken &&
+              _apiService.userId == sessionUserId) {
+            await Purchases.logIn(sessionUserId!.toString());
+          }
         } catch (e) {
           debugPrint('Error logging in to RevenueCat: $e');
         }
@@ -948,7 +953,7 @@ class AppState extends ChangeNotifier {
     }
     if (supportsOptionalDeviceServices) {
       await PushService.instance.unregisterForUser(_apiService);
-      unawaited(Purchases.logOut());
+      await PurchasesBootstrap.instance.logOutIfConfigured();
     }
     await _authService.signOut();
     _clearData();
@@ -965,7 +970,7 @@ class AppState extends ChangeNotifier {
     if (!success) return false;
     await steps.eraseAccount();
     if (supportsOptionalDeviceServices) {
-      unawaited(Purchases.logOut());
+      await PurchasesBootstrap.instance.logOutIfConfigured();
     }
 
     try {
@@ -1616,7 +1621,9 @@ class AppState extends ChangeNotifier {
       );
       return;
     }
-    if (supportsOptionalDeviceServices) {
+    if (supportsOptionalDeviceServices &&
+        await PurchasesBootstrap.instance.ensureConfigured() &&
+        _samePremiumAccount(userId)) {
       try {
         if (await _applyStoreEntitlement(
           await Purchases.getCustomerInfo(),
@@ -1659,6 +1666,10 @@ class AppState extends ChangeNotifier {
     if (!supportsOptionalDeviceServices || !isAuthenticated) return;
     final userId = _apiService.userId;
     try {
+      if (!await PurchasesBootstrap.instance.ensureConfigured() ||
+          !_samePremiumAccount(userId)) {
+        return;
+      }
       final info = await Purchases.getCustomerInfo();
       if (!_samePremiumAccount(userId)) return;
       if (!await _applyStoreEntitlement(info, userId) &&
@@ -1673,6 +1684,10 @@ class AppState extends ChangeNotifier {
     _purchaseVerificationPending = false;
     final userId = _apiService.userId;
     try {
+      if (!await PurchasesBootstrap.instance.ensureConfigured() ||
+          !_samePremiumAccount(userId)) {
+        return false;
+      }
       await Purchases.logIn(userId!.toString());
       if (!_samePremiumAccount(userId)) return false;
       if (productId != null) {
@@ -1704,6 +1719,11 @@ class AppState extends ChangeNotifier {
       return _samePremiumAccount(userId) && isPremium;
     }
     try {
+      if (!await PurchasesBootstrap.instance.ensureConfigured()) {
+        await syncPremiumFromServer();
+        return _samePremiumAccount(userId) && isPremium;
+      }
+      if (!_samePremiumAccount(userId)) return false;
       await Purchases.logIn(userId!.toString());
       if (!_samePremiumAccount(userId)) return false;
       if (await _applyStoreEntitlement(

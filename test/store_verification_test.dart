@@ -68,6 +68,7 @@ void main() {
     });
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(channel, (call) async {
+          if (call.method == 'isConfigured') return true;
           if (call.method == 'logIn') {
             return {'customerInfo': customer(), 'created': false};
           }

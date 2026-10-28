@@ -1,8 +1,6 @@
 import 'screens/premium_gifts_screen.dart';
 import 'dart:async';
 import 'package:nutrify/l10n/framework_localizations.dart';
-import 'dart:io' show Platform;
-import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -11,6 +9,7 @@ import 'package:nutrify/services/auth_service.dart';
 import 'package:nutrify/services/api_service.dart';
 import 'package:nutrify/services/notification_service.dart';
 import 'package:nutrify/services/push_service.dart';
+import 'package:nutrify/services/purchases_bootstrap.dart';
 import 'package:nutrify/theme/app_theme.dart';
 import 'package:nutrify/screens/login_screen.dart';
 import 'package:nutrify/screens/onboarding_screen.dart';
@@ -66,25 +65,7 @@ Future<void> _initializeOptionalServices(AppState appState) async {
       await PushService.instance.init().timeout(const Duration(seconds: 8));
     } catch (_) {}
 
-    // Initialize RevenueCat (purchases_flutter) with demo keys
-    try {
-      await Purchases.setLogLevel(LogLevel.error);
-      PurchasesConfiguration configuration;
-      if (Platform.isAndroid) {
-        configuration = PurchasesConfiguration(private_keys.rcAndroidApiKey);
-      } else if (Platform.isIOS) {
-        configuration = PurchasesConfiguration(private_keys.rcIosApiKey);
-      } else {
-        configuration = PurchasesConfiguration("");
-      }
-      if (configuration.apiKey.isNotEmpty) {
-        await Purchases.configure(
-          configuration,
-        ).timeout(const Duration(seconds: 8));
-      }
-    } catch (e) {
-      debugPrint('Error configuring RevenueCat: $e');
-    }
+    await PurchasesBootstrap.instance.ensureConfigured();
   }
 
   await appState.onAppResumed();
