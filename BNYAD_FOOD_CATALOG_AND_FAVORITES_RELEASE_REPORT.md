@@ -1,6 +1,6 @@
 # BNYAD food catalog and favorites release report
 
-Date: 30 October 2026 (Asia/Baghdad). Candidate: **1.0.5 (21)**. Store-facing name remains **BNYAD: Calorie & Macro Tracker**.
+Date: 30 October 2026 (Asia/Baghdad). Submitted release: **1.0.5 (21)**. Store-facing name remains **BNYAD: Calorie & Macro Tracker**.
 
 ## Delivery status
 
@@ -9,12 +9,12 @@ Date: 30 October 2026 (Asia/Baghdad). Candidate: **1.0.5 (21)**. Store-facing na
 - Both repositories use `codex/bnyad-production-repair-2026-10-25`; pushes verified against GitHub. This is the active production-repair branch, newer than the original stability branch. No reset or force push.
 - Backend deployed to the existing `nutrify-api` project: `dpl_AQK4c7XXvAniih5zU1WUwu5jD9Zm`, READY, alias `https://nutrify-api-lovat.vercel.app`.
 - Production migration committed successfully; reviewed insert-only import confirmed **829 inserted records**. No historical meal records, profiles, subscriptions, promotional grants or nutrition goals were rewritten.
-- Build 20 distribution IPA was verified and uploaded successfully; Apple is processing it. Corrected build 21 archive is complete, but export currently reports **No Accounts / no iOS Distribution identity**. Existing Xcode account renewal is awaiting owner completion; no replacement certificate was created. Final build-21 submission remains pending.
-- Android build 20 was submitted and shows **Changes in review**. Corrected build 21 signed AAB is built and validated, ready to replace the queued artifact; final console submission remains pending.
+- Corrected iOS build 21 distribution IPA exported, validated and uploaded successfully after the owner renewed the existing Xcode account. The owner completed Apple’s export declaration; build 21 was selected and submitted. App Store Connect confirms **Waiting for Review** for **1.0.5 (21)**. Submission ID: `bf0ef3b9-fc52-4bc8-acd0-ba5700929d80`. Automatic release after approval is preserved. No replacement certificate was created.
+- Corrected Android build 21 signed AAB passed bundle/signature/certificate checks and was saved and submitted to the existing Google Play production track at 100% rollout. Google Play visibly confirms **Changes in review**, with build 21 and managed publishing off; quick checks continue as part of that review request. Build 20 is superseded.
 - Complete BNYAD Dev 1.0.5 installed and launched on the connected iPhone using the isolated authenticated local backend and simulated AI. Production and Health Test identifiers were preserved. The user replied positively. The isolated backend recorded four authenticated favorite PUT requests returning 200; the test database contains one canonical-food row at version 4, inactive after removal, with zero duplicate keys. Exact restart/health checklist items were not separately confirmed one by one.
 - Samsung was not connected during this task, so no new physical Android test is claimed.
 
-Uploaded/submitted does not mean publicly available. The release-code commit is listed above; this report can be delivered in a subsequent documentation-only commit. Use build 21 for the final corrected release, not the intermediate queued build 20.
+Uploaded/submitted does not mean publicly available. The release-code commit is listed above; this report can be delivered in a subsequent documentation-only commit. Both submitted store updates use corrected build 21. Intermediate build 20 is not the submitted iOS binary and was superseded on Google Play.
 
 ## 1. Confirmed favorites root causes
 
@@ -89,9 +89,9 @@ No new environment variables, paid dependencies or credentials are needed. Local
 - Backend automated suite: **180 passed**.
 - Backend TypeScript checks and optimized Next.js build: passed.
 - Disposable PostgreSQL integration: passed migration/import reruns, 829 records, canonical alias import, ten concurrent writes, mutation replay, two-user isolation, normal bearer authentication, CAS admin edits, audit/disable behavior and deletion cascades.
-- Verified prior iOS distribution release: 1.0.5 (20), `com.nutrify.bnyad`. Exported distribution IPA verified, HealthKit true, debugger entitlement false, APNs production entitlement retained, no development markers, public mobile subscription configuration present.
+- Corrected iOS distribution release: 1.0.5 (21), `com.nutrify.bnyad`. Exported distribution IPA verified, HealthKit true, debugger entitlement false, APNs production entitlement retained, no development markers, public mobile subscription configuration present.
 - Corrected signed Android release: 1.0.5 (21), `com.bnyad.app`. Bundletool validation, JAR signature and existing Google upload-certificate fingerprint match passed. Camera and Health Connect permissions, catalog asset and public mobile subscription configuration verified.
-- Prior build-20 iOS IPA SHA-256 (not the pending corrected build): `32464157d94715a7aa70164cab207d6072eb3ff06d4bb8d2f0e685bfe07421e5`.
+- Corrected build-21 iOS IPA SHA-256: `84526defe8efab94b2f92b6587b4a4cb3a6f77b9f72304c6f6b4be832d82129e`.
 - Android AAB SHA-256: `ae37e7f98e2f0a7545fa585eb5795bac7f8a8c424f9db0cb2a492c92f130838f`.
 - Real iPhone: complete isolated development build installed and launched, preserving production and Health Test apps. No connected Samsung was available.
 
@@ -101,14 +101,19 @@ Existing authentication, Premium/gifts, startup guards, AI contract/safety/quota
 
 Release notes in English, Arabic and Sorani are in `release-notes/1.0.5.md`. The existing store name, application identifiers and signing credentials are preserved. Private signing/configuration files and local databases are excluded from Git.
 
-At task start Apple publicly showed 1.0.4, while Google Play still showed version 19 (1.0.4) in review. This update includes that prior startup hotfix. Current console evidence: Google Play build 20 shows Changes in review, managed publishing off, full rollout selected; compatibility checks report zero lost devices (12,509 phones and 6,823 tablets remain supported). Apple accepted build 20 and continues to show Processing, with no selectable build yet. Build 21 is the corrected candidate; Android replacement submission and iOS distribution export/upload remain to be completed. Xcode displays the existing Admin account/team, but command-line export reports No Accounts/no iOS Distribution identity; the existing account sign-in renewal is open for the owner. No replacement signing certificate was generated.
+At task start Apple publicly showed 1.0.4, while Google Play still showed version 19 (1.0.4) in review. This update includes that prior startup hotfix. Current console evidence: Google Play **21 (1.0.5)** shows **Changes in review**, managed publishing off, full rollout selected; compatibility checks report zero lost devices (12,509 phones and 6,823 tablets remain supported). Intermediate build 20 was superseded. Apple **1.0.5 (21)** shows **Waiting for Review**, with automatic release after approval and immediate release to all users preserved. The owner renewed Xcode's existing account, reauthenticated App Store Connect and completed the build-21 export declaration. No replacement signing certificate was generated. English, Arabic and Sorani release notes were entered in the existing default store localizations (combined multilingual notes, not new independent store-listing locales). Neither store submission is represented as already approved or publicly live.
+
 
 Nonblocking existing build warnings: iOS placeholder launch-image validation, plugins not yet supporting Swift Package Manager, and upcoming Flutter AGP/Kotlin minimum-version changes. No dependency upgrade was mixed into this food/favorites update. More regional recipe verification, native-speaker wording review, and physical Android verification remain useful follow-ups; none are represented as already completed.
 
-## Owner handoff if signing remains blocked
+## Store submission receipts and release behavior
 
-Finish the existing Apple developer sign-in in Xcode (not the browser), then retry automatic distribution export/upload for the build-21 archive. Keep team `632WWWM8AH`, bundle `com.nutrify.bnyad`, HealthKit and production APNs. Do not replace signing keys or remove entitlements. Export using the existing `build/ios/ExportOptions-production.plist`; the archive is `build/ios/archive/Runner.xcarchive`. After successful distribution export, verify version 1.0.5/build 21, HealthKit, debugger entitlement false and subscription public SDK configuration. Upload using Xcode's supported workflow. The owner must complete any required Apple export-compliance declaration before App Review submission.
+Apple: existing app ID `6781387722`, **1.0.5 (21)**, **Waiting for Review**, submission `bf0ef3b9-fc52-4bc8-acd0-ba5700929d80`. Existing private reviewer credentials were preserved; reviewer notes reference build 21. The owner saved export compliance. Automatic release on approval and release to all users immediately remain selected. Do not resubmit intermediate build 20.
 
-The corrected Android AAB is `build/app/outputs/bundle/release/app-release.aab`, version code 21; its validated SHA-256 is recorded above. Use the existing production track to supersede queued build 20, preserve the same listing/signing/100% rollout and submit for review. No Samsung physical validation is claimed.
+Google Play: existing `com.bnyad.app` production track, **21 (1.0.5)**, **Changes in review**, 100% rollout, managed publishing off. The corrected bundle supersedes build 20. Google’s automated checks remain part of its review workflow. No approval/public availability is claimed.
 
-The localhost demo preview can be run with `flutter run -d web-server --target lib/main_demo.dart --web-hostname=127.0.0.1 --web-port=8765`; its data/AI are fictional and isolated. The native iPhone local backend remains authenticated and mock-only, preserving the exhausted Gemini development ledger.
+Both receipts were saved privately on the development Mac; screenshots with private review credentials were not committed. The signed iOS IPA is `build/ios/ipa21-verified/BNYAD.ipa`, archive `build/ios/archive/Runner.xcarchive`; Android bundle is `build/app/outputs/bundle/release/app-release.aab`. Their validated SHA-256 values are listed above. Keep team `632WWWM8AH`, bundle `com.nutrify.bnyad`, HealthKit, production APNs and existing Android upload signing. Signing/private config, databases and artifacts are excluded from Git.
+
+No further owner action is currently required for submission. Apple/Google may request additional review information; review duration and approval are controlled by the stores. More regional recipe verification, native-speaker wording review, and a physical Samsung regression check remain useful follow-ups, with the physical-device limits explicitly stated above.
+
+The localhost demo preview remains available at `http://127.0.0.1:8765/` while its development server runs. It uses fictional data and simulated AI. The native iPhone local backend remains authenticated and mock-only, preserving the exhausted Gemini development ledger.
