@@ -11,6 +11,7 @@ import 'package:nutrify/navigation/main_shell_tabs.dart';
 import 'package:nutrify/models/log_entry.dart';
 import 'package:nutrify/theme/app_theme.dart';
 import 'package:nutrify/utils/ai_trilingual_strings.dart';
+import 'package:nutrify/services/camera_access.dart';
 
 class ScannerScreen extends StatefulWidget {
   const ScannerScreen({super.key});
@@ -65,6 +66,11 @@ class _ScannerScreenState extends State<ScannerScreen> {
 
   Future<void> _pickAndAnalyze(ImageSource source) async {
     final state = context.read<AppState>();
+    if (source == ImageSource.camera &&
+        !await ensureCameraAccess(context, state.lang)) {
+      return;
+    }
+    if (!mounted) return;
     if (!await ensureAiConsent(context, state) || !mounted) return;
     try {
       final XFile? image = await _picker.pickImage(
@@ -149,6 +155,11 @@ class _ScannerScreenState extends State<ScannerScreen> {
 
   Future<void> _scanFridge(ImageSource source) async {
     final initialState = context.read<AppState>();
+    if (source == ImageSource.camera &&
+        !await ensureCameraAccess(context, initialState.lang)) {
+      return;
+    }
+    if (!mounted) return;
     if (!await ensureAiConsent(context, initialState) || !mounted) return;
     try {
       final XFile? image = await _picker.pickImage(

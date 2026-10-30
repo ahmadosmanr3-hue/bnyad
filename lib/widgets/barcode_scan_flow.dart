@@ -9,7 +9,10 @@ import 'package:nutrify/models/log_entry.dart';
 import 'package:nutrify/providers/app_state.dart';
 import 'package:nutrify/services/food_barcode_service.dart';
 import 'package:nutrify/theme/app_theme.dart';
-import 'package:permission_handler/permission_handler.dart';
+import 'package:nutrify/services/camera_access.dart';
+import 'package:nutrify/l10n/scan_strings.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:nutrify/widgets/barcode_label_dialog.dart';
 
 /// Opens barcode scanner → shows macros → asks to log to daily intake.
 Future<void> openBarcodeScanFlow(
@@ -18,8 +21,8 @@ Future<void> openBarcodeScanFlow(
   String? mealId,
 }) async {
   if (!kIsWeb) {
-    final granted = await _ensureCameraPermission(context, state);
-    if (!granted) return;
+    await ensureCameraAccess(context, state.lang);
+    // Manual barcode entry remains available even when the camera is denied.
   }
 
   if (!context.mounted) return;
@@ -38,7 +41,7 @@ Future<void> openBarcodeScanFlow(
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
     builder: (ctx) =>
-        _BarcodeConfirmSheet(state: state, lookup: lookup, mealId: mealId),
+        BarcodeConfirmSheet(state: state, lookup: lookup, mealId: mealId),
   );
 
   if (logged == true && context.mounted) {
@@ -46,33 +49,6 @@ Future<void> openBarcodeScanFlow(
       context,
     ).showSnackBar(SnackBar(content: Text(state.t.barcodeLogged)));
   }
-}
-
-Future<bool> _ensureCameraPermission(
-  BuildContext context,
-  AppState state,
-) async {
-  var status = await Permission.camera.status;
-  if (status.isGranted) return true;
-
-  status = await Permission.camera.request();
-  if (status.isGranted) return true;
-
-  if (!context.mounted) return false;
-
-  final message = status.isPermanentlyDenied
-      ? state.t.barcodeCameraSettings
-      : state.t.barcodeCameraDenied;
-
-  ScaffoldMessenger.of(context).showSnackBar(
-    SnackBar(
-      content: Text(message),
-      action: status.isPermanentlyDenied
-          ? SnackBarAction(label: state.t.settings, onPressed: openAppSettings)
-          : null,
-    ),
-  );
-  return false;
 }
 
 class _BarcodeScannerPage extends StatefulWidget {
@@ -84,11 +60,18 @@ class _BarcodeScannerPage extends StatefulWidget {
 }
 
 class _BarcodeScannerPageState extends State<_BarcodeScannerPage> {
-  final FoodBarcodeService _service = FoodBarcodeService();
+  late final FoodBarcodeService _service;
+  @override
+  void initState() {
+    super.initState();
+    _service = widget.state.barcodes;
+  }
+
   // Read every common retail/product symbology so more packaged foods are
   // recognized (not just EAN/UPC) — e.g. Code 128, Code 39, ITF, DataBar.
   final MobileScannerController _controller = MobileScannerController(
     detectionSpeed: DetectionSpeed.normal,
+    autoZoom: true,
     facing: CameraFacing.back,
     formats: const [
       BarcodeFormat.ean13,
@@ -99,7 +82,9 @@ class _BarcodeScannerPageState extends State<_BarcodeScannerPage> {
       BarcodeFormat.code39,
       BarcodeFormat.code93,
       BarcodeFormat.codabar,
-      BarcodeFormat.itf,
+      BarcodeFormat.itf14,
+      BarcodeFormat.dataBar,
+      BarcodeFormat.dataBarExpanded,
       BarcodeFormat.dataMatrix,
     ],
   );
@@ -143,7 +128,7 @@ class _BarcodeScannerPageState extends State<_BarcodeScannerPage> {
     return false;
   }
 
-  Future<void> _lookupBarcode(String code) async {
+  Future<void> _lookupBarcode(String code, {String? format}) async {
     if (_lookupLocked) return;
     if (_shouldIgnoreDuplicate(code)) return;
 
@@ -152,9 +137,17 @@ class _BarcodeScannerPageState extends State<_BarcodeScannerPage> {
       _error = null;
     });
 
-    await _controller.stop();
+    try {
+      await _controller.stop();
+    } catch (_) {
+      /* Manual entry needs no active camera. */
+    }
 
-    final result = await _service.lookup(code, isOnline: widget.state.isOnline);
+    final result = await _service.lookup(
+      code,
+      isOnline: widget.state.isOnline,
+      format: format,
+    );
 
     if (!mounted) return;
 
@@ -163,7 +156,8 @@ class _BarcodeScannerPageState extends State<_BarcodeScannerPage> {
       return;
     }
 
-    if (result.failure == BarcodeLookupFailure.notFound) {
+    if (result.failure == BarcodeLookupFailure.notFound ||
+        result.failure == BarcodeLookupFailure.networkError) {
       setState(() {
         _lookupLocked = false;
         _error = null;
@@ -191,7 +185,7 @@ class _BarcodeScannerPageState extends State<_BarcodeScannerPage> {
       }
 
       setState(() => _error = widget.state.t.barcodeNotFound);
-      await _controller.start();
+      await _resumeCamera();
       return;
     }
 
@@ -201,7 +195,7 @@ class _BarcodeScannerPageState extends State<_BarcodeScannerPage> {
         result.failure ?? BarcodeLookupFailure.notFound,
       );
     });
-    await _controller.start();
+    await _resumeCamera();
   }
 
   Future<void> _lookupManual() async {
@@ -209,6 +203,14 @@ class _BarcodeScannerPageState extends State<_BarcodeScannerPage> {
     if (code.isEmpty) return;
     _lastHandledCode = null;
     await _lookupBarcode(code);
+  }
+
+  Future<void> _resumeCamera() async {
+    try {
+      await _controller.start();
+    } catch (_) {
+      if (mounted) setState(() => _error = widget.state.t.barcodeCameraDenied);
+    }
   }
 
   @override
@@ -222,9 +224,29 @@ class _BarcodeScannerPageState extends State<_BarcodeScannerPage> {
         foregroundColor: Colors.white,
         title: Text(t.scanBarcode),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.flash_on),
-            onPressed: () => _controller.toggleTorch(),
+          ValueListenableBuilder<MobileScannerState>(
+            valueListenable: _controller,
+            builder: (context, camera, child) => IconButton(
+              tooltip: ScanStrings(widget.state.lang).torch,
+              icon: Icon(
+                camera.torchState == TorchState.on
+                    ? Icons.flash_on
+                    : Icons.flash_off,
+              ),
+              onPressed:
+                  camera.torchState == TorchState.unavailable ||
+                      camera.error != null
+                  ? null
+                  : () async {
+                      try {
+                        await _controller.toggleTorch();
+                      } catch (_) {
+                        if (mounted) {
+                          setState(() => _error = t.barcodeCameraDenied);
+                        }
+                      }
+                    },
+            ),
           ),
         ],
       ),
@@ -236,7 +258,20 @@ class _BarcodeScannerPageState extends State<_BarcodeScannerPage> {
               children: [
                 MobileScanner(
                   controller: _controller,
-                  errorBuilder: (context, error, child) {
+                  tapToFocus: true,
+                  overlayBuilder: (context, constraints) => IgnorePointer(
+                    child: Center(
+                      child: Container(
+                        width: constraints.maxWidth * 0.86,
+                        height: constraints.maxHeight.clamp(80, 180).toDouble(),
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.white, width: 2),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                    ),
+                  ),
+                  errorBuilder: (context, error) {
                     return Center(
                       child: Padding(
                         padding: const EdgeInsets.all(24),
@@ -274,7 +309,7 @@ class _BarcodeScannerPageState extends State<_BarcodeScannerPage> {
                     for (final b in capture.barcodes) {
                       final raw = b.rawValue;
                       if (raw != null && raw.isNotEmpty) {
-                        _lookupBarcode(raw);
+                        _lookupBarcode(raw, format: b.format.name);
                         break;
                       }
                     }
@@ -399,36 +434,91 @@ class _BarcodeScannerPageState extends State<_BarcodeScannerPage> {
   }
 }
 
-class _BarcodeConfirmSheet extends StatefulWidget {
+class BarcodeConfirmSheet extends StatefulWidget {
   final AppState state;
   final BarcodeFoodLookup lookup;
   final String? mealId;
 
-  const _BarcodeConfirmSheet({
+  const BarcodeConfirmSheet({
+    super.key,
     required this.state,
     required this.lookup,
     this.mealId,
   });
 
   @override
-  State<_BarcodeConfirmSheet> createState() => _BarcodeConfirmSheetState();
+  State<BarcodeConfirmSheet> createState() => _BarcodeConfirmSheetState();
 }
 
-class _BarcodeConfirmSheetState extends State<_BarcodeConfirmSheet> {
+class _BarcodeConfirmSheetState extends State<BarcodeConfirmSheet> {
   late double _grams;
+  late BarcodeFoodLookup _lookup;
+  late final TextEditingController _quantity;
+  String _inputUnit = 'g';
+  bool _saving = false;
+  late bool _basisConfirmed;
 
   @override
   void initState() {
     super.initState();
-    _grams = widget.lookup.initialGrams;
+    _lookup = widget.lookup;
+    _basisConfirmed =
+        _lookup.labelBasisConfirmed ||
+        _lookup.fromLocalDatabase ||
+        _lookup.source == 'manual';
+    _grams = _lookup.initialAmount;
+    _inputUnit = _lookup.basisUnit == 'ml' && _grams >= 1000
+        ? 'L'
+        : _lookup.basisUnit;
+    _quantity = TextEditingController(text: _quantityText());
+  }
+
+  String _quantityText() => (_grams / (_inputUnit == 'L' ? 1000 : 1))
+      .toStringAsFixed(_inputUnit == 'L' ? 3 : 1)
+      .replaceFirst(RegExp(r'\.?0+$'), '');
+  void _setAmount(double value) => setState(() {
+    _grams = value.clamp(1, 10000);
+    _quantity.text = _quantityText();
+  });
+  @override
+  void dispose() {
+    _quantity.dispose();
+    super.dispose();
+  }
+
+  String _amountLabel(double value) {
+    final t = ScanStrings(widget.state.lang);
+    return ltrFragment(
+      _lookup.basisUnit == 'ml' && value >= 1000
+          ? '${(value / 1000).toStringAsFixed(2)} ${t.liters}'
+          : '${value.round()} ${_lookup.basisUnit == 'ml' ? t.ml : t.grams}',
+    );
+  }
+
+  Future<void> _editLabel() async {
+    final result = await showDialog<BarcodeFoodLookup>(
+      context: context,
+      builder: (_) =>
+          BarcodeLabelDialog(lookup: _lookup, lang: widget.state.lang),
+    );
+    if (result == null || !mounted) return;
+    await widget.state.barcodes.remember(result.barcode, result);
+    if (!mounted) return;
+    setState(() {
+      _lookup = result;
+      _basisConfirmed = true;
+      _inputUnit = result.basisUnit;
+      _quantity.text = _quantityText();
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     final t = widget.state.t;
     final isDark = widget.state.isDark;
-    final lookup = widget.lookup;
-    final macros = lookup.macrosForGrams(_grams);
+    final lookup = _lookup;
+    final strings = ScanStrings(widget.state.lang);
+    final macros = lookup.macrosForAmount(_grams);
 
     return Padding(
       padding: EdgeInsets.only(
@@ -498,7 +588,7 @@ class _BarcodeConfirmSheetState extends State<_BarcodeConfirmSheet> {
                             ),
                           ),
                         Text(
-                          '${t.per100g}: ${lookup.caloriesPer100g.round()} ${t.kcal}',
+                          '${lookup.basisUnit == 'ml' ? strings.per100ml : strings.per100g}: ${lookup.caloriesPer100g.round()} ${t.kcal}',
                           style: TextStyle(
                             fontSize: 11,
                             color: isDark
@@ -536,7 +626,112 @@ class _BarcodeConfirmSheetState extends State<_BarcodeConfirmSheet> {
               ],
               const SizedBox(height: 20),
               Text(
-                t.barcodeAmountLabel,
+                strings.checkLabel,
+                style: TextStyle(
+                  color: isDark ? AppTheme.slate300 : AppTheme.slate700,
+                ),
+              ),
+              if (lookup.attribution != null)
+                TextButton(
+                  onPressed: lookup.sourceUrl == null
+                      ? null
+                      : () => launchUrl(Uri.parse(lookup.sourceUrl!)),
+                  child: Text(lookup.attribution!),
+                ),
+              TextButton.icon(
+                onPressed: _saving ? null : _editLabel,
+                icon: const Icon(Icons.edit_outlined),
+                label: Text(strings.editLabel),
+              ),
+              DropdownButtonFormField<String>(
+                key: ValueKey('${lookup.basisUnit}:$_basisConfirmed'),
+                isExpanded: true,
+                initialValue: _basisConfirmed ? lookup.basisUnit : null,
+                decoration: InputDecoration(
+                  labelText: strings.basis,
+                  hintText: strings.chooseBasis,
+                ),
+                items: ['g', 'ml']
+                    .map(
+                      (u) => DropdownMenuItem(
+                        value: u,
+                        child: Text(
+                          u == 'g' ? strings.per100g : strings.per100ml,
+                        ),
+                      ),
+                    )
+                    .toList(),
+                onChanged: _saving
+                    ? null
+                    : (unit) {
+                        if (unit == null) return;
+                        setState(() {
+                          _lookup = lookup.corrected(
+                            name: lookup.name,
+                            unit: unit,
+                            calories: lookup.caloriesPer100g,
+                            protein: lookup.proteinPer100g,
+                            carbs: lookup.carbsPer100g,
+                            fat: lookup.fatPer100g,
+                          );
+                          _basisConfirmed = true;
+                          _inputUnit = unit;
+                          _quantity.text = _quantityText();
+                        });
+                      },
+              ),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _quantity,
+                      textDirection: TextDirection.ltr,
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
+                      decoration: InputDecoration(labelText: strings.quantity),
+                      onChanged: (value) {
+                        final n = parseLocalizedDouble(value);
+                        if (n != null &&
+                            n > 0 &&
+                            n * (_inputUnit == 'L' ? 1000 : 1) <= 10000) {
+                          setState(
+                            () => _grams = n * (_inputUnit == 'L' ? 1000 : 1),
+                          );
+                        }
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  DropdownButton<String>(
+                    value: _inputUnit,
+                    items: (lookup.basisUnit == 'ml' ? ['ml', 'L'] : ['g'])
+                        .map(
+                          (unit) => DropdownMenuItem(
+                            value: unit,
+                            child: Text(
+                              unit == 'g'
+                                  ? strings.grams
+                                  : unit == 'L'
+                                  ? strings.liters
+                                  : strings.ml,
+                            ),
+                          ),
+                        )
+                        .toList(),
+                    onChanged: (unit) {
+                      if (unit != null) {
+                        setState(() {
+                          _inputUnit = unit;
+                          _quantity.text = _quantityText();
+                        });
+                      }
+                    },
+                  ),
+                ],
+              ),
+              Text(
+                strings.quantity,
                 style: TextStyle(
                   fontWeight: FontWeight.w700,
                   color: isDark ? AppTheme.slate300 : AppTheme.slate700,
@@ -545,7 +740,7 @@ class _BarcodeConfirmSheetState extends State<_BarcodeConfirmSheet> {
               Row(
                 children: [
                   _gramStepButton(Icons.remove, isDark, () {
-                    setState(() => _grams = (_grams - 10).clamp(5, 2000));
+                    _setAmount(_grams - 10);
                   }),
                   Expanded(
                     child: Slider(
@@ -553,17 +748,16 @@ class _BarcodeConfirmSheetState extends State<_BarcodeConfirmSheet> {
                       min: 5,
                       max: 1000,
                       divisions: 199,
-                      label: '${_grams.round()} ${t.grams}',
-                      onChanged: (v) =>
-                          setState(() => _grams = v.roundToDouble()),
+                      label: _amountLabel(_grams),
+                      onChanged: (v) => _setAmount(v.roundToDouble()),
                     ),
                   ),
                   _gramStepButton(Icons.add, isDark, () {
-                    setState(() => _grams = (_grams + 10).clamp(5, 2000));
+                    _setAmount(_grams + 10);
                   }),
                   const SizedBox(width: 8),
                   Text(
-                    '${_grams.round()} ${t.grams}',
+                    _amountLabel(_grams),
                     style: TextStyle(
                       fontWeight: FontWeight.w800,
                       color: AppTheme.indigo,
@@ -577,7 +771,7 @@ class _BarcodeConfirmSheetState extends State<_BarcodeConfirmSheet> {
                 children: [50, 100, 150, 200, 300, 500].map((g) {
                   final active = _grams.round() == g;
                   return GestureDetector(
-                    onTap: () => setState(() => _grams = g.toDouble()),
+                    onTap: () => _setAmount(g.toDouble()),
                     child: Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 12,
@@ -592,7 +786,7 @@ class _BarcodeConfirmSheetState extends State<_BarcodeConfirmSheet> {
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Text(
-                        '$g${t.grams}',
+                        _amountLabel(g.toDouble()),
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w700,
@@ -608,16 +802,47 @@ class _BarcodeConfirmSheetState extends State<_BarcodeConfirmSheet> {
                 }).toList(),
               ),
               const SizedBox(height: 12),
-              Row(
-                children: [
-                  _macroChip(t.calories, macros['calories']!.round(), isDark),
-                  const SizedBox(width: 8),
-                  _macroChip(t.protein, macros['protein']!.round(), isDark),
-                  const SizedBox(width: 8),
-                  _macroChip(t.carbs, macros['carbs']!.round(), isDark),
-                  const SizedBox(width: 8),
-                  _macroChip(t.fat, macros['fat']!.round(), isDark),
-                ],
+              LayoutBuilder(
+                builder: (context, space) {
+                  final cells = [
+                    _macroChip(t.calories, macros['calories']!.round(), isDark),
+                    _macroChip(t.protein, macros['protein']!.round(), isDark),
+                    _macroChip(t.carbs, macros['carbs']!.round(), isDark),
+                    _macroChip(t.fat, macros['fat']!.round(), isDark),
+                  ];
+                  if (space.maxWidth < 360) {
+                    return Column(
+                      children: [
+                        Row(
+                          children: [
+                            cells[0],
+                            const SizedBox(width: 8),
+                            cells[1],
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            cells[2],
+                            const SizedBox(width: 8),
+                            cells[3],
+                          ],
+                        ),
+                      ],
+                    );
+                  }
+                  return Row(
+                    children: [
+                      cells[0],
+                      const SizedBox(width: 8),
+                      cells[1],
+                      const SizedBox(width: 8),
+                      cells[2],
+                      const SizedBox(width: 8),
+                      cells[3],
+                    ],
+                  );
+                },
               ),
               const SizedBox(height: 24),
               Text(
@@ -641,33 +866,71 @@ class _BarcodeConfirmSheetState extends State<_BarcodeConfirmSheet> {
                   Expanded(
                     flex: 2,
                     child: ElevatedButton.icon(
-                      onPressed: () async {
-                        final foodId =
-                            lookup.localFoodId ?? 'barcode_${lookup.barcode}';
-                        final saved = await widget.state.addLogEntry(
-                          LogEntry(
-                            id: DateTime.now().millisecondsSinceEpoch
-                                .toString(),
-                            foodId: foodId,
-                            name: lookup.name,
-                            amount: _grams,
-                            calories: macros['calories']!,
-                            protein: macros['protein']!,
-                            carbs: macros['carbs']!,
-                            fat: macros['fat']!,
-                            timestamp: DateTime.now().millisecondsSinceEpoch,
-                            mealId: widget.mealId,
-                          ),
-                        );
-                        if (!context.mounted) return;
-                        if (saved) {
-                          Navigator.pop(context, true);
-                        } else {
-                          ScaffoldMessenger.of(
-                            context,
-                          ).showSnackBar(SnackBar(content: Text(t.saveFailed)));
-                        }
-                      },
+                      onPressed: _saving || !_basisConfirmed
+                          ? null
+                          : () async {
+                              final entered = parseLocalizedDouble(
+                                _quantity.text,
+                              );
+                              if (entered == null ||
+                                  entered <= 0 ||
+                                  entered * (_inputUnit == 'L' ? 1000 : 1) >
+                                      10000) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(strings.invalidNutrition),
+                                  ),
+                                );
+                                return;
+                              }
+                              setState(() => _saving = true);
+                              if (lookup.source == 'manual') {
+                                try {
+                                  await widget.state.barcodes.remember(
+                                    lookup.barcode,
+                                    lookup,
+                                  );
+                                } catch (_) {
+                                  if (context.mounted) {
+                                    setState(() => _saving = false);
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(content: Text(t.saveFailed)),
+                                    );
+                                  }
+                                  return;
+                                }
+                                if (!mounted) return;
+                              }
+                              final foodId =
+                                  lookup.localFoodId ??
+                                  'barcode_${lookup.barcode}';
+                              final saved = await widget.state.addLogEntry(
+                                LogEntry(
+                                  id: DateTime.now().millisecondsSinceEpoch
+                                      .toString(),
+                                  foodId: foodId,
+                                  name: lookup.name,
+                                  amount: _grams,
+                                  amountUnit: lookup.basisUnit,
+                                  calories: macros['calories']!,
+                                  protein: macros['protein']!,
+                                  carbs: macros['carbs']!,
+                                  fat: macros['fat']!,
+                                  timestamp:
+                                      DateTime.now().millisecondsSinceEpoch,
+                                  mealId: widget.mealId,
+                                ),
+                              );
+                              if (!context.mounted) return;
+                              if (saved) {
+                                Navigator.pop(context, true);
+                              } else {
+                                setState(() => _saving = false);
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text(t.saveFailed)),
+                                );
+                              }
+                            },
                       icon: const Icon(Icons.add_chart),
                       label: Text(t.barcodeLogYes),
                     ),
@@ -686,8 +949,8 @@ class _BarcodeConfirmSheetState extends State<_BarcodeConfirmSheet> {
       onTap: onTap,
       borderRadius: BorderRadius.circular(10),
       child: Container(
-        width: 34,
-        height: 34,
+        width: 44,
+        height: 44,
         decoration: BoxDecoration(
           color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
           borderRadius: BorderRadius.circular(10),
@@ -746,6 +1009,7 @@ class _BarcodeNotFoundSheet extends StatefulWidget {
 }
 
 class _BarcodeNotFoundSheetState extends State<_BarcodeNotFoundSheet> {
+  String _basisUnit = 'g';
   final _nameController = TextEditingController();
   final _kcalController = TextEditingController();
   final _proteinController = TextEditingController();
@@ -767,7 +1031,21 @@ class _BarcodeNotFoundSheetState extends State<_BarcodeNotFoundSheet> {
 
   Future<void> _saveManual() async {
     final name = _nameController.text.trim();
-    if (name.isEmpty) return;
+    final fields = [
+      _kcalController,
+      _proteinController,
+      _carbsController,
+      _fatController,
+    ];
+    if (name.isEmpty ||
+        fields.any((c) => parseLocalizedDouble(c.text) == null)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(ScanStrings(widget.state.lang).invalidNutrition),
+        ),
+      );
+      return;
+    }
 
     final lookup = BarcodeFoodLookup(
       barcode: widget.barcode,
@@ -777,7 +1055,17 @@ class _BarcodeNotFoundSheetState extends State<_BarcodeNotFoundSheet> {
       carbsPer100g: _parseField(_carbsController),
       fatPer100g: _parseField(_fatController),
       fromLocalDatabase: true,
+      basisUnit: _basisUnit,
+      source: 'manual',
     );
+    if (!lookup.isValid) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(ScanStrings(widget.state.lang).invalidNutrition),
+        ),
+      );
+      return;
+    }
     await widget.service.remember(widget.barcode, lookup);
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
@@ -881,6 +1169,28 @@ class _BarcodeNotFoundSheetState extends State<_BarcodeNotFoundSheet> {
                 controller: _nameController,
                 decoration: InputDecoration(labelText: t.barcodeProductName),
               ),
+              DropdownButtonFormField<String>(
+                isExpanded: true,
+                initialValue: _basisUnit,
+                decoration: InputDecoration(
+                  labelText: ScanStrings(widget.state.lang).basis,
+                ),
+                items: ['g', 'ml']
+                    .map(
+                      (u) => DropdownMenuItem(
+                        value: u,
+                        child: Text(
+                          u == 'g'
+                              ? ScanStrings(widget.state.lang).per100g
+                              : ScanStrings(widget.state.lang).per100ml,
+                        ),
+                      ),
+                    )
+                    .toList(),
+                onChanged: (u) {
+                  if (u != null) setState(() => _basisUnit = u);
+                },
+              ),
               const SizedBox(height: 8),
               Row(
                 children: [
@@ -889,7 +1199,7 @@ class _BarcodeNotFoundSheetState extends State<_BarcodeNotFoundSheet> {
                       controller: _kcalController,
                       keyboardType: TextInputType.number,
                       decoration: InputDecoration(
-                        labelText: '${t.calories} / 100g',
+                        labelText: '${t.calories} / 100 $_basisUnit',
                       ),
                     ),
                   ),
@@ -899,7 +1209,7 @@ class _BarcodeNotFoundSheetState extends State<_BarcodeNotFoundSheet> {
                       controller: _proteinController,
                       keyboardType: TextInputType.number,
                       decoration: InputDecoration(
-                        labelText: '${t.protein} / 100g',
+                        labelText: '${t.protein} / 100 $_basisUnit',
                       ),
                     ),
                   ),
@@ -913,7 +1223,7 @@ class _BarcodeNotFoundSheetState extends State<_BarcodeNotFoundSheet> {
                       controller: _carbsController,
                       keyboardType: TextInputType.number,
                       decoration: InputDecoration(
-                        labelText: '${t.carbs} / 100g',
+                        labelText: '${t.carbs} / 100 $_basisUnit',
                       ),
                     ),
                   ),
@@ -922,7 +1232,9 @@ class _BarcodeNotFoundSheetState extends State<_BarcodeNotFoundSheet> {
                     child: TextField(
                       controller: _fatController,
                       keyboardType: TextInputType.number,
-                      decoration: InputDecoration(labelText: '${t.fat} / 100g'),
+                      decoration: InputDecoration(
+                        labelText: '${t.fat} / 100 $_basisUnit',
+                      ),
                     ),
                   ),
                 ],

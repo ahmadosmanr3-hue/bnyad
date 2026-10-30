@@ -47,6 +47,10 @@ class HealthStepBridge(private val activity: FlutterFragmentActivity, flutterEng
                 result.success(offlinePreviewAllowed(activity))
                 return@setMethodCallHandler
             }
+            if (call.method == "localBackendAllowed") {
+                result.success(localBackendAllowed(activity))
+                return@setMethodCallHandler
+            }
             activity.lifecycleScope.launch {
                 try {
                     val sdk = HealthConnectClient.getSdkStatus(activity)

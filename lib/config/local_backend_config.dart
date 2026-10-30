@@ -3,7 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 
-/// Only the explicitly marked non-release iOS development bundle can use this.
+/// Only explicitly marked native development identifiers can use this.
 /// Production and ordinary staging keep their existing configuration unchanged.
 class LocalBackendConfig {
   final Uri api;
@@ -39,13 +39,18 @@ class LocalBackendConfig {
   Future<void> authorize() async {
     if (kIsWeb ||
         kReleaseMode ||
-        defaultTargetPlatform != TargetPlatform.iOS ||
+        ![
+          TargetPlatform.iOS,
+          TargetPlatform.android,
+        ].contains(defaultTargetPlatform) ||
+        (defaultTargetPlatform == TargetPlatform.android &&
+            allowSupervisedFood) ||
         await const MethodChannel(
               'com.bnyad.app/steps',
             ).invokeMethod<bool>('localBackendAllowed') !=
             true) {
       throw StateError(
-        'Local backend requires the marked iPhone development build.',
+        'Local backend requires a marked native development build. Live food tests remain iPhone-only.',
       );
     }
   }

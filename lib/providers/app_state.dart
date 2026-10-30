@@ -1,14 +1,20 @@
+import 'package:nutrify/services/food_catalog.dart';
+import 'package:nutrify/services/favorites_controller.dart';
+import 'package:nutrify/constants/food_serving_switch.dart';
+import 'package:nutrify/constants/food_database.dart';
 import 'dart:io' show InternetAddress;
 import 'dart:async';
 import 'package:nutrify/l10n/notification_text.dart';
 import 'package:nutrify/l10n/native_locale.dart';
 import '../activity/step_tracker.dart';
+import '../models/premium_gift.dart';
 import '../activity/step_health_provider.dart';
 import '../activity/step_models.dart';
 import 'dart:convert';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:nutrify/services/food_barcode_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:nutrify/services/auth_service.dart';
@@ -17,6 +23,7 @@ import 'package:nutrify/services/local_account_cache.dart';
 import 'package:nutrify/services/ai_service.dart';
 import 'package:nutrify/services/notification_service.dart';
 import 'package:nutrify/services/push_service.dart';
+import 'package:nutrify/services/purchases_bootstrap.dart';
 import 'package:nutrify/models/user_profile.dart';
 import 'package:nutrify/models/log_entry.dart';
 import 'package:nutrify/models/meal.dart';
@@ -44,6 +51,7 @@ Map<String, dynamic> _logEntryToJson(LogEntry e) => {
   'foodId': e.foodId,
   'name': e.name,
   'amount': e.amount,
+  'amountUnit': e.amountUnit,
   'calories': e.calories,
   'protein': e.protein,
   'carbs': e.carbs,
@@ -60,6 +68,7 @@ LogEntry _logEntryFromJson(Map<String, dynamic> m) {
     foodId: m['foodId']?.toString() ?? '',
     name: m['name']?.toString() ?? '',
     amount: (m['amount'] as num?)?.toDouble() ?? 0,
+    amountUnit: m['amountUnit'] == 'ml' ? 'ml' : 'g',
     calories: (m['calories'] as num?)?.toDouble() ?? 0,
     protein: (m['protein'] as num?)?.toDouble() ?? 0,
     carbs: (m['carbs'] as num?)?.toDouble() ?? 0,
@@ -129,7 +138,8 @@ class AppState extends ChangeNotifier {
   bool _isOnline = true;
   final Map<String, Map<String, int>> _nutritionHistory = {};
   final Map<String, double> _weightHistory = {};
-  List<FavoriteTemplate> _favorites = [];
+  late final FavoritesController favoriteState;
+  late final FoodCatalog catalog;
   List<ShoppingItem> _shoppingList = [];
   bool _weeklyDigestEnabled = false;
   String _mealPlanCuisine = 'all';
@@ -154,6 +164,9 @@ class AppState extends ChangeNotifier {
     void Function(String)? stepDiagnostics,
   }) : _authService = authService,
        _apiService = apiService {
+    catalog = FoodCatalog(_apiService)..addListener(notifyListeners);
+    favoriteState = FavoritesController(_apiService)
+      ..addListener(notifyListeners);
     steps = StepTracker(
       provider: stepHealthProvider ?? NativeStepHealthProvider(),
       store: stepSettingsStore ?? LocalStepSettingsStore(),
@@ -293,9 +306,11 @@ class AppState extends ChangeNotifier {
       keys.map((k) => t.getAllergy(k)).join(', ');
   bool get isRTL => _lang == 'ar' || (_lang == 'ku' || _lang == 'ckb');
   AiService get ai => AiService(api: _apiService);
+  FoodBarcodeService get barcodes => FoodBarcodeService(api: _apiService);
   String get aiErrorCode => _apiService.aiErrorCode;
   int? get sessionAccountId => _apiService.userId;
   Future<bool?> getAiConsent() => _apiService.getAiConsent();
+  bool? get aiServiceAvailable => _apiService.aiServiceAvailable;
   Future<bool> setAiConsent(bool enabled) async {
     final saved = await _apiService.setAiConsent(enabled);
     if (saved && !enabled) {
@@ -319,7 +334,16 @@ class AppState extends ChangeNotifier {
   Map<String, Map<String, int>> get nutritionHistory =>
       Map.unmodifiable(_nutritionHistory);
   Map<String, double> get weightHistory => Map.unmodifiable(_weightHistory);
-  List<FavoriteTemplate> get favorites => List.unmodifiable(_favorites);
+  List<FavoriteTemplate> get favorites => favoriteState.items;
+  bool isFavorite(String id) => favoriteState.contains(canonicalFavoriteId(id));
+  String canonicalFavoriteId(String id) {
+    if (catalog.foods[id] != null) return catalog.foods[id]!.canonicalKey;
+    for (final food in foodDatabase) {
+      if (food.id == id) return foodCanonicalGrams(food).id;
+    }
+    return id.replaceFirst(RegExp(r'_(syn_pc|syn_bw)$'), '');
+  }
+
   List<ShoppingItem> get shoppingList => List.unmodifiable(_shoppingList);
   bool get weeklyDigestEnabled => _weeklyDigestEnabled;
   String get mealPlanCuisine => _mealPlanCuisine;
@@ -575,6 +599,7 @@ class AppState extends ChangeNotifier {
         }
       }
 
+      await refreshFavorites();
       final today = _nutritionDateKey(DateTime.now());
       final logs = await _apiService.getDailyLogs(date: today);
       final water = await _apiService.getWaterIntake(date: today);
@@ -589,7 +614,11 @@ class AppState extends ChangeNotifier {
 
       if (supportsOptionalDeviceServices && _apiService.userId != null) {
         try {
-          await Purchases.logIn(_apiService.userId!.toString());
+          if (await PurchasesBootstrap.instance.ensureConfigured() &&
+              _apiService.hasToken &&
+              _apiService.userId == sessionUserId) {
+            await Purchases.logIn(sessionUserId!.toString());
+          }
         } catch (e) {
           debugPrint('Error logging in to RevenueCat: $e');
         }
@@ -627,10 +656,16 @@ class AppState extends ChangeNotifier {
     _isLoggedIn = false;
     _isPremium = false;
     _premiumUntil = null;
+    _purchaseVerificationPending = false;
+    _premiumGifts = [];
+    _storeManagedPremium = false;
+    _premiumRefreshTimer?.cancel();
+    _premiumRefreshTimer = null;
     _notifications = [];
     _nutritionHistory.clear();
     _weightHistory.clear();
-    _favorites = [];
+    favoriteState.persist = null;
+    favoriteState.attach(server: false, cached: []);
     _shoppingList = [];
     _vitamins = [];
     _savedRecipe = null;
@@ -648,6 +683,7 @@ class AppState extends ChangeNotifier {
 
     // Re-fetch data from API if logged in.
     if (_isLoggedIn && !_isMockUser) {
+      unawaited(syncPremiumFromServer());
       unawaited(_fetchUserData());
     }
 
@@ -729,7 +765,9 @@ class AppState extends ChangeNotifier {
     if (_lang == newLang) return;
     _lang = newLang;
     notifyListeners();
-    _languagePersistence = _languagePersistence.then((_) => _persistLang(newLang));
+    _languagePersistence = _languagePersistence.then(
+      (_) => _persistLang(newLang),
+    );
     await _languagePersistence;
   }
 
@@ -818,6 +856,10 @@ class AppState extends ChangeNotifier {
 
   /// Completes API sign-in after OTP verification.
   Future<void> finishPhoneLogin(Map<String, dynamic> userData) async {
+    _premiumGifts = [];
+    _storeManagedPremium = false;
+    _premiumRefreshTimer?.cancel();
+    _premiumRefreshTimer = null;
     if (_isMockUser) {
       await clearMockUser();
     }
@@ -929,7 +971,8 @@ class AppState extends ChangeNotifier {
       return;
     }
     if (supportsOptionalDeviceServices) {
-      unawaited(Purchases.logOut());
+      await PushService.instance.unregisterForUser(_apiService);
+      await PurchasesBootstrap.instance.logOutIfConfigured();
     }
     await _authService.signOut();
     _clearData();
@@ -946,7 +989,7 @@ class AppState extends ChangeNotifier {
     if (!success) return false;
     await steps.eraseAccount();
     if (supportsOptionalDeviceServices) {
-      unawaited(Purchases.logOut());
+      await PurchasesBootstrap.instance.logOutIfConfigured();
     }
 
     try {
@@ -1389,16 +1432,42 @@ class AppState extends ChangeNotifier {
     }
   }
 
-  Future<void> addFavorite(FavoriteTemplate template) async {
-    _favorites = [..._favorites.where((f) => f.id != template.id), template];
-    await _saveFavorites();
-    notifyListeners();
+  FavoriteTemplate _canonicalFavorite(FavoriteTemplate f) {
+    final id = canonicalFavoriteId(f.foodId ?? f.id);
+    return FavoriteTemplate(
+      id: id,
+      foodId: id,
+      name: f.name,
+      amount: f.amount,
+      amountUnit: f.amountUnit,
+      calories: f.calories,
+      protein: f.protein,
+      carbs: f.carbs,
+      fat: f.fat,
+      micros: f.micros,
+    );
   }
 
-  Future<void> removeFavorite(String id) async {
-    _favorites = _favorites.where((f) => f.id != id).toList();
-    await _saveFavorites();
-    notifyListeners();
+  Future<void> addFavorite(FavoriteTemplate template) async {
+    if (!await favoriteState.set(_canonicalFavorite(template), true)) {
+      throw StateError('Favorite could not be saved');
+    }
+  }
+
+  Future<bool> toggleFavorite(FavoriteTemplate template) =>
+      favoriteState.toggle(_canonicalFavorite(template));
+  Future<bool> removeFavorite(String id) async {
+    final key = canonicalFavoriteId(id);
+    final found = favorites.where((f) => (f.foodId ?? f.id) == key).firstOrNull;
+    return found == null || await favoriteState.set(found, false);
+  }
+
+  Future<bool> refreshFavorites() async {
+    if (!_isMockUser && _apiService.hasToken && !favoriteState.remote) {
+      final prefs = await SharedPreferences.getInstance();
+      await _loadFavorites(prefs);
+    }
+    return favoriteState.refresh();
   }
 
   Future<void> logFromFavorite(FavoriteTemplate f) async {
@@ -1408,6 +1477,7 @@ class AppState extends ChangeNotifier {
         foodId: f.foodId ?? 'favorite-${f.id}',
         name: f.name,
         amount: f.amount,
+        amountUnit: f.amountUnit,
         calories: f.calories,
         protein: f.protein,
         carbs: f.carbs,
@@ -1530,6 +1600,30 @@ class AppState extends ChangeNotifier {
 
   // ─── Premium ────────────────────────────────────────
 
+  bool _storeManagedPremium = false;
+  bool get storeManagedPremium => _storeManagedPremium;
+  List<PremiumGift> _premiumGifts = [];
+  List<PremiumGift> get premiumGifts => List.unmodifiable(_premiumGifts);
+  Timer? _premiumRefreshTimer;
+  void _startPremiumRefresh() {
+    if (!supportsOptionalDeviceServices || !isAuthenticated) return;
+    _premiumRefreshTimer ??= Timer.periodic(const Duration(seconds: 60), (_) {
+      if (isAuthenticated &&
+          WidgetsBinding.instance.lifecycleState == AppLifecycleState.resumed) {
+        unawaited(syncPremiumFromServer());
+      }
+    });
+  }
+
+  bool _purchaseVerificationPending = false;
+  bool get purchaseVerificationPending => _purchaseVerificationPending;
+
+  bool _samePremiumAccount(int? userId) =>
+      isAuthenticated &&
+      _apiService.hasToken &&
+      userId != null &&
+      _apiService.userId == userId;
+
   void _loadPremium(SharedPreferences prefs) {
     _isPremium = prefs.getBool('is_premium') ?? false;
     final untilMs = prefs.getInt('premium_until_ms');
@@ -1557,44 +1651,75 @@ class AppState extends ChangeNotifier {
 
   Future<void> syncPremiumFromServer() async {
     if (_isMockUser || !_isLoggedIn) return;
+    final userId = _apiService.userId;
     final sub = await _apiService.getSubscription();
-    if (sub == null) return;
+    if (!_samePremiumAccount(userId) || sub == null) return;
+    _premiumGifts = PremiumGift.parse(sub['gifts']);
+    _storeManagedPremium =
+        sub['storeManaged'] == true || sub['plan'] == 'store_verified';
+    _startPremiumRefresh();
+    notifyListeners();
     if (sub['isPremium'] == true) {
+      _purchaseVerificationPending = false;
       await setPremium(
         true,
         until: DateTime.tryParse(sub['expiresAt']?.toString() ?? ''),
       );
       return;
     }
-    if (supportsOptionalDeviceServices) {
+    if (supportsOptionalDeviceServices &&
+        await PurchasesBootstrap.instance.ensureConfigured() &&
+        _samePremiumAccount(userId)) {
       try {
-        if (await _applyStoreEntitlement(await Purchases.getCustomerInfo())) {
+        if (await _applyStoreEntitlement(
+          await Purchases.getCustomerInfo(),
+          userId,
+        )) {
           return;
         }
       } catch (_) {
         return;
       }
     }
-    await setPremium(false);
+    if (_samePremiumAccount(userId)) await setPremium(false);
   }
 
-  Future<bool> _applyStoreEntitlement(CustomerInfo info) async {
+  Future<bool> _applyStoreEntitlement(CustomerInfo info, int? userId) async {
+    if (!_samePremiumAccount(userId)) return false;
     final entitlement = info.entitlements.all['all_feature'];
     if (entitlement?.isActive != true) return false;
     final expiration = DateTime.tryParse(entitlement?.expirationDate ?? '');
     if (expiration != null && !expiration.isAfter(DateTime.now())) return false;
-    await setPremium(true, until: expiration);
-    if (_isLoggedIn && !_isMockUser) {
-      unawaited(_apiService.postSubscription());
-    }
+    // StoreKit completion is not backend authorization. Await verification
+    // and a trusted access snapshot before reporting success to the user.
+    _purchaseVerificationPending = true;
+    final verified = await _apiService.postSubscription();
+    if (!_samePremiumAccount(userId) || !verified) return false;
+    final sub = await _apiService.getSubscription();
+    if (!_samePremiumAccount(userId) || sub?['isPremium'] != true) return false;
+    _premiumGifts = PremiumGift.parse(sub?['gifts']);
+    _storeManagedPremium =
+        sub?['storeManaged'] == true || sub?['plan'] == 'store_verified';
+    await setPremium(
+      true,
+      until: DateTime.tryParse(sub!['expiresAt']?.toString() ?? ''),
+    );
+    _purchaseVerificationPending = false;
     return true;
   }
 
   Future<void> syncPremiumFromRevenueCat() async {
-    if (!supportsOptionalDeviceServices) return;
+    if (!supportsOptionalDeviceServices || !isAuthenticated) return;
+    final userId = _apiService.userId;
     try {
+      if (!await PurchasesBootstrap.instance.ensureConfigured() ||
+          !_samePremiumAccount(userId)) {
+        return;
+      }
       final info = await Purchases.getCustomerInfo();
-      if (!await _applyStoreEntitlement(info) && _isLoggedIn && !_isMockUser) {
+      if (!_samePremiumAccount(userId)) return;
+      if (!await _applyStoreEntitlement(info, userId) &&
+          _samePremiumAccount(userId)) {
         await syncPremiumFromServer();
       }
     } catch (_) {}
@@ -1602,23 +1727,30 @@ class AppState extends ChangeNotifier {
 
   Future<bool> purchasePremium({String? productId}) async {
     if (!supportsOptionalDeviceServices || !isAuthenticated) return false;
+    _purchaseVerificationPending = false;
+    final userId = _apiService.userId;
     try {
-      await Purchases.logIn(_apiService.userId!.toString());
+      if (!await PurchasesBootstrap.instance.ensureConfigured() ||
+          !_samePremiumAccount(userId)) {
+        return false;
+      }
+      await Purchases.logIn(userId!.toString());
+      if (!_samePremiumAccount(userId)) return false;
       if (productId != null) {
         final products = await Purchases.getProducts([productId]);
-        if (products.isEmpty) return false;
+        if (!_samePremiumAccount(userId) || products.isEmpty) return false;
         final result = await Purchases.purchase(
           PurchaseParams.storeProduct(products.first),
         );
-        return await _applyStoreEntitlement(result.customerInfo);
+        return await _applyStoreEntitlement(result.customerInfo, userId);
       }
       final offerings = await Purchases.getOfferings();
       final packages = offerings.current?.availablePackages ?? [];
-      if (packages.isEmpty) return false;
+      if (!_samePremiumAccount(userId) || packages.isEmpty) return false;
       final result = await Purchases.purchase(
         PurchaseParams.package(packages.first),
       );
-      return await _applyStoreEntitlement(result.customerInfo);
+      return await _applyStoreEntitlement(result.customerInfo, userId);
     } catch (_) {
       return false;
     }
@@ -1626,18 +1758,30 @@ class AppState extends ChangeNotifier {
 
   Future<bool> restorePurchases() async {
     if (!isAuthenticated) return false;
+    _purchaseVerificationPending = false;
+    final userId = _apiService.userId;
     if (!supportsOptionalDeviceServices) {
       await syncPremiumFromServer();
-      return isPremium;
+      return _samePremiumAccount(userId) && isPremium;
     }
     try {
-      await Purchases.logIn(_apiService.userId!.toString());
-      if (await _applyStoreEntitlement(await Purchases.restorePurchases())) {
+      if (!await PurchasesBootstrap.instance.ensureConfigured()) {
+        await syncPremiumFromServer();
+        return _samePremiumAccount(userId) && isPremium;
+      }
+      if (!_samePremiumAccount(userId)) return false;
+      await Purchases.logIn(userId!.toString());
+      if (!_samePremiumAccount(userId)) return false;
+      if (await _applyStoreEntitlement(
+        await Purchases.restorePurchases(),
+        userId,
+      )) {
         return true;
       }
+      if (!_samePremiumAccount(userId)) return false;
       await syncPremiumFromServer();
     } catch (_) {}
-    return isPremium;
+    return _samePremiumAccount(userId) && isPremium;
   }
 
   // ─── Notifications inbox ─────────────────────────────
@@ -1682,6 +1826,7 @@ class AppState extends ChangeNotifier {
               'translations': n['translations'],
               'body': n['body']?.toString() ?? '',
               'createdAt': n['createdAt']?.toString() ?? '',
+              'campaignId': n['campaignId'],
             },
           )
           .toList();
@@ -1700,6 +1845,9 @@ class AppState extends ChangeNotifier {
 
       if (supportsOptionalDeviceServices) {
         for (final n in fresh) {
+          // Campaign alerts are delivered by FCM. Polling only records their
+          // history, so reopening cannot display the same gift a second time.
+          if (n['campaignId'] != null) continue;
           try {
             await NotificationService.instance.showServerNotification(
               id: n['id'] as int,
@@ -1707,6 +1855,9 @@ class AppState extends ChangeNotifier {
                   ? 'BNYAD'
                   : notificationText(n, 'title', _lang),
               body: notificationText(n, 'body', _lang),
+              route: n['campaignId'] != null
+                  ? 'premium-gifts'
+                  : 'server-notifications',
             );
           } catch (e) {
             debugPrint('show server notification error: $e');
@@ -2107,20 +2258,50 @@ class AppState extends ChangeNotifier {
     } catch (_) {}
   }
 
-  Future<void> _saveFavorites() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setStringList(
-      'favorites',
-      _favorites.map((f) => f.toJsonString()).toList(),
-    );
-  }
-
   Future<void> _loadFavorites(SharedPreferences prefs) async {
-    final raw = prefs.getStringList('favorites') ?? [];
-    _favorites = raw
+    final owner = '${_apiService.baseUrl}:${_apiService.userId ?? 'local'}';
+    final key = 'favorites_v2_$owner';
+    final legacy = prefs.getStringList('favorites') ?? [];
+    final raw = prefs.getStringList(key) ?? legacy;
+    final parsed = raw
         .map(FavoriteTemplate.tryParse)
         .whereType<FavoriteTemplate>()
+        .map(_canonicalFavorite)
         .toList();
+    favoriteState.persist = null;
+    favoriteState.attach(
+      server: !_isMockUser && _apiService.hasToken,
+      cached: parsed,
+    );
+    favoriteState.persist = (items) {
+      // Scoped cache remains separate even if a previous account's disk write
+      // finishes after logout. The unscoped legacy backup is never overwritten.
+      unawaited(
+        prefs.setStringList(key, items.map((f) => f.toJsonString()).toList()),
+      );
+    };
+    if (favoriteState.remote && prefs.getBool('${key}_imported') != true) {
+      final user = _apiService.userId;
+      await prefs.setStringList('${key}_legacy_backup', legacy);
+      try {
+        final imported = legacy
+            .map(FavoriteTemplate.tryParse)
+            .whereType<FavoriteTemplate>()
+            .map(_canonicalFavorite)
+            .toList();
+        for (var start = 0; start < imported.length; start += 50) {
+          if (_apiService.userId != user) return;
+          await _apiService.importFavorites(
+            imported.skip(start).take(50).map((f) => f.toMap()).toList(),
+          );
+        }
+        if (_apiService.userId == user) {
+          await prefs.setBool('${key}_imported', true);
+        }
+      } catch (_) {
+        /* Keep backup and retry import on the next account refresh. */
+      }
+    }
   }
 
   Future<void> _saveShoppingList() async {
@@ -2208,6 +2389,11 @@ class AppState extends ChangeNotifier {
 
   @override
   void dispose() {
+    favoriteState.removeListener(notifyListeners);
+    favoriteState.dispose();
+    catalog.removeListener(notifyListeners);
+    catalog.dispose();
+    _premiumRefreshTimer?.cancel();
     steps.removeListener(notifyListeners);
     steps.dispose();
     _connectivitySub?.cancel();

@@ -2,6 +2,23 @@
 class AiStrings {
   static const translations = {
     'en': {
+      'adultProfile':
+          'AI features are available only to users aged 18 or older. Your saved profile does not meet this requirement.',
+      'premiumAiConditions':
+          'AI requires age 18 or older and consent to Google data sharing. A shared daily allowance and service spending limits apply.',
+      'availabilityChecking': 'Checking AI service availability…',
+      'premiumAiPaused':
+          'AI features are currently disabled for everyone. A Premium subscription does not enable AI while the service is paused. Other available features remain unchanged.',
+      'availabilityUnknown':
+          'AI availability could not be checked. A Premium subscription does not guarantee that AI services are available.',
+      'disabled':
+          'AI features are currently paused by BNYAD. Basic tracking remains available.',
+      'configuration':
+          'BNYAD AI needs a service configuration update. Please contact support.',
+      'serviceUpdate':
+          'The AI service needs an update. Please contact BNYAD support.',
+      'providerQuota':
+          'The AI provider has reached its current request allowance. Please try later.',
       'rateLimit': 'Too many AI requests. Wait a minute before trying again.',
       'dailyLimit':
           'Your daily AI allowance is used up. It resets at midnight UTC.',
@@ -34,6 +51,23 @@ class AiStrings {
           'AI is not enabled or is temporarily unavailable. Your saved data is unchanged.',
     },
     'ar': {
+      'adultProfile':
+          'ميزات الذكاء الاصطناعي متاحة فقط لمن أعمارهم ١٨ عاماً أو أكثر. ملفك المحفوظ لا يستوفي هذا الشرط.',
+      'premiumAiConditions':
+          'يتطلب الذكاء الاصطناعي عمراً لا يقل عن ١٨ عاماً وموافقة على مشاركة البيانات مع Google. جميع أدواته تشترك في حد يومي، وتخضع لحدود إنفاق الخدمة.',
+      'availabilityChecking': 'جارٍ التحقق من توفر خدمة الذكاء الاصطناعي…',
+      'premiumAiPaused':
+          'ميزات الذكاء الاصطناعي معطلة للجميع حالياً. لا يؤدي اشتراك Premium إلى تفعيلها أثناء إيقاف الخدمة. تبقى الميزات الأخرى المتاحة دون تغيير.',
+      'availabilityUnknown':
+          'تعذر التحقق من توفر الذكاء الاصطناعي. لا يضمن اشتراك Premium توفر خدمات الذكاء الاصطناعي.',
+      'disabled':
+          'أوقف بنياد ميزات الذكاء الاصطناعي مؤقتاً. يبقى التتبع الأساسي متاحاً.',
+      'configuration':
+          'تحتاج خدمة الذكاء الاصطناعي في بنياد إلى تحديث إعداداتها. يرجى التواصل مع الدعم.',
+      'serviceUpdate':
+          'تحتاج خدمة الذكاء الاصطناعي إلى تحديث. يرجى التواصل مع دعم بنياد.',
+      'providerQuota':
+          'بلغ مزود الذكاء الاصطناعي الحد المتاح للطلبات حالياً. حاول لاحقاً.',
       'rateLimit': 'طلبات الذكاء الاصطناعي كثيرة. انتظر دقيقة ثم حاول مجدداً.',
       'dailyLimit':
           'استهلكت الحد اليومي للذكاء الاصطناعي. يتجدد عند منتصف الليل بتوقيت UTC.',
@@ -67,6 +101,24 @@ class AiStrings {
           'الذكاء الاصطناعي غير مفعل أو غير متاح مؤقتاً. لم تتغير بياناتك المحفوظة.',
     },
     'ku': {
+      'adultProfile':
+          'تایبەتمەندییەکانی زیرەکیی دەستکرد تەنها بۆ کەسانی تەمەن ١٨ ساڵ یان زیاتر بەردەستن. تەمەنە هەڵگیراوەکەت ئەم مەرجە پڕ ناکاتەوە.',
+      'premiumAiConditions':
+          'بۆ بەکارهێنانی زیرەکیی دەستکرد، تەمەنت دەبێت ١٨ ساڵ یان زیاتر بێت و ڕازی بیت بە هاوبەشکردنی داتا لەگەڵ Google. سنووری ڕۆژانە بۆ هەموو ئامرازەکان هاوبەشە؛ سنووری خەرجیش هەیە.',
+      'availabilityChecking':
+          'بەردەستبوونی خزمەتگوزاریی زیرەکی دەستکرد دەپشکنرێت…',
+      'premiumAiPaused':
+          'تایبەتمەندییەکانی زیرەکی دەستکرد ئێستا بۆ هەمووان ناچالاکن. بەشداریی Premium لە کاتی ڕاگرتنی خزمەتگوزارییەکەدا چالاکیان ناکات. تایبەتمەندییە بەردەستەکانی تر وەک خۆیان دەمێننەوە.',
+      'availabilityUnknown':
+          'بەردەستبوونی زیرەکی دەستکرد نەپشکنرا. بەشداریی Premium بەڵێنی بەردەستبوونی خزمەتگوزارییەکانی زیرەکی دەستکرد نادات.',
+      'disabled':
+          'بنیاد تایبەتمەندییەکانی زیرەکیی دەستکردی کاتی ڕاگرتووە. تۆمارکردنی ئاسایی بەردەستە.',
+      'configuration':
+          'خزمەتگوزاریی زیرەکیی دەستکردی بنیاد پێویستی بە نوێکردنەوەی ڕێکخستنەکانە. پەیوەندی بە پشتگیرییەوە بکە.',
+      'serviceUpdate':
+          'خزمەتگوزاریی زیرەکیی دەستکرد پێویستی بە نوێکردنەوەیە. پەیوەندی بە پشتگیریی بنیادەوە بکە.',
+      'providerQuota':
+          'دابینکەری زیرەکیی دەستکرد گەیشتووەتە سنووری ئێستای داواکارییەکان. دواتر هەوڵ بدەوە.',
       'rateLimit':
           'داواکارییەکانی زیرەکیی دەستکرد زۆرن. خولەکێک چاوەڕێ بکە و دووبارە هەوڵ بدەوە.',
       'dailyLimit':
