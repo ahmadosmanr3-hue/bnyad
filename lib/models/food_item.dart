@@ -6,17 +6,25 @@ import 'package:nutrify/utils/food_search_match.dart';
 enum FoodAmountKind {
   /// User adjusts weight in grams; macros scale vs [FoodItem.nutritionReferenceG].
   grams,
+
   /// User adjusts count; each unit = [nutritionReferenceG] grams for macro scaling.
   discreteUnits,
 }
 
 /// When [FoodAmountKind] is [discreteUnits], whether each unit is a piece or a bowl.
-enum FoodDiscreteUnit {
-  piece,
-  bowl,
-}
+enum FoodDiscreteUnit { piece, bowl }
 
 class FoodItem {
+  static Map<String, FoodItem> catalogOverrides = {};
+  final String? canonicalId;
+  final String? categoryId;
+  final String nutritionUnit;
+  final List<String> synonyms;
+  final List<Map<String, dynamic>> portions;
+  final Map<String, dynamic> source;
+  String get canonicalKey => canonicalId ?? id;
+  bool get isLiquid => nutritionUnit == 'ml';
+
   final String id;
   final String name;
   final String? nameAr;
@@ -26,6 +34,7 @@ class FoodItem {
   final double carbs;
   final double fat;
   final String category;
+
   /// Micronutrients per 100g: vitA(mcg), vitC(mg), vitD(mcg), vitB12(mcg), iron(mg), calcium(mg), potassium(mg), zinc(mg)
   final Map<String, double> micros;
 
@@ -55,6 +64,12 @@ class FoodItem {
 
   const FoodItem({
     required this.id,
+    this.canonicalId,
+    this.categoryId,
+    this.nutritionUnit = 'g',
+    this.synonyms = const [],
+    this.portions = const [],
+    this.source = const {},
     required this.name,
     this.nameAr,
     this.nameKu,
@@ -103,12 +118,15 @@ class FoodItem {
       return null;
     }
 
-    final en = pick(json, ['name', 'nameEn', 'en', 'english', 'name_en']) ??
+    final en =
+        pick(json, ['name', 'nameEn', 'en', 'english', 'name_en']) ??
         (nameMap == null ? null : pick(nameMap, ['en', 'english', 'name'])) ??
         '';
-    final ku = pick(json, ['nameKu', 'ku', 'name_ku', 'sorani']) ??
+    final ku =
+        pick(json, ['nameKu', 'ku', 'name_ku', 'sorani']) ??
         (nameMap == null ? null : pick(nameMap, ['ku', 'ckb', 'sorani']));
-    final ar = pick(json, ['nameAr', 'ar', 'name_ar', 'arabic']) ??
+    final ar =
+        pick(json, ['nameAr', 'ar', 'name_ar', 'arabic']) ??
         (nameMap == null ? null : pick(nameMap, ['ar', 'arabic']));
 
     double numField(String a, String b) {
@@ -122,7 +140,11 @@ class FoodItem {
     final micros = _microsFromJson(microRaw);
 
     double refG = 100;
-    final rawRef = json['nutritionReferenceG'] ?? json['reference_g'] ?? json['nutrition_reference_g'];
+    final rawRef =
+        json['referenceAmount'] ??
+        json['nutritionReferenceG'] ??
+        json['reference_g'] ??
+        json['nutrition_reference_g'];
     if (rawRef is num) refG = rawRef.toDouble();
 
     final sEn = pick(json, ['serving_en', 'servingLabelEn']);
@@ -131,7 +153,9 @@ class FoodItem {
 
     final rawKind = json['amountKind'] ?? json['amount_kind'];
     FoodAmountKind kind = FoodAmountKind.grams;
-    if (rawKind == 'discreteUnits' || rawKind == 'discrete' || rawKind == 'units') {
+    if (rawKind == 'discreteUnits' ||
+        rawKind == 'discrete' ||
+        rawKind == 'units') {
       kind = FoodAmountKind.discreteUnits;
     }
     FoodDiscreteUnit? du;
@@ -147,6 +171,20 @@ class FoodItem {
 
     return FoodItem(
       id: json['id']?.toString() ?? '',
+      canonicalId: json['canonicalId'] as String?,
+      categoryId: json['categoryId'] as String?,
+      nutritionUnit: json['nutritionUnit'] == 'ml' ? 'ml' : 'g',
+      synonyms:
+          (json['synonyms'] as List?)?.whereType<String>().toList() ?? const [],
+      portions:
+          (json['portions'] as List?)
+              ?.whereType<Map>()
+              .map((p) => Map<String, dynamic>.from(p))
+              .toList() ??
+          const [],
+      source: json['source'] is Map
+          ? Map<String, dynamic>.from(json['source'])
+          : const {},
       name: en,
       nameAr: ar,
       nameKu: ku,
@@ -160,6 +198,8 @@ class FoodItem {
       servingLabelEn: sEn,
       servingLabelKu: sKu,
       servingLabelAr: sAr,
+      gramsPerPiece: (json['gramsPerPiece'] as num?)?.toDouble(),
+      gramsPerBowl: (json['gramsPerBowl'] as num?)?.toDouble(),
       amountKind: kind,
       discreteUnit: kind == FoodAmountKind.discreteUnits ? du : null,
     );
@@ -175,8 +215,18 @@ class FoodItem {
   static const Map<String, List<String>> searchAliases = {
     'k5': ['naan', 'nan', 'flatbread', 'nan bread', 'نان'],
     'k2': ['biryani', 'kurdish rice', 'rice kurdish', 'بریانی', 'برنج کوردی'],
-    'k2_no_oil': ['kurdish rice no oil', 'biryani no oil', 'rice without oil', 'بێ ڕۆن'],
-    'k2_with_oil': ['kurdish rice with oil', 'biryani with oil', 'rice with oil', 'بە ڕۆن'],
+    'k2_no_oil': [
+      'kurdish rice no oil',
+      'biryani no oil',
+      'rice without oil',
+      'بێ ڕۆن',
+    ],
+    'k2_with_oil': [
+      'kurdish rice with oil',
+      'biryani with oil',
+      'rice with oil',
+      'بە ڕۆن',
+    ],
     'k2_chicken': ['biryani chicken', 'rice chicken'],
     'k2_meat': ['biryani meat', 'rice meat'],
     'g2': ['white rice', 'rice white', 'برنج', 'برنجی سپی'],
@@ -191,11 +241,43 @@ class FoodItem {
     'kuu_rice_kurdish_no_oil_100g': ['kurdish rice no oil', 'rice without oil'],
     'kuu_rice_kurdish_oil_bowl': ['kurdish rice bowl oil'],
     'kuu_rice_kurdish_no_oil_bowl': ['kurdish rice bowl no oil'],
-    'kuu_paqla_raw_no_oil_100g': ['paqla', 'broad beans', 'fava beans', 'پاقلە', 'باقلا'],
-    'shl_kolk_kurdi_100g': ['zucchini shla', 'kolek', 'kolk', 'کولەکە', 'شلە کولەکە'],
-    'sup_on_gold_whey': ['optimum nutrition', 'gold standard whey', 'on whey', 'whey protein', 'وی پروتین', 'بروتين واي'],
-    'sup_whey_isolate': ['mpn isolate', 'maxpro isolate', 'isolate blend', 'banana protein', 'پرۆتینی ئایسۆلەیت'],
-    'sup_mass_gainer': ['mpn pro mass', 'maxpro mass', 'mass gainer', 'pro mass vanilla', 'گەینەر', 'mass protein'],
+    'kuu_paqla_raw_no_oil_100g': [
+      'paqla',
+      'broad beans',
+      'fava beans',
+      'پاقلە',
+      'باقلا',
+    ],
+    'shl_kolk_kurdi_100g': [
+      'zucchini shla',
+      'kolek',
+      'kolk',
+      'کولەکە',
+      'شلە کولەکە',
+    ],
+    'sup_on_gold_whey': [
+      'optimum nutrition',
+      'gold standard whey',
+      'on whey',
+      'whey protein',
+      'وی پروتین',
+      'بروتين واي',
+    ],
+    'sup_whey_isolate': [
+      'mpn isolate',
+      'maxpro isolate',
+      'isolate blend',
+      'banana protein',
+      'پرۆتینی ئایسۆلەیت',
+    ],
+    'sup_mass_gainer': [
+      'mpn pro mass',
+      'maxpro mass',
+      'mass gainer',
+      'pro mass vanilla',
+      'گەینەر',
+      'mass protein',
+    ],
     'sup_whey_concentrate': ['whey concentrate', 'whey scoop', 'پرۆتینی وەی'],
     'ff_big_mac': ['big mac', 'mcdonalds', 'mcd burger', 'بیگ ماک'],
     'ff_mcnuggets': ['mcnuggets', 'chicken nuggets', 'ناگێتس'],
@@ -210,6 +292,9 @@ class FoodItem {
     if (foodSearchFieldMatches(name, nq)) return true;
     if (foodSearchFieldMatches(nameAr, nq)) return true;
     if (foodSearchFieldMatches(nameKu, nq)) return true;
+    for (final alias in synonyms) {
+      if (foodSearchFieldMatches(alias, nq)) return true;
+    }
     final extra = searchAliases[id];
     if (extra != null) {
       for (final e in extra) {
@@ -222,7 +307,10 @@ class FoodItem {
   static Map<String, double> _microsFromJson(dynamic raw) {
     if (raw is! Map) return {};
     return raw.map(
-      (k, v) => MapEntry(k.toString(), (v is num) ? v.toDouble() : double.tryParse('$v') ?? 0),
+      (k, v) => MapEntry(
+        k.toString(),
+        (v is num) ? v.toDouble() : double.tryParse('$v') ?? 0,
+      ),
     );
   }
 
@@ -277,6 +365,12 @@ class FoodItem {
     final ratio = gramsPerUnit / nutritionReferenceG;
     return FoodItem(
       id: '${id}_$idSuffix',
+      canonicalId: canonicalKey,
+      categoryId: categoryId,
+      nutritionUnit: nutritionUnit,
+      synonyms: synonyms,
+      portions: portions,
+      source: source,
       name: name,
       nameAr: nameAr,
       nameKu: nameKu,

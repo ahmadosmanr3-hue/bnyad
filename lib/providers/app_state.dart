@@ -1,3 +1,7 @@
+import 'package:nutrify/services/food_catalog.dart';
+import 'package:nutrify/services/favorites_controller.dart';
+import 'package:nutrify/constants/food_serving_switch.dart';
+import 'package:nutrify/constants/food_database.dart';
 import 'dart:io' show InternetAddress;
 import 'dart:async';
 import 'package:nutrify/l10n/notification_text.dart';
@@ -134,7 +138,8 @@ class AppState extends ChangeNotifier {
   bool _isOnline = true;
   final Map<String, Map<String, int>> _nutritionHistory = {};
   final Map<String, double> _weightHistory = {};
-  List<FavoriteTemplate> _favorites = [];
+  late final FavoritesController favoriteState;
+  late final FoodCatalog catalog;
   List<ShoppingItem> _shoppingList = [];
   bool _weeklyDigestEnabled = false;
   String _mealPlanCuisine = 'all';
@@ -159,6 +164,9 @@ class AppState extends ChangeNotifier {
     void Function(String)? stepDiagnostics,
   }) : _authService = authService,
        _apiService = apiService {
+    catalog = FoodCatalog(_apiService)..addListener(notifyListeners);
+    favoriteState = FavoritesController(_apiService)
+      ..addListener(notifyListeners);
     steps = StepTracker(
       provider: stepHealthProvider ?? NativeStepHealthProvider(),
       store: stepSettingsStore ?? LocalStepSettingsStore(),
@@ -326,7 +334,16 @@ class AppState extends ChangeNotifier {
   Map<String, Map<String, int>> get nutritionHistory =>
       Map.unmodifiable(_nutritionHistory);
   Map<String, double> get weightHistory => Map.unmodifiable(_weightHistory);
-  List<FavoriteTemplate> get favorites => List.unmodifiable(_favorites);
+  List<FavoriteTemplate> get favorites => favoriteState.items;
+  bool isFavorite(String id) => favoriteState.contains(canonicalFavoriteId(id));
+  String canonicalFavoriteId(String id) {
+    if (catalog.foods[id] != null) return catalog.foods[id]!.canonicalKey;
+    for (final food in foodDatabase) {
+      if (food.id == id) return foodCanonicalGrams(food).id;
+    }
+    return id.replaceFirst(RegExp(r'_(syn_pc|syn_bw)$'), '');
+  }
+
   List<ShoppingItem> get shoppingList => List.unmodifiable(_shoppingList);
   bool get weeklyDigestEnabled => _weeklyDigestEnabled;
   String get mealPlanCuisine => _mealPlanCuisine;
@@ -582,6 +599,7 @@ class AppState extends ChangeNotifier {
         }
       }
 
+      await refreshFavorites();
       final today = _nutritionDateKey(DateTime.now());
       final logs = await _apiService.getDailyLogs(date: today);
       final water = await _apiService.getWaterIntake(date: today);
@@ -646,7 +664,8 @@ class AppState extends ChangeNotifier {
     _notifications = [];
     _nutritionHistory.clear();
     _weightHistory.clear();
-    _favorites = [];
+    favoriteState.persist = null;
+    favoriteState.attach(server: false, cached: []);
     _shoppingList = [];
     _vitamins = [];
     _savedRecipe = null;
@@ -1413,16 +1432,42 @@ class AppState extends ChangeNotifier {
     }
   }
 
-  Future<void> addFavorite(FavoriteTemplate template) async {
-    _favorites = [..._favorites.where((f) => f.id != template.id), template];
-    await _saveFavorites();
-    notifyListeners();
+  FavoriteTemplate _canonicalFavorite(FavoriteTemplate f) {
+    final id = canonicalFavoriteId(f.foodId ?? f.id);
+    return FavoriteTemplate(
+      id: id,
+      foodId: id,
+      name: f.name,
+      amount: f.amount,
+      amountUnit: f.amountUnit,
+      calories: f.calories,
+      protein: f.protein,
+      carbs: f.carbs,
+      fat: f.fat,
+      micros: f.micros,
+    );
   }
 
-  Future<void> removeFavorite(String id) async {
-    _favorites = _favorites.where((f) => f.id != id).toList();
-    await _saveFavorites();
-    notifyListeners();
+  Future<void> addFavorite(FavoriteTemplate template) async {
+    if (!await favoriteState.set(_canonicalFavorite(template), true)) {
+      throw StateError('Favorite could not be saved');
+    }
+  }
+
+  Future<bool> toggleFavorite(FavoriteTemplate template) =>
+      favoriteState.toggle(_canonicalFavorite(template));
+  Future<bool> removeFavorite(String id) async {
+    final key = canonicalFavoriteId(id);
+    final found = favorites.where((f) => (f.foodId ?? f.id) == key).firstOrNull;
+    return found == null || await favoriteState.set(found, false);
+  }
+
+  Future<bool> refreshFavorites() async {
+    if (!_isMockUser && _apiService.hasToken && !favoriteState.remote) {
+      final prefs = await SharedPreferences.getInstance();
+      await _loadFavorites(prefs);
+    }
+    return favoriteState.refresh();
   }
 
   Future<void> logFromFavorite(FavoriteTemplate f) async {
@@ -1432,6 +1477,7 @@ class AppState extends ChangeNotifier {
         foodId: f.foodId ?? 'favorite-${f.id}',
         name: f.name,
         amount: f.amount,
+        amountUnit: f.amountUnit,
         calories: f.calories,
         protein: f.protein,
         carbs: f.carbs,
@@ -2212,20 +2258,50 @@ class AppState extends ChangeNotifier {
     } catch (_) {}
   }
 
-  Future<void> _saveFavorites() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setStringList(
-      'favorites',
-      _favorites.map((f) => f.toJsonString()).toList(),
-    );
-  }
-
   Future<void> _loadFavorites(SharedPreferences prefs) async {
-    final raw = prefs.getStringList('favorites') ?? [];
-    _favorites = raw
+    final owner = '${_apiService.baseUrl}:${_apiService.userId ?? 'local'}';
+    final key = 'favorites_v2_$owner';
+    final legacy = prefs.getStringList('favorites') ?? [];
+    final raw = prefs.getStringList(key) ?? legacy;
+    final parsed = raw
         .map(FavoriteTemplate.tryParse)
         .whereType<FavoriteTemplate>()
+        .map(_canonicalFavorite)
         .toList();
+    favoriteState.persist = null;
+    favoriteState.attach(
+      server: !_isMockUser && _apiService.hasToken,
+      cached: parsed,
+    );
+    favoriteState.persist = (items) {
+      // Scoped cache remains separate even if a previous account's disk write
+      // finishes after logout. The unscoped legacy backup is never overwritten.
+      unawaited(
+        prefs.setStringList(key, items.map((f) => f.toJsonString()).toList()),
+      );
+    };
+    if (favoriteState.remote && prefs.getBool('${key}_imported') != true) {
+      final user = _apiService.userId;
+      await prefs.setStringList('${key}_legacy_backup', legacy);
+      try {
+        final imported = legacy
+            .map(FavoriteTemplate.tryParse)
+            .whereType<FavoriteTemplate>()
+            .map(_canonicalFavorite)
+            .toList();
+        for (var start = 0; start < imported.length; start += 50) {
+          if (_apiService.userId != user) return;
+          await _apiService.importFavorites(
+            imported.skip(start).take(50).map((f) => f.toMap()).toList(),
+          );
+        }
+        if (_apiService.userId == user) {
+          await prefs.setBool('${key}_imported', true);
+        }
+      } catch (_) {
+        /* Keep backup and retry import on the next account refresh. */
+      }
+    }
   }
 
   Future<void> _saveShoppingList() async {
@@ -2313,6 +2389,10 @@ class AppState extends ChangeNotifier {
 
   @override
   void dispose() {
+    favoriteState.removeListener(notifyListeners);
+    favoriteState.dispose();
+    catalog.removeListener(notifyListeners);
+    catalog.dispose();
     _premiumRefreshTimer?.cancel();
     steps.removeListener(notifyListeners);
     steps.dispose();

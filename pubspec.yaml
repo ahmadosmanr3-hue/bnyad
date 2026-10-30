@@ -1,7 +1,7 @@
 name: nutrify
 description: "BNYAD — AI-powered nutrition tracking app with trilingual support"
 publish_to: 'none'
-version: 1.0.4+19
+version: 1.0.5+20
 
 environment:
   sdk: ^3.9.2
@@ -39,6 +39,7 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
+    - assets/catalog/catalog.json
     - assets/images/bnyad_logo.png
     - assets/images/bnyad_icon.png
     - fonts/

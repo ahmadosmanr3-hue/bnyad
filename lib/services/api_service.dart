@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:nutrify/services/favorites_controller.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http_pkg;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -8,7 +9,7 @@ import 'package:nutrify/models/log_entry.dart';
 import 'package:nutrify/models/meal.dart';
 
 /// REST client for the active Next.js backend and compatible bearer-token API.
-class ApiService {
+class ApiService implements FavoritesApi {
   final String baseUrl;
   final bool aiEnabled;
   String? _token;
@@ -314,6 +315,48 @@ class ApiService {
     'Accept': 'application/json',
     if (_token != null) 'Authorization': 'Bearer $_token',
   };
+
+  Future<Map<String, dynamic>> _favoritesRequest(
+    String method, [
+    Map<String, dynamic>? body,
+  ]) async {
+    final owner = _token;
+    if (!hasToken) throw StateError('Sign in required');
+    final url = Uri.parse('$baseUrl/favorites');
+    final response = method == 'GET'
+        ? await _http.get(url, headers: _headers)
+        : method == 'PUT'
+        ? await _http.put(url, headers: _headers, body: jsonEncode(body))
+        : await _http.post(url, headers: _headers, body: jsonEncode(body));
+    if (owner != _token || response.statusCode != 200) {
+      throw StateError('Favorites could not synchronize');
+    }
+    return jsonDecode(response.body) as Map<String, dynamic>;
+  }
+
+  @override
+  Future<Map<String, dynamic>> readFavorites() => _favoritesRequest('GET');
+  @override
+  Future<Map<String, dynamic>> writeFavorite(Map<String, dynamic> intent) =>
+      _favoritesRequest('PUT', intent);
+  @override
+  Future<void> importFavorites(List<Map<String, dynamic>> favorites) async {
+    await _favoritesRequest('POST', {'favorites': favorites});
+  }
+
+  Future<Map<String, dynamic>?> readFoodCatalog({String? etag}) async {
+    try {
+      final r = await _http.get(
+        Uri.parse('$baseUrl/catalog'),
+        headers: {'Accept': 'application/json', 'If-None-Match': ?etag},
+      );
+      if (r.statusCode == 304) return {'notModified': true};
+      if (r.statusCode == 200) {
+        return jsonDecode(r.body) as Map<String, dynamic>;
+      }
+    } catch (_) {}
+    return null;
+  }
 
   // ─── Auth ──────────────────────────────────────────
 

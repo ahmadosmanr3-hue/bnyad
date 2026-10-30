@@ -1,3 +1,5 @@
+import 'dart:async';
+import 'package:nutrify/widgets/food_favorite_button.dart';
 import 'package:flutter/material.dart';
 import 'package:nutrify/l10n/localized_numbers.dart';
 import 'package:provider/provider.dart';
@@ -32,9 +34,12 @@ class _FoodLogScreenState extends State<FoodLogScreen> {
     _listenerAttached = true;
     _appState = context.read<AppState>();
     _appState!.addListener(_onAppStateChanged);
-    WidgetsBinding.instance.addPostFrameCallback(
-      (_) => _tryOpenFoodLogIntent(),
-    );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      unawaited(_appState!.catalog.load());
+      unawaited(_appState!.refreshFavorites());
+      _tryOpenFoodLogIntent();
+    });
   }
 
   void _onAppStateChanged() {
@@ -332,6 +337,7 @@ class _FavoritesSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final state = context.watch<AppState>();
     final t = state.t;
     final isDark = state.isDark;
     final list = state.favorites;
@@ -341,11 +347,9 @@ class _FavoritesSheet extends StatelessWidget {
       minChildSize: 0.35,
       maxChildSize: 0.92,
       builder: (_, scrollController) {
-        return Container(
-          decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF0F172A) : Colors.white,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(40)),
-          ),
+        return Material(
+          color: isDark ? const Color(0xFF0F172A) : Colors.white,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(40)),
           child: Column(
             children: [
               const SizedBox(height: 12),
@@ -412,7 +416,15 @@ class _FavoritesSheet extends StatelessWidget {
                           return Dismissible(
                             key: Key(f.id),
                             direction: DismissDirection.endToStart,
-                            onDismissed: (_) => state.removeFavorite(f.id),
+                            confirmDismiss: (_) async {
+                              final saved = await state.removeFavorite(f.id);
+                              if (!saved && context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text(state.t.saveFailed)),
+                                );
+                              }
+                              return saved;
+                            },
                             background: Container(
                               alignment: Alignment.centerRight,
                               padding: const EdgeInsetsDirectional.only(
@@ -429,7 +441,10 @@ class _FavoritesSheet extends StatelessWidget {
                                 vertical: 4,
                               ),
                               title: Text(
-                                f.name,
+                                state.catalog.foods[f.foodId]?.getLocalizedName(
+                                      state.lang,
+                                    ) ??
+                                    f.name,
                                 style: TextStyle(
                                   fontWeight: FontWeight.w700,
                                   color: isDark
@@ -438,11 +453,33 @@ class _FavoritesSheet extends StatelessWidget {
                                 ),
                               ),
                               subtitle: Text(
-                                '${f.amount.round()} ${t.grams} · ${f.calories.round()} ${t.kcal}',
+                                '${ltrFragment('${f.amount.round()} ${f.amountUnit}')} · ${f.calories.round()} ${t.kcal}',
                                 style: const TextStyle(
                                   fontSize: 11,
                                   color: Color(0xFF64748B),
                                 ),
+                              ),
+                              leading: IconButton(
+                                tooltip: foodText(
+                                  state.lang,
+                                  'Remove favorite',
+                                  'إزالة من المفضلة',
+                                  'لابردن لە دڵخوازەکان',
+                                ),
+                                icon: const Icon(
+                                  Icons.star,
+                                  color: Color(0xFFF59E0B),
+                                ),
+                                onPressed: () async {
+                                  if (!await state.removeFavorite(f.id) &&
+                                      context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(state.t.saveFailed),
+                                      ),
+                                    );
+                                  }
+                                },
                               ),
                               trailing: IconButton(
                                 icon: Icon(
@@ -499,6 +536,16 @@ class _FoodSearchSheetState extends State<_FoodSearchSheet> {
   int _pieceCount = 1;
   int _bowlCount = 1;
   bool _withBones = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      unawaited(widget.state.catalog.load());
+      unawaited(widget.state.refreshFavorites());
+    });
+  }
 
   static String _weightFieldText(double w) {
     try {
@@ -585,57 +632,44 @@ class _FoodSearchSheetState extends State<_FoodSearchSheet> {
   /// Bowl: only Kurdish dishes with a real bowl line (rice, qara, etc.). No generic 150g bowl for other foods.
   bool _canBowlFor(FoodItem f) => kurdishHasBowlMode(f);
 
-  static const _categories = [
-    'Kurdish',
-    'Bread',
-    'RiceDishes',
-    'Soup',
-    'Arabic',
-    'Protein',
-    'Dairy',
-    'Grains',
-    'Fruit',
-    'Vegetable',
-    'Nuts',
-    'Legumes',
-    'International',
-    'FastFood',
-    'Supplement',
-    'Beverage',
-    'Snacks',
-    'Oil',
-  ];
-
-  static const _categoryIcons = {
-    'Kurdish': Icons.restaurant,
-    'Bread': Icons.bakery_dining,
-    'RiceDishes': Icons.rice_bowl,
-    'Soup': Icons.soup_kitchen,
-    'Arabic': Icons.restaurant_menu,
-    'Protein': Icons.egg_alt,
-    'Dairy': Icons.water_drop,
-    'Grains': Icons.grain,
-    'Fruit': Icons.apple,
-    'Vegetable': Icons.eco,
-    'Nuts': Icons.spa,
-    'Legumes': Icons.grass,
-    'International': Icons.public,
-    'FastFood': Icons.fastfood,
-    'Supplement': Icons.fitness_center,
-    'Beverage': Icons.local_cafe,
-    'Snacks': Icons.cookie,
-    'Oil': Icons.opacity,
-  };
-
   @override
   Widget build(BuildContext context) {
-    final state = widget.state;
+    final state = context.watch<AppState>();
     final t = state.t;
     final isDark = state.isDark;
-    var filtered = foodsForFoodLogBrowse().where((row) {
-      if (!foodBrowseRowMatchesCategory(row, _selectedCategory)) return false;
+    final recent = state.dailyLog
+        .map((log) => state.canonicalFavoriteId(log.foodId))
+        .toSet();
+    var filtered = state.catalog.browse().where((row) {
+      final food = row.displayFood;
+      if (_selectedCategory == '@favorites' &&
+          !state.isFavorite(food.canonicalKey)) {
+        return false;
+      }
+      if (_selectedCategory == '@recent' &&
+          !recent.contains(food.canonicalKey)) {
+        return false;
+      }
+      if (_selectedCategory != null &&
+          !_selectedCategory!.startsWith('@') &&
+          !state.catalog.categoryMatches(food, _selectedCategory)) {
+        return false;
+      }
       return row.matchesQuery(_search);
     }).toList();
+    if (_search.trim().isNotEmpty) {
+      final query = _search.trim().toLowerCase();
+      int score(FoodBrowseRow row) {
+        final n = row.nameForLang(state.lang).toLowerCase();
+        return n == query
+            ? 0
+            : n.startsWith(query)
+            ? 1
+            : 2;
+      }
+
+      filtered.sort((a, b) => score(a).compareTo(score(b)));
+    }
 
     return Container(
       height: MediaQuery.of(context).size.height * 0.85,
@@ -773,18 +807,101 @@ class _FoodSearchSheetState extends State<_FoodSearchSheet> {
             children: [
               _categoryChip(null, t.browseFoods, Icons.apps, isDark),
               const SizedBox(width: 8),
-              ..._categories.map(
-                (cat) => Padding(
-                  padding: const EdgeInsetsDirectional.only(end: 8),
-                  child: _categoryChip(
-                    cat,
-                    widget.state.t.getCategory(cat),
-                    _categoryIcons[cat] ?? Icons.restaurant,
-                    isDark,
-                  ),
-                ),
+              _categoryChip(
+                '@favorites',
+                t.favorites,
+                Icons.star_outline,
+                isDark,
               ),
+              const SizedBox(width: 8),
+              _categoryChip(
+                '@recent',
+                foodText(widget.state.lang, 'Recent', 'الأخيرة', 'دواییەکان'),
+                Icons.history,
+                isDark,
+              ),
+              const SizedBox(width: 8),
+              ...widget.state.catalog.categories
+                  .where((c) => c['parentId'] == null)
+                  .map(
+                    (cat) => Padding(
+                      padding: const EdgeInsetsDirectional.only(end: 8),
+                      child: _categoryChip(
+                        cat['id'],
+                        widget.state.catalog.categoryName(
+                          cat,
+                          widget.state.lang,
+                        ),
+                        switch (cat['id']) {
+                          'cafe' => Icons.local_cafe,
+                          'drinks' => Icons.local_drink,
+                          'fast-food' => Icons.fastfood,
+                          'desserts' => Icons.cake,
+                          'snacks' => Icons.cookie,
+                          'regional' => Icons.restaurant_menu,
+                          _ => Icons.restaurant,
+                        },
+                        isDark,
+                      ),
+                    ),
+                  ),
             ],
+          ),
+        ),
+        if (_selectedCategory != null &&
+            !_selectedCategory!.startsWith('@')) ...[
+          const SizedBox(height: 8),
+          SizedBox(
+            height: 40,
+            child: ListView(
+              scrollDirection: Axis.horizontal,
+              children: [
+                ...widget.state.catalog.categories
+                    .where(
+                      (c) =>
+                          c['parentId'] == _selectedCategory ||
+                          c['id'] == _selectedCategory &&
+                              c['parentId'] != null ||
+                          c['parentId'] != null &&
+                              widget.state.catalog.categories.any(
+                                (p) =>
+                                    p['id'] == _selectedCategory &&
+                                    p['parentId'] == c['parentId'],
+                              ),
+                    )
+                    .map(
+                      (c) => Padding(
+                        padding: const EdgeInsetsDirectional.only(end: 8),
+                        child: _categoryChip(
+                          c['id'],
+                          widget.state.catalog.categoryName(
+                            c,
+                            widget.state.lang,
+                          ),
+                          Icons.restaurant,
+                          isDark,
+                        ),
+                      ),
+                    ),
+              ],
+            ),
+          ),
+        ],
+        if (widget.state.catalog.loading)
+          const LinearProgressIndicator(minHeight: 2),
+        Padding(
+          padding: const EdgeInsets.only(top: 6),
+          child: Text(
+            foodText(
+              widget.state.lang,
+              '${filtered.length} results · nutrition varies by source',
+              '${filtered.length} نتيجة · تختلف القيم حسب المصدر',
+              '${filtered.length} ئەنجام · بەهاکان بەپێی سەرچاوە دەگۆڕێن',
+            ),
+            style: TextStyle(
+              fontSize: 11,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
           ),
         ),
         const SizedBox(height: 12),
@@ -858,7 +975,10 @@ class _FoodSearchSheetState extends State<_FoodSearchSheet> {
                                   ),
                                   const SizedBox(height: 2),
                                   Text(
-                                    widget.state.t.getCategory(food.category),
+                                    widget.state.catalog.labelFor(
+                                      food,
+                                      widget.state.lang,
+                                    ),
                                     style: const TextStyle(
                                       fontSize: 10,
                                       color: Color(0xFF64748B),
@@ -882,6 +1002,7 @@ class _FoodSearchSheetState extends State<_FoodSearchSheet> {
                                 ],
                               ),
                             ),
+                            FoodFavoriteButton(food: food),
                             if (hasPrep)
                               Icon(
                                 Icons.chevron_right,
@@ -891,7 +1012,7 @@ class _FoodSearchSheetState extends State<_FoodSearchSheet> {
                               )
                             else
                               Text(
-                                '${browseDisplayCalories(food)} ${widget.state.t.kcal}',
+                                '${browseDisplayCalories(food)} ${widget.state.t.kcal}\n${food.nutritionReferenceG.round()} ${food.nutritionUnit}',
                                 style: TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w700,
@@ -1147,6 +1268,75 @@ class _FoodSearchSheetState extends State<_FoodSearchSheet> {
     return _sanitizeGrams(raw);
   }
 
+  Future<void> _editFoodAmount(FoodItem food) async {
+    final lang = widget.state.lang;
+    String input = '';
+    bool liters = false;
+    String? error;
+    final value = await showDialog<double>(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, update) => AlertDialog(
+          title: Text(widget.state.t.amount),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                autofocus: true,
+                onChanged: (v) => input = v,
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
+                textDirection: TextDirection.ltr,
+                decoration: InputDecoration(
+                  labelText: food.isLiquid
+                      ? (liters ? 'L' : 'mL')
+                      : widget.state.t.grams,
+                  errorText: error,
+                ),
+              ),
+              if (food.isLiquid)
+                DropdownButton<bool>(
+                  value: liters,
+                  items: const [
+                    DropdownMenuItem(value: false, child: Text('mL')),
+                    DropdownMenuItem(value: true, child: Text('L')),
+                  ],
+                  onChanged: (v) => update(() => liters = v ?? false),
+                ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(widget.state.t.cancel),
+            ),
+            TextButton(
+              onPressed: () {
+                final number = parseLocalizedDouble(input),
+                    base = number == null ? null : number * (liters ? 1000 : 1);
+                if (base == null || base <= 0 || base > 100000) {
+                  update(
+                    () => error = foodText(
+                      lang,
+                      'Enter a positive amount up to 100,000 g/mL.',
+                      'أدخل كمية موجبة لا تتجاوز 100000 غ/مل.',
+                      'بڕێکی ئەرێنی تا ١٠٠٠٠٠ گرام/مل بنووسە.',
+                    ),
+                  );
+                  return;
+                }
+                Navigator.pop(context, base);
+              },
+              child: Text(widget.state.t.save),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (value != null && mounted) setState(() => _amount = value);
+  }
+
   Widget _buildDetail(dynamic t, bool isDark, AppState state) {
     final selected = _selected!;
     final mode = _effectiveServingMode(selected);
@@ -1154,93 +1344,87 @@ class _FoodSearchSheetState extends State<_FoodSearchSheet> {
     final totalGrams = _totalGramsForSelection(selected);
     final ratio = _macroRatioSafe(food, totalGrams);
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
+    return Material(
+      color: Colors.transparent,
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            IconButton(
-              icon: Icon(
-                state.isRTL ? Icons.chevron_right : Icons.chevron_left,
-                color: isDark
-                    ? const Color(0xFF94A3B8)
-                    : const Color(0xFF64748B),
-              ),
-              onPressed: () {
-                if (_detailFromPrepStep && _prepGroup != null) {
-                  setState(() => _selected = null);
-                } else {
-                  setState(() {
-                    _selected = null;
-                    _prepGroup = null;
-                    _rootPrepGroup = null;
-                    _detailFromPrepStep = false;
-                  });
-                }
-              },
-            ),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (widget.mealId != null)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 4),
-                      child: Text(
-                        t.mealSlotLabel(widget.mealId!),
+            Row(
+              children: [
+                IconButton(
+                  icon: Icon(
+                    state.isRTL ? Icons.chevron_right : Icons.chevron_left,
+                    color: isDark
+                        ? const Color(0xFF94A3B8)
+                        : const Color(0xFF64748B),
+                  ),
+                  onPressed: () {
+                    if (_detailFromPrepStep && _prepGroup != null) {
+                      setState(() => _selected = null);
+                    } else {
+                      setState(() {
+                        _selected = null;
+                        _prepGroup = null;
+                        _rootPrepGroup = null;
+                        _detailFromPrepStep = false;
+                      });
+                    }
+                  },
+                ),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (widget.mealId != null)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 4),
+                          child: Text(
+                            t.mealSlotLabel(widget.mealId!),
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w800,
+                              color: AppTheme.indigo.withValues(alpha: 0.9),
+                            ),
+                          ),
+                        ),
+                      Text(
+                        _rootPrepGroup?.titleForLang(state.lang) ??
+                            food.getLocalizedName(state.lang),
                         style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w800,
-                          color: AppTheme.indigo.withValues(alpha: 0.9),
+                          fontSize: 20,
+                          fontWeight: FontWeight.w700,
+                          color: isDark
+                              ? Colors.white
+                              : const Color(0xFF1E293B),
                         ),
                       ),
-                    ),
-                  Text(
-                    _rootPrepGroup?.titleForLang(state.lang) ??
-                        food.getLocalizedName(state.lang),
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w700,
-                      color: isDark ? Colors.white : const Color(0xFF1E293B),
-                    ),
+                      if (_rootPrepGroup != null || _prepGroup != null)
+                        Text(
+                          food.getLocalizedName(state.lang),
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: isDark
+                                ? const Color(0xFF64748B)
+                                : const Color(0xFF94A3B8),
+                          ),
+                        ),
+                    ],
                   ),
-                  if (_rootPrepGroup != null || _prepGroup != null)
-                    Text(
-                      food.getLocalizedName(state.lang),
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: isDark
-                            ? const Color(0xFF64748B)
-                            : const Color(0xFF94A3B8),
-                      ),
-                    ),
-                ],
-              ),
-            ),
-            IconButton(
-              tooltip: t.saveAsFavorite,
-              icon: Icon(
-                Icons.star_outline,
-                color: isDark ? AppTheme.indigoLight : AppTheme.indigo,
-              ),
-              onPressed: () async {
-                final totalGrams = _totalGramsForSelection(selected);
-                final ratio = _macroRatioSafe(food, totalGrams);
-                final boneMult = meatLogMacroMultiplier(
-                  food,
-                  withBones: _withBones,
-                );
-                await state.addFavorite(
-                  FavoriteTemplate(
-                    id: DateTime.now().millisecondsSinceEpoch.toString(),
+                ),
+                FoodFavoriteButton(
+                  food: food,
+                  template: FavoriteTemplate(
+                    id: food.canonicalKey,
+                    foodId: food.canonicalKey,
                     name:
                         food.getLocalizedName(state.lang) +
                         meatBoneSuffixForLang(
                           state.lang,
                           withBones: _withBones,
                         ),
-                    foodId: food.id,
                     amount: totalGrams,
+                    amountUnit: food.nutritionUnit,
                     calories: food.calories * ratio,
                     protein: food.protein * ratio,
                     carbs: food.carbs * ratio,
@@ -1248,412 +1432,494 @@ class _FoodSearchSheetState extends State<_FoodSearchSheet> {
                     micros: scaleMicrosFromFood(
                       food,
                       totalGrams,
-                      boneMult: boneMult,
+                      boneMult: meatLogMacroMultiplier(
+                        food,
+                        withBones: _withBones,
+                      ),
                     ),
                   ),
-                );
-                if (!mounted) return;
-                ScaffoldMessenger.of(
-                  context,
-                ).showSnackBar(SnackBar(content: Text(t.savedFavorite)));
-              },
+                ),
+              ],
             ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(
-              child: _modeButton(
-                t.byGrams,
-                mode == FoodServingMode.grams,
-                _canGramsFor(selected)
-                    ? () => setState(() => _amountMode = FoodServingMode.grams)
-                    : null,
-                isDark,
-                enabled: _canGramsFor(selected),
+            const SizedBox(height: 8),
+            if (food.source.isNotEmpty)
+              ExpansionTile(
+                tilePadding: EdgeInsets.zero,
+                visualDensity: VisualDensity.compact,
+                title: Text(
+                  food.source['type'] == 'usda'
+                      ? 'USDA · ${foodText(state.lang, 'generic reference', 'مرجع عام', 'سەرچاوەی گشتی')}'
+                      : foodText(
+                          state.lang,
+                          'Estimated nutrition',
+                          'قيم غذائية تقديرية',
+                          'بەهای خۆراکیی خەمڵێنراو',
+                        ),
+                  style: const TextStyle(fontSize: 12),
+                ),
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: Text(
+                      food.source['type'] == 'usda'
+                          ? '${foodText(state.lang, 'USDA FoodData Central, SR Legacy. Not a brand-specific value.', 'بيانات USDA العامة، وليست خاصة بعلامة تجارية.', 'داتای گشتیی USDA؛ تایبەت بە براندێک نییە.')}\n${food.source['fdcId']} · ${food.source['description']}'
+                          : foodText(
+                              state.lang,
+                              'Estimate: recipe, restaurant and serving size affect nutrition. Adjust your portion.',
+                              'تقدير: تختلف التغذية حسب الوصفة والمطعم وحجم الحصة. عدّل كميتك.',
+                              'خەمڵاندن: ڕێچکە، چێشتخانە و قەبارەی پشک بەهاکان دەگۆڕن. بڕەکەت ڕێک بخە.',
+                            ),
+                      style: const TextStyle(fontSize: 12),
+                    ),
+                  ),
+                ],
               ),
-            ),
-            const SizedBox(width: 6),
-            Expanded(
-              child: _modeButton(
-                t.byPiece,
-                mode == FoodServingMode.piece,
-                _canPieceFor(selected)
-                    ? () => setState(() => _amountMode = FoodServingMode.piece)
-                    : null,
-                isDark,
-                enabled: _canPieceFor(selected),
+            if (food.portions.isNotEmpty)
+              Wrap(
+                spacing: 6,
+                runSpacing: 4,
+                children: food.portions
+                    .map(
+                      (p) => ActionChip(
+                        label: Text(
+                          (food.isLiquid && p['amount'] == 1000
+                                  ? '1 L'
+                                  : p['names']?[state.lang == 'ckb'
+                                            ? 'ku'
+                                            : state.lang] ??
+                                        p['names']?['en'] ??
+                                        '')
+                              .toString(),
+                        ),
+                        onPressed: () => setState(() {
+                          _amountMode = FoodServingMode.grams;
+                          _amount = (p['amount'] as num).toDouble();
+                        }),
+                      ),
+                    )
+                    .toList(),
               ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: _modeButton(
+                    food.isLiquid ? 'mL' : t.byGrams,
+                    mode == FoodServingMode.grams,
+                    _canGramsFor(selected)
+                        ? () => setState(
+                            () => _amountMode = FoodServingMode.grams,
+                          )
+                        : null,
+                    isDark,
+                    enabled: _canGramsFor(selected),
+                  ),
+                ),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: _modeButton(
+                    t.byPiece,
+                    mode == FoodServingMode.piece,
+                    _canPieceFor(selected)
+                        ? () => setState(
+                            () => _amountMode = FoodServingMode.piece,
+                          )
+                        : null,
+                    isDark,
+                    enabled: _canPieceFor(selected),
+                  ),
+                ),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: _modeButton(
+                    t.byBowl,
+                    mode == FoodServingMode.bowl,
+                    _canBowlFor(selected)
+                        ? () =>
+                              setState(() => _amountMode = FoodServingMode.bowl)
+                        : null,
+                    isDark,
+                    enabled: _canBowlFor(selected),
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(width: 6),
-            Expanded(
-              child: _modeButton(
-                t.byBowl,
-                mode == FoodServingMode.bowl,
-                _canBowlFor(selected)
-                    ? () => setState(() => _amountMode = FoodServingMode.bowl)
-                    : null,
-                isDark,
-                enabled: _canBowlFor(selected),
-              ),
-            ),
-          ],
-        ),
-        if (meatSupportsBoneChoice(food)) ...[
-          const SizedBox(height: 14),
-          Text(
-            t.bonePortionLabel,
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 1,
-              color: isDark ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
-            ),
-          ),
-          const SizedBox(height: 8),
-          Row(
-            children: [
-              Expanded(
-                child: _modeButton(
-                  t.bonelessPortion,
-                  !_withBones,
-                  () => setState(() => _withBones = false),
-                  isDark,
+            if (meatSupportsBoneChoice(food)) ...[
+              const SizedBox(height: 14),
+              Text(
+                t.bonePortionLabel,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 1,
+                  color: isDark
+                      ? const Color(0xFF64748B)
+                      : const Color(0xFF94A3B8),
                 ),
               ),
-              const SizedBox(width: 6),
-              Expanded(
-                child: _modeButton(
-                  t.withBonesPortion,
-                  _withBones,
-                  () => setState(() => _withBones = true),
-                  isDark,
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Expanded(
+                    child: _modeButton(
+                      t.bonelessPortion,
+                      !_withBones,
+                      () => setState(() => _withBones = false),
+                      isDark,
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: _modeButton(
+                      t.withBonesPortion,
+                      _withBones,
+                      () => setState(() => _withBones = true),
+                      isDark,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 6),
+              Text(
+                t.bonePortionHint,
+                style: TextStyle(
+                  fontSize: 11,
+                  height: 1.35,
+                  color: isDark
+                      ? const Color(0xFF64748B)
+                      : const Color(0xFF94A3B8),
                 ),
               ),
             ],
-          ),
-          const SizedBox(height: 6),
-          Text(
-            t.bonePortionHint,
-            style: TextStyle(
-              fontSize: 11,
-              height: 1.35,
-              color: isDark ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
-            ),
-          ),
-        ],
-        const SizedBox(height: 16),
+            const SizedBox(height: 16),
 
-        if (mode == FoodServingMode.grams) ...[
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Flexible(
-                child: Text(
-                  '${t.amount} (${t.grams})',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 1,
-                    color: isDark
-                        ? const Color(0xFF64748B)
-                        : const Color(0xFF94A3B8),
+            if (mode == FoodServingMode.grams) ...[
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Flexible(
+                    child: Text(
+                      '${t.amount} (${food.isLiquid ? 'mL' : t.grams})',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 1,
+                        color: isDark
+                            ? const Color(0xFF64748B)
+                            : const Color(0xFF94A3B8),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Flexible(
+                    child: scaleDownText(
+                      '${_roundGramsDisplay(_amount)} ${food.isLiquid ? 'mL' : t.grams}',
+                      textAlign: TextAlign.end,
+                      style: const TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w900,
+                        color: AppTheme.indigo,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Slider(
+                value: _amount.clamp(10, 1000),
+                min: 10,
+                max: 1000,
+                divisions: 99,
+                activeColor: AppTheme.indigo,
+                inactiveColor: isDark
+                    ? const Color(0xFF1E293B)
+                    : const Color(0xFFF1F5F9),
+                onChanged: (v) => setState(() => _amount = v),
+              ),
+              TextButton.icon(
+                onPressed: () => _editFoodAmount(food),
+                icon: const Icon(Icons.edit_outlined, size: 18),
+                label: Text(
+                  foodText(
+                    state.lang,
+                    'Enter amount',
+                    'إدخال الكمية',
+                    'نووسینی بڕ',
                   ),
                 ),
               ),
-              const SizedBox(width: 8),
-              Flexible(
-                child: scaleDownText(
-                  '${_roundGramsDisplay(_amount)} ${t.grams}',
-                  textAlign: TextAlign.end,
-                  style: const TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.w900,
+            ] else if (mode == FoodServingMode.piece) ...[
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          t.perPiece,
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: isDark
+                                ? const Color(0xFF64748B)
+                                : const Color(0xFF94A3B8),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 14,
+                          ),
+                          decoration: BoxDecoration(
+                            color: isDark
+                                ? const Color(0xFF1E293B)
+                                : const Color(0xFFF8FAFC),
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(
+                              color: isDark
+                                  ? const Color(0xFF334155)
+                                  : const Color(0xFFE2E8F0),
+                            ),
+                          ),
+                          child: Text(
+                            '${_weightFieldText(food.nutritionReferenceG)} ${food.isLiquid ? 'mL' : t.grams}',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w800,
+                              color: isDark
+                                  ? Colors.white
+                                  : const Color(0xFF1E293B),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        t.pieces,
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: isDark
+                              ? const Color(0xFF64748B)
+                              : const Color(0xFF94A3B8),
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          _counterBtn('-', () {
+                            if (_pieceCount > 1) setState(() => _pieceCount--);
+                          }, isDark),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 10),
+                            child: Text(
+                              '$_pieceCount',
+                              style: TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.w900,
+                                color: AppTheme.indigo,
+                              ),
+                            ),
+                          ),
+                          _counterBtn(
+                            '+',
+                            () => setState(() => _pieceCount++),
+                            isDark,
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Center(
+                child: Text(
+                  '${t.total}: ${_roundGramsDisplay(totalGrams)} ${food.isLiquid ? 'mL' : t.grams}',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w800,
+                    color: AppTheme.indigo,
+                  ),
+                ),
+              ),
+            ] else ...[
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          t.perBowl,
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: isDark
+                                ? const Color(0xFF64748B)
+                                : const Color(0xFF94A3B8),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 14,
+                          ),
+                          decoration: BoxDecoration(
+                            color: isDark
+                                ? const Color(0xFF1E293B)
+                                : const Color(0xFFF8FAFC),
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(
+                              color: isDark
+                                  ? const Color(0xFF334155)
+                                  : const Color(0xFFE2E8F0),
+                            ),
+                          ),
+                          child: Text(
+                            '${_weightFieldText(food.nutritionReferenceG)} ${food.isLiquid ? 'mL' : t.grams}',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w800,
+                              color: isDark
+                                  ? Colors.white
+                                  : const Color(0xFF1E293B),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        t.bowls,
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: isDark
+                              ? const Color(0xFF64748B)
+                              : const Color(0xFF94A3B8),
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          _counterBtn('-', () {
+                            if (_bowlCount > 1) setState(() => _bowlCount--);
+                          }, isDark),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 10),
+                            child: Text(
+                              '$_bowlCount',
+                              style: TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.w900,
+                                color: AppTheme.indigo,
+                              ),
+                            ),
+                          ),
+                          _counterBtn(
+                            '+',
+                            () => setState(() => _bowlCount++),
+                            isDark,
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Center(
+                child: Text(
+                  '${t.total}: ${_roundGramsDisplay(totalGrams)} ${food.isLiquid ? 'mL' : t.grams}',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w800,
                     color: AppTheme.indigo,
                   ),
                 ),
               ),
             ],
-          ),
-          const SizedBox(height: 8),
-          Slider(
-            value: _amount,
-            min: 10,
-            max: 1000,
-            divisions: 99,
-            activeColor: AppTheme.indigo,
-            inactiveColor: isDark
-                ? const Color(0xFF1E293B)
-                : const Color(0xFFF1F5F9),
-            onChanged: (v) => setState(() => _amount = v),
-          ),
-        ] else if (mode == FoodServingMode.piece) ...[
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      t.perPiece,
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                        color: isDark
-                            ? const Color(0xFF64748B)
-                            : const Color(0xFF94A3B8),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 14,
-                        vertical: 14,
-                      ),
-                      decoration: BoxDecoration(
-                        color: isDark
-                            ? const Color(0xFF1E293B)
-                            : const Color(0xFFF8FAFC),
-                        borderRadius: BorderRadius.circular(14),
-                        border: Border.all(
-                          color: isDark
-                              ? const Color(0xFF334155)
-                              : const Color(0xFFE2E8F0),
-                        ),
-                      ),
-                      child: Text(
-                        '${_weightFieldText(food.nutritionReferenceG)} ${t.grams}',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w800,
-                          color: isDark
-                              ? Colors.white
-                              : const Color(0xFF1E293B),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 12),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    t.pieces,
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
-                      color: isDark
-                          ? const Color(0xFF64748B)
-                          : const Color(0xFF94A3B8),
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      _counterBtn('-', () {
-                        if (_pieceCount > 1) setState(() => _pieceCount--);
-                      }, isDark),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 10),
-                        child: Text(
-                          '$_pieceCount',
-                          style: TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.w900,
-                            color: AppTheme.indigo,
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                _miniStat(t.calories, (food.calories * ratio).round(), isDark),
+                const SizedBox(width: 8),
+                _miniStat(t.protein, (food.protein * ratio).round(), isDark),
+                const SizedBox(width: 8),
+                _miniStat(t.carbs, (food.carbs * ratio).round(), isDark),
+                const SizedBox(width: 8),
+                _miniStat(t.fat, (food.fat * ratio).round(), isDark),
+              ],
+            ),
+            const SizedBox(height: 24),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () async {
+                  final boneMult = meatLogMacroMultiplier(
+                    food,
+                    withBones: _withBones,
+                  );
+                  final saved = await state.addLogEntry(
+                    LogEntry(
+                      id: DateTime.now().millisecondsSinceEpoch.toString(),
+                      foodId: food.id,
+                      name:
+                          food.getLocalizedName(state.lang) +
+                          meatBoneSuffixForLang(
+                            state.lang,
+                            withBones: _withBones,
                           ),
-                        ),
+                      amount: totalGrams,
+                      amountUnit: food.nutritionUnit,
+                      calories: food.calories * ratio,
+                      protein: food.protein * ratio,
+                      carbs: food.carbs * ratio,
+                      fat: food.fat * ratio,
+                      timestamp: DateTime.now().millisecondsSinceEpoch,
+                      mealId: widget.mealId,
+                      micros: scaleMicrosFromFood(
+                        food,
+                        totalGrams,
+                        boneMult: boneMult,
                       ),
-                      _counterBtn(
-                        '+',
-                        () => setState(() => _pieceCount++),
-                        isDark,
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Center(
-            child: Text(
-              '${t.total}: ${_roundGramsDisplay(totalGrams)} ${t.grams}',
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w800,
-                color: AppTheme.indigo,
+                    ),
+                  );
+                  if (!mounted) return;
+                  if (!saved) {
+                    ScaffoldMessenger.of(
+                      context,
+                    ).showSnackBar(SnackBar(content: Text(t.saveFailed)));
+                    return;
+                  }
+                  Navigator.pop(context);
+                },
+                child: Text(t.addFood),
               ),
             ),
-          ),
-        ] else ...[
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      t.perBowl,
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                        color: isDark
-                            ? const Color(0xFF64748B)
-                            : const Color(0xFF94A3B8),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 14,
-                        vertical: 14,
-                      ),
-                      decoration: BoxDecoration(
-                        color: isDark
-                            ? const Color(0xFF1E293B)
-                            : const Color(0xFFF8FAFC),
-                        borderRadius: BorderRadius.circular(14),
-                        border: Border.all(
-                          color: isDark
-                              ? const Color(0xFF334155)
-                              : const Color(0xFFE2E8F0),
-                        ),
-                      ),
-                      child: Text(
-                        '${_weightFieldText(food.nutritionReferenceG)} ${t.grams}',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w800,
-                          color: isDark
-                              ? Colors.white
-                              : const Color(0xFF1E293B),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 12),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    t.bowls,
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
-                      color: isDark
-                          ? const Color(0xFF64748B)
-                          : const Color(0xFF94A3B8),
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      _counterBtn('-', () {
-                        if (_bowlCount > 1) setState(() => _bowlCount--);
-                      }, isDark),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 10),
-                        child: Text(
-                          '$_bowlCount',
-                          style: TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.w900,
-                            color: AppTheme.indigo,
-                          ),
-                        ),
-                      ),
-                      _counterBtn(
-                        '+',
-                        () => setState(() => _bowlCount++),
-                        isDark,
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Center(
-            child: Text(
-              '${t.total}: ${_roundGramsDisplay(totalGrams)} ${t.grams}',
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w800,
-                color: AppTheme.indigo,
-              ),
-            ),
-          ),
-        ],
-        const SizedBox(height: 16),
-        Row(
-          children: [
-            _miniStat(t.calories, (food.calories * ratio).round(), isDark),
-            const SizedBox(width: 8),
-            _miniStat(t.protein, (food.protein * ratio).round(), isDark),
-            const SizedBox(width: 8),
-            _miniStat(t.carbs, (food.carbs * ratio).round(), isDark),
-            const SizedBox(width: 8),
-            _miniStat(t.fat, (food.fat * ratio).round(), isDark),
+            const SizedBox(height: 24),
           ],
         ),
-        const Spacer(),
-        SizedBox(
-          width: double.infinity,
-          child: ElevatedButton(
-            onPressed: () async {
-              final boneMult = meatLogMacroMultiplier(
-                food,
-                withBones: _withBones,
-              );
-              final saved = await state.addLogEntry(
-                LogEntry(
-                  id: DateTime.now().millisecondsSinceEpoch.toString(),
-                  foodId: food.id,
-                  name:
-                      food.getLocalizedName(state.lang) +
-                      meatBoneSuffixForLang(state.lang, withBones: _withBones),
-                  amount: totalGrams,
-                  calories: food.calories * ratio,
-                  protein: food.protein * ratio,
-                  carbs: food.carbs * ratio,
-                  fat: food.fat * ratio,
-                  timestamp: DateTime.now().millisecondsSinceEpoch,
-                  mealId: widget.mealId,
-                  micros: scaleMicrosFromFood(
-                    food,
-                    totalGrams,
-                    boneMult: boneMult,
-                  ),
-                ),
-              );
-              if (!mounted) return;
-              if (!saved) {
-                ScaffoldMessenger.of(
-                  context,
-                ).showSnackBar(SnackBar(content: Text(t.saveFailed)));
-                return;
-              }
-              Navigator.pop(context);
-            },
-            child: Text(t.addFood),
-          ),
-        ),
-        const SizedBox(height: 24),
-      ],
+      ),
     );
   }
 
