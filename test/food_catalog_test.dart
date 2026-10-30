@@ -131,4 +131,30 @@ void main() {
       );
     },
   );
+  test(
+    'admin-disabled preparation is omitted without deleting remaining cooking choices',
+    () {
+      final group = catalog
+          .browse()
+          .singleWhere((row) => row.displayFood.id == 'p1')
+          .group!;
+      final cooking = group.subGroups!['no_oil']!;
+      expect(
+        catalog.preparations(cooking).any((o) => o.foodId == 'p1_boiled'),
+        true,
+      );
+      catalog.accept({
+        ...document,
+        'disabledIds': ['p1_boiled'],
+      });
+      expect(
+        catalog.preparations(cooking).any((o) => o.foodId == 'p1_boiled'),
+        false,
+      );
+      expect(
+        catalog.preparations(cooking).any((o) => o.foodId == 'p1_roasted'),
+        true,
+      );
+    },
+  );
 }

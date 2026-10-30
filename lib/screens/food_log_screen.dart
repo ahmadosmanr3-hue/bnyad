@@ -1078,6 +1078,7 @@ class _FoodSearchSheetState extends State<_FoodSearchSheet> {
 
   Widget _buildPrepPicker(dynamic t, bool isDark) {
     final group = _prepGroup!;
+    final options = widget.state.catalog.preparations(group);
     final lang = widget.state.lang;
     final isSubStep = _rootPrepGroup != null && group != _rootPrepGroup;
     return Column(
@@ -1119,9 +1120,9 @@ class _FoodSearchSheetState extends State<_FoodSearchSheet> {
         const SizedBox(height: 16),
         Expanded(
           child: ListView.builder(
-            itemCount: group.options.length,
+            itemCount: options.length,
             itemBuilder: (_, i) {
-              final opt = group.options[i];
+              final opt = options[i];
               final food = opt.opensSubGroup ? null : foodById(opt.foodId);
               final kcal = food?.calories.round() ?? 0;
               final servingNote =

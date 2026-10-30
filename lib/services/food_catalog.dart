@@ -132,6 +132,18 @@ class FoodCatalog extends ChangeNotifier {
     return f.category;
   }
 
+  List<FoodGroupOption> preparations(FoodPickGroup group) =>
+      group.options.where((option) {
+        if (option.opensSubGroup) {
+          final child = group.subGroups?[option.subGroupKey];
+          return child != null && preparations(child).isNotEmpty;
+        }
+        return !disabled.contains(option.foodId) &&
+            !disabled.contains(
+              foods[option.foodId]?.canonicalKey ?? option.foodId,
+            );
+      }).toList();
+
   List<FoodBrowseRow> browse() {
     final result = <FoodBrowseRow>[], seen = <String>{};
     for (final row in foodsForFoodLogBrowse()) {
