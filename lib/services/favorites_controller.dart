@@ -58,7 +58,8 @@ class FavoritesController extends ChangeNotifier {
   }
 
   void _publish() {
-    persist?.call(items);
+    // Never save an unacknowledged optimistic intent as confirmed disk state.
+    persist?.call(List.unmodifiable(_confirmed.values));
     notifyListeners();
   }
 

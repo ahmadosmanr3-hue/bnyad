@@ -110,4 +110,25 @@ void main() {
       expect(catalog.foods.length, 829);
     },
   );
+  test(
+    'boiled chicken stays inside its preparation family, never duplicated in browsing',
+    () {
+      expect(
+        catalog.browse().where((row) => row.displayFood.id == 'p1_boiled'),
+        isEmpty,
+      );
+      expect(
+        catalog.browse().where(
+          (row) =>
+              row.group != null &&
+              (row.group!.subGroups?.values.any(
+                    (group) =>
+                        group.options.any((o) => o.foodId == 'p1_boiled'),
+                  ) ??
+                  false),
+        ),
+        isNotEmpty,
+      );
+    },
+  );
 }

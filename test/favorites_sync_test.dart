@@ -150,4 +150,20 @@ void main() {
       expect(a.items, isEmpty);
     },
   );
+  test(
+    'disk cache stores only acknowledged favorites during an in-flight change',
+    () async {
+      final s = Server()..hold = Completer<void>(), a = client(s);
+      await a.refresh();
+      List<FavoriteTemplate> saved = [];
+      a.persist = (items) => saved = items;
+      final operation = a.toggle(food);
+      expect(a.contains('milk'), true);
+      expect(saved, isEmpty);
+      await Future<void>.delayed(const Duration(milliseconds: 1));
+      s.hold!.complete();
+      await operation;
+      expect(saved.single.foodId, 'milk');
+    },
+  );
 }

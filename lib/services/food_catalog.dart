@@ -1,3 +1,4 @@
+import 'package:nutrify/constants/food_database.dart';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
@@ -141,7 +142,11 @@ class FoodCatalog extends ChangeNotifier {
       seen.add(food.canonicalKey);
       result.add(FoodBrowseRow(displayFood: food, group: row.group));
     }
+    final legacyIds = foodDatabase.map((f) => f.id).toSet();
     for (final f in foods.values) {
+      // The legacy registry already groups preparations and hides serving aliases.
+      // Append only genuinely new entries; never reintroduce hidden variants.
+      if (legacyIds.contains(f.id)) continue;
       if (disabled.contains(f.id) ||
           disabled.contains(f.canonicalKey) ||
           !seen.add(f.canonicalKey)) {
