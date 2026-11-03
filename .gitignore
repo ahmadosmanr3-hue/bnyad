@@ -31,3 +31,7 @@ android/app/google-services.json
 ios/Runner/GoogleService-Info.plist
 lib/firebase_options.dart
 release-config.json
+
+# Generated verification artifacts
+/test/failures/
+/android/.kotlin/
