@@ -22,6 +22,50 @@ void main() {
     });
   });
   test(
+    'server switch blocks generation and can enable it later in the same client',
+    () async {
+      var available = false;
+      var posts = 0;
+      final api = ApiService(
+        baseUrl: 'https://example.test/api',
+        client: MockClient((request) async {
+          if (request.method == 'POST') {
+            posts++;
+            return http.Response('{"data":{"fixture":true}}', 200);
+          }
+          return http.Response(
+            jsonEncode({
+              'available': available,
+              'enabled': true,
+              'version': ApiService.aiConsentVersion,
+            }),
+            200,
+          );
+        }),
+      );
+      addTearDown(api.dispose);
+      await api.loadToken();
+      expect(
+        await api.generateAi('recipe', {
+          'ingredients': ['rice'],
+        }),
+        isNull,
+      );
+      expect(api.aiServiceAvailable, false);
+      expect(api.aiErrorCode, 'disabled');
+      expect(posts, 0);
+      available = true;
+      expect(
+        await api.generateAi('recipe', {
+          'ingredients': ['rice'],
+        }),
+        {'fixture': true},
+      );
+      expect(api.aiServiceAvailable, true);
+      expect(posts, 1);
+    },
+  );
+  test(
     'food scan uses authenticated backend, never sends a provider key or client health profile',
     () async {
       final requests = <http.Request>[];
@@ -174,6 +218,49 @@ void main() {
       }
     },
   );
+  test(
+    'adult-profile rejection has its own localized message, not a Premium error',
+    () async {
+      final api = ApiService(
+        baseUrl: 'https://example.test/api',
+        client: MockClient(
+          (request) async => request.method == 'GET'
+              ? http.Response(
+                  jsonEncode({
+                    'enabled': true,
+                    'available': true,
+                    'version': ApiService.aiConsentVersion,
+                  }),
+                  200,
+                )
+              : http.Response(
+                  '{"code":"ai_age_restricted","message":"private server details"}',
+                  403,
+                ),
+        ),
+      );
+      addTearDown(api.dispose);
+      await api.loadToken();
+      expect(
+        await api.generateAi('recipe', {
+          'ingredients': ['rice'],
+        }),
+        isNull,
+      );
+      expect(api.aiErrorCode, 'adultProfile');
+      for (final lang in ['en', 'ar', 'ku']) {
+        expect(
+          AiStrings.get(lang, 'adultProfile'),
+          isNot(AiStrings.get(lang, 'notAuthorized')),
+        );
+        expect(
+          AiStrings.get(lang, 'adultProfile').contains('private server'),
+          false,
+        );
+        expect(AiStrings.get(lang, 'premiumAiConditions'), isNotEmpty);
+      }
+    },
+  );
   test('AI result arriving after logout is discarded', () async {
     final delayed = Completer<http.Response>();
     final api = ApiService(
@@ -198,6 +285,66 @@ void main() {
     await api.clearAuth();
     delayed.complete(http.Response('{"data":{"calories":130}}', 200));
     expect(await pending, null);
+  });
+  test('missing deployed AI route is distinct from declined consent', () async {
+    var posts = 0;
+    final api = ApiService(
+      baseUrl: 'https://example.test/api',
+      client: MockClient((r) async {
+        if (r.method == 'POST') posts++;
+        return http.Response('{}', 404);
+      }),
+    );
+    await api.loadToken();
+    expect(
+      await api.generateAi('recipe', {
+        'ingredients': ['rice'],
+      }),
+      isNull,
+    );
+    expect(api.aiErrorCode, 'serviceUpdate');
+    expect(posts, 0);
+  });
+  test('server operational failures remain distinct and localized', () async {
+    for (final entry in {
+      'ai_disabled': 'disabled',
+      'ai_not_configured': 'configuration',
+      'ai_provider_access': 'configuration',
+      'ai_model_unavailable': 'configuration',
+      'ai_provider_quota': 'providerQuota',
+    }.entries) {
+      final api = ApiService(
+        baseUrl: 'https://example.test/api',
+        client: MockClient(
+          (r) async => r.method == 'GET'
+              ? http.Response(
+                  jsonEncode({
+                    'enabled': true,
+                    'version': ApiService.aiConsentVersion,
+                  }),
+                  200,
+                )
+              : http.Response(
+                  jsonEncode({'code': entry.key}),
+                  entry.key == 'ai_provider_quota' ? 429 : 503,
+                ),
+        ),
+      );
+      await api.loadToken();
+      expect(
+        await api.generateAi('recipe', {
+          'ingredients': ['rice'],
+        }),
+        isNull,
+      );
+      expect(api.aiErrorCode, entry.value);
+      for (final language in ['en', 'ar', 'ku']) {
+        expect(
+          AiStrings.get(language, entry.value),
+          isNot(AiStrings.get(language, 'failed')),
+        );
+      }
+    }
   });
   test(
     'all AI consent/error keys have English, Arabic and Sorani coverage',

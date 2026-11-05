@@ -22,7 +22,6 @@ import 'package:nutrify/providers/app_state.dart';
 import 'package:nutrify/screens/premium_paywall_screen.dart';
 import 'package:nutrify/services/api_service.dart';
 import 'package:nutrify/services/auth_service.dart';
-import 'package:nutrify/services/food_barcode_service.dart';
 import 'step_tracking_test.dart' show MemoryStepStore, profile, FakeHealth;
 import 'package:nutrify/activity/step_tracker.dart';
 import 'package:nutrify/activity/step_strings.dart';
@@ -124,7 +123,6 @@ void main() {
   });
   tearDown(() {
     HttpOverrides.global = null;
-    FoodBarcodeService.clientOverride = null;
     debugDefaultTargetPlatformOverride = null;
     SharedPreferences.resetStatic();
     for (final channel in [health, secure, purchases]) {

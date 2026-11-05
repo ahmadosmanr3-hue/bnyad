@@ -3,8 +3,13 @@ class AppBranding {
   AppBranding._();
 
   static const name = 'BNYAD';
+
+  /// Store listing title; launcher name and existing package identities stay short.
+  static const storeName = 'BNYAD: Calorie & Macro Tracker';
+
   /// Transparent PNG — apple mark, natural aspect ratio (`bnyadnewest.jpeg`).
   static const logoAsset = 'assets/images/bnyad_logo.png';
+
   /// Square transparent icon for app bar / compact UI.
   static const iconAsset = 'assets/images/bnyad_icon.png';
 

@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:nutrify/widgets/app_build_info.dart';
 import 'package:nutrify/l10n/localized_time_picker.dart';
 import 'package:nutrify/l10n/localized_numbers.dart';
 import '../activity/step_widgets.dart';
@@ -327,6 +328,7 @@ class SettingsScreen extends StatelessWidget {
               ],
             ),
           ),
+          Center(child: AppBuildInfo(lang: state.lang)),
         ],
       ),
     );
@@ -661,8 +663,10 @@ class _PremiumStatusCard extends StatelessWidget {
                                   SnackBar(
                                     content: Text(
                                       success
-                                          ? 'Premium restored successfully!'
-                                          : 'No active premium subscription found.',
+                                          ? t.restoreSuccess
+                                          : state.purchaseVerificationPending
+                                          ? t.purchaseVerificationPending
+                                          : t.restoreNotFound,
                                     ),
                                   ),
                                 );

@@ -6,7 +6,6 @@ import 'package:nutrify/main.dart' show BnyadApp;
 import 'package:nutrify/providers/app_state.dart';
 import 'package:nutrify/services/api_service.dart';
 import 'package:nutrify/services/auth_service.dart';
-import 'package:nutrify/services/food_barcode_service.dart';
 import 'demo/demo_backend.dart';
 import 'demo/demo_guard.dart';
 import 'demo/demo_shell.dart';
@@ -36,7 +35,6 @@ Future<void> main() async {
   final backend = DemoBackend(prefs);
   await backend.seedLocalHistory();
   UrlLauncherPlatform.instance = DemoUrlLauncher();
-  FoodBarcodeService.clientOverride = backend.client;
   final api = ApiService(
     baseUrl: DemoBackend.baseUrl,
     storage: DemoStorage(prefs),

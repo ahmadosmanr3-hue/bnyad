@@ -1,3 +1,4 @@
+import 'premium_gifts_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:nutrify/l10n/notification_text.dart';
 import 'package:nutrify/l10n/localized_numbers.dart';
@@ -155,6 +156,16 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                 : AppTheme.slate700,
                           ),
                         ),
+                        if (n['campaignId'] != null)
+                          TextButton.icon(
+                            icon: const Icon(Icons.card_giftcard),
+                            label: Text(state.t.premiumGifts),
+                            onPressed: () => Navigator.of(context).push(
+                              MaterialPageRoute<void>(
+                                builder: (_) => const PremiumGiftsScreen(),
+                              ),
+                            ),
+                          ),
                         if ((n['createdAt']?.toString() ?? '').isNotEmpty) ...[
                           const SizedBox(height: 10),
                           Text(

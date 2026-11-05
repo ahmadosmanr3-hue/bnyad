@@ -6,6 +6,7 @@ class FavoriteTemplate {
   final String name;
   final String? foodId;
   final double amount;
+  final String amountUnit;
   final double calories;
   final double protein;
   final double carbs;
@@ -17,6 +18,7 @@ class FavoriteTemplate {
     required this.name,
     this.foodId,
     required this.amount,
+    this.amountUnit = 'g',
     required this.calories,
     required this.protein,
     required this.carbs,
@@ -25,16 +27,17 @@ class FavoriteTemplate {
   });
 
   Map<String, dynamic> toMap() => {
-        'id': id,
-        'name': name,
-        if (foodId != null) 'foodId': foodId,
-        'amount': amount,
-        'calories': calories,
-        'protein': protein,
-        'carbs': carbs,
-        'fat': fat,
-        if (micros.isNotEmpty) 'micros': micros,
-      };
+    'id': id,
+    'name': name,
+    if (foodId != null) 'foodId': foodId,
+    'amount': amount,
+    'amountUnit': amountUnit,
+    'calories': calories,
+    'protein': protein,
+    'carbs': carbs,
+    'fat': fat,
+    if (micros.isNotEmpty) 'micros': micros,
+  };
 
   factory FavoriteTemplate.fromMap(Map<String, dynamic> map) {
     final rawM = map['micros'];
@@ -50,6 +53,7 @@ class FavoriteTemplate {
       name: map['name']?.toString() ?? '',
       foodId: map['foodId']?.toString(),
       amount: (map['amount'] as num?)?.toDouble() ?? 100,
+      amountUnit: map['amountUnit'] == 'ml' ? 'ml' : 'g',
       calories: (map['calories'] as num?)?.toDouble() ?? 0,
       protein: (map['protein'] as num?)?.toDouble() ?? 0,
       carbs: (map['carbs'] as num?)?.toDouble() ?? 0,

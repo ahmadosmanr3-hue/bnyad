@@ -3,6 +3,7 @@ class LogEntry {
   final String foodId;
   final String name;
   final double amount;
+  final String amountUnit;
   final double calories;
   final double protein;
   final double carbs;
@@ -16,6 +17,7 @@ class LogEntry {
     required this.foodId,
     required this.name,
     required num amount,
+    this.amountUnit = 'g',
     required num calories,
     required num protein,
     required num carbs,
@@ -23,11 +25,11 @@ class LogEntry {
     required this.timestamp,
     this.mealId,
     this.micros = const {},
-  })  : amount = amount.toDouble(),
-        calories = calories.toDouble(),
-        protein = protein.toDouble(),
-        carbs = carbs.toDouble(),
-        fat = fat.toDouble();
+  }) : amount = amount.toDouble(),
+       calories = calories.toDouble(),
+       protein = protein.toDouble(),
+       carbs = carbs.toDouble(),
+       fat = fat.toDouble();
 
   factory LogEntry.fromMap(String id, Map<String, dynamic> map) {
     final rawMicros = map['micros'] as Map<String, dynamic>? ?? {};
@@ -45,20 +47,26 @@ class LogEntry {
 
     return LogEntry(
       id: id,
-      foodId: map['foodId']?.toString() ??
+      foodId:
+          map['foodId']?.toString() ??
           map['external_food_id']?.toString() ??
           map['food_id']?.toString() ??
           '',
       name: map['name']?.toString() ?? map['food_name']?.toString() ?? '',
-      amount: (map['amount'] as num?)?.toDouble() ??
+      amount:
+          (map['amount'] as num?)?.toDouble() ??
           (map['amount_g'] as num?)?.toDouble() ??
           0.0,
+      amountUnit: map['amount_unit'] == 'ml' || map['amountUnit'] == 'ml'
+          ? 'ml'
+          : 'g',
       calories: (map['calories'] as num?)?.toDouble() ?? 0.0,
       protein: (map['protein'] as num?)?.toDouble() ?? 0.0,
       carbs: (map['carbs'] as num?)?.toDouble() ?? 0.0,
       fat: (map['fat'] as num?)?.toDouble() ?? 0.0,
       timestamp: ts,
-      mealId: map['mealId']?.toString() ??
+      mealId:
+          map['mealId']?.toString() ??
           map['meal_type']?.toString() ??
           map['meal_slot']?.toString(),
       micros: rawMicros.map((k, v) => MapEntry(k, (v as num).toDouble())),
@@ -66,15 +74,16 @@ class LogEntry {
   }
 
   Map<String, dynamic> toMap() => {
-        'foodId': foodId,
-        'name': name,
-        'amount': amount,
-        'calories': calories,
-        'protein': protein,
-        'carbs': carbs,
-        'fat': fat,
-        'timestamp': timestamp,
-        if (mealId != null) 'mealId': mealId,
-        if (micros.isNotEmpty) 'micros': micros,
-      };
+    'foodId': foodId,
+    'name': name,
+    'amount': amount,
+    'amountUnit': amountUnit,
+    'calories': calories,
+    'protein': protein,
+    'carbs': carbs,
+    'fat': fat,
+    'timestamp': timestamp,
+    if (mealId != null) 'mealId': mealId,
+    if (micros.isNotEmpty) 'micros': micros,
+  };
 }

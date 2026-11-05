@@ -1,3 +1,4 @@
+import 'premium_gifts_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
@@ -5,8 +6,10 @@ import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'package:nutrify/providers/app_state.dart';
+import 'package:nutrify/services/purchases_bootstrap.dart';
 import 'package:nutrify/screens/medical_citations_screen.dart';
 import 'package:nutrify/theme/app_theme.dart';
+import 'package:nutrify/utils/ai_strings.dart';
 
 /// Opens the premium paywall as a modal bottom sheet.
 Future<void> showPremiumPaywall(BuildContext context) {
@@ -29,10 +32,23 @@ class _PremiumPaywallSheetState extends State<_PremiumPaywallSheet> {
   String _selectedProductId = 'BNYAD_Y1';
   bool _loading = false;
   final Map<String, String> _prices = {};
+  bool _aiAvailabilityChecked = false;
+  bool? _aiAvailable;
   @override
   void initState() {
     super.initState();
     _loadPrices();
+    _checkAiAvailability();
+  }
+
+  Future<void> _checkAiAvailability() async {
+    final state = context.read<AppState>();
+    await state.getAiConsent();
+    if (!mounted) return;
+    setState(() {
+      _aiAvailable = state.aiServiceAvailable;
+      _aiAvailabilityChecked = true;
+    });
   }
 
   Future<void> _loadPrices() async {
@@ -40,6 +56,9 @@ class _PremiumPaywallSheetState extends State<_PremiumPaywallSheet> {
       return;
     }
     try {
+      if (!await PurchasesBootstrap.instance.ensureConfigured() || !mounted) {
+        return;
+      }
       final products = await Purchases.getProducts(['BNYAD_M1', 'BNYAD_Y1']);
       if (!mounted) return;
       setState(() {
@@ -129,7 +148,42 @@ class _PremiumPaywallSheetState extends State<_PremiumPaywallSheet> {
                       ),
                       const SizedBox(height: 24),
 
+                      if (_aiAvailable != true) ...[
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: isDark
+                                ? AppTheme.slate800
+                                : AppTheme.slate100,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            AiStrings.get(
+                              state.lang,
+                              !_aiAvailabilityChecked
+                                  ? 'availabilityChecking'
+                                  : _aiAvailable == false
+                                  ? 'premiumAiPaused'
+                                  : 'availabilityUnknown',
+                            ),
+                            style: TextStyle(color: title, height: 1.5),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                      ],
+
                       // Plan Selection Cards
+                      if (_aiAvailable == true) ...[
+                        Text(
+                          AiStrings.get(state.lang, 'premiumAiConditions'),
+                          style: TextStyle(
+                            color: muted,
+                            fontSize: 13,
+                            height: 1.5,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                      ],
                       _buildPlanCard(
                         productId: 'BNYAD_M1',
                         title: t.monthlyPlan,
@@ -159,6 +213,19 @@ class _PremiumPaywallSheetState extends State<_PremiumPaywallSheet> {
                             isDark: isDark,
                           ),
                         ),
+                      if (state.premiumGifts.isNotEmpty) ...[
+                        const SizedBox(height: 12),
+                        ListTile(
+                          leading: const Icon(Icons.card_giftcard),
+                          title: Text(t.premiumGifts),
+                          subtitle: Text(t.giftDatesMayChange),
+                          onTap: () => Navigator.of(context).push(
+                            MaterialPageRoute<void>(
+                              builder: (_) => const PremiumGiftsScreen(),
+                            ),
+                          ),
+                        ),
+                      ],
                       const SizedBox(height: 18),
                       Text(
                         t.premiumFooterNote,
@@ -194,6 +261,8 @@ class _PremiumPaywallSheetState extends State<_PremiumPaywallSheet> {
                                       content: Text(
                                         success
                                             ? t.restoreSuccess
+                                            : state.purchaseVerificationPending
+                                            ? t.purchaseVerificationPending
                                             : t.restoreNotFound,
                                       ),
                                     ),
@@ -605,10 +674,20 @@ class _ActivateButton extends StatelessWidget {
     final t = state.t;
 
     return ElevatedButton.icon(
-      onPressed: loading
+      onPressed:
+          loading ||
+              (isPremium &&
+                  !state.storeManagedPremium &&
+                  state.premiumGifts.isEmpty)
           ? null
           : () async {
-              if (isPremium) {
+              if (isPremium && !state.storeManagedPremium) {
+                await Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => const PremiumGiftsScreen(),
+                  ),
+                );
+              } else if (isPremium) {
                 onLoadingChanged(true);
                 await launchUrl(
                   Uri.parse(
@@ -629,7 +708,13 @@ class _ActivateButton extends StatelessWidget {
                 if (context.mounted) {
                   if (!success) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(state.t.purchaseFailed)),
+                      SnackBar(
+                        content: Text(
+                          state.purchaseVerificationPending
+                              ? state.t.purchaseVerificationPending
+                              : state.t.purchaseFailed,
+                        ),
+                      ),
                     );
                   } else {
                     Navigator.of(context).pop();
@@ -652,14 +737,22 @@ class _ActivateButton extends StatelessWidget {
                   : Icons.workspace_premium_rounded,
               size: 18,
             ),
-      label: Text(isPremium ? t.manageSubscription : t.premiumActivate),
+      label: Text(
+        isPremium
+            ? (state.storeManagedPremium
+                  ? t.manageSubscription
+                  : state.premiumGifts.isNotEmpty
+                  ? t.premiumGifts
+                  : t.premiumActive)
+            : t.premiumActivate,
+      ),
       style: ElevatedButton.styleFrom(
         backgroundColor: AppTheme.indigo,
         foregroundColor: Colors.white,
         padding: const EdgeInsets.symmetric(vertical: 18),
         textStyle: const TextStyle(
-                      fontFamily: AppTheme.fontFamily,
-                      fontFamilyFallback: AppTheme.fontFamilyFallback,
+          fontFamily: AppTheme.fontFamily,
+          fontFamilyFallback: AppTheme.fontFamilyFallback,
           fontSize: 15,
           fontWeight: FontWeight.w800,
           letterSpacing: 0.2,

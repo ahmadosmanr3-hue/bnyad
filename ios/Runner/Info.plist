@@ -4,6 +4,8 @@
 <dict>
 	<key>NSHealthShareUsageDescription</key>
 	<string>With your permission, BNYAD reads your steps and optional walking/running distance to show daily activity, suggest gentle step goals, and estimate walking calories on this device. Health data is not uploaded or sent to AI.</string>
+	<key>NSHealthUpdateUsageDescription</key>
+	<string>BNYAD does not request permission to add or change Apple Health data. Step tracking only reads steps and optional walking/running distance.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>Allow camera access to scan food and estimate nutrition.</string>
 	<key>NSPhotoLibraryUsageDescription</key>

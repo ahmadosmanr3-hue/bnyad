@@ -78,8 +78,6 @@ void main() {
         final response = await backend.client.get(Uri.parse(url));
         expect(response.statusCode, anyOf(401, 404));
       }
-      FoodBarcodeService.clientOverride = backend.client;
-      addTearDown(() => FoodBarcodeService.clientOverride = null);
       final result = await FoodBarcodeService().lookup(
         '9999999999999',
         isOnline: true,

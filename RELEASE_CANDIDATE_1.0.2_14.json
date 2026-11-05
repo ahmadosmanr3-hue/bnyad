@@ -1,0 +1,34 @@
+{
+  "status": "android-prepared-ios-internal-upload-rejected",
+  "version": "1.0.2+14",
+  "mobileSourceCommit": "51c0b06e42e86cd218d442979802270799065213",
+  "backendSourceCommit": "0b0726f61349887b33e3134b9662a182c95943c0",
+  "productionDeployment": "dpl_C9Z87f4d1ANLULjjYw4DrW8dKRAW",
+  "aiEnabled": false,
+  "geminiLiveRequestsMade": 0,
+  "developmentGeminiLedger": "21/21",
+  "artifacts": {
+    "build/app/outputs/bundle/release/app-release.aab": {
+      "sha256": "dfcffd44d940d2eb6cdea89f2be9a3de44afa4e84c853376da0e2b2c790f47da",
+      "bytes": 74522209
+    },
+    "build/ios/ipa/BNYAD.ipa": {
+      "sha256": "db83fddc40ea1d1c6df44a6b5bedf265e7189933e8da9947ac8040937defcad0",
+      "bytes": 30022644
+    }
+  },
+  "remainingReleaseGates": [
+    "Clean iPhone camera-permission state (upgrade camera flows passed)",
+    "Purchase/restore verification against RevenueCat",
+    "Remaining foreground/normal-closed push states and unambiguous Samsung push test",
+    "Final Play country/device checks, store metadata and review configuration"
+  ],
+  "iosUpload": {
+    "channel": "internal-testflight-only",
+    "accepted": false,
+    "reason": "Apple validation requires NSHealthUpdateUsageDescription",
+    "nextInternalBuild": 15
+  },
+  "storeReviewSubmitted": false,
+  "productionReleasePublished": false
+}

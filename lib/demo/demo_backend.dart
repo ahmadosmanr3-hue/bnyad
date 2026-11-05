@@ -92,6 +92,57 @@ class DemoBackend {
     if (request.headers['Authorization'] != 'Bearer $token') {
       return _reply({'message': 'Demo session required.'}, 401);
     }
+    if (path == '/favorites') {
+      final favorites = Map<String, dynamic>.from(
+        data['favorites_v2'] as Map? ?? {},
+      );
+      final versions = Map<String, dynamic>.from(
+        data['favorite_versions'] as Map? ?? {},
+      );
+      final revision = (data['favorite_revision'] as num? ?? 0).toInt();
+      if (method == 'GET') {
+        return _reply({
+          'revision': revision,
+          'data': favorites.values.toList(),
+          'versions': versions,
+        });
+      }
+      if (method == 'POST') {
+        for (final f in body['favorites'] as List? ?? []) {
+          final key = f['foodId'] ?? f['id'];
+          if (!versions.containsKey(key)) {
+            favorites[key] = f;
+            versions[key] = 1;
+          }
+        }
+      } else if (method == 'PUT') {
+        final key = body['foodId'] as String;
+        if (body['expectedVersion'] != (versions[key] ?? 0)) {
+          return _reply({'message': 'Demo revision conflict'}, 409);
+        }
+        versions[key] = (versions[key] as num? ?? 0).toInt() + 1;
+        if (body['favorite'] == true) {
+          favorites[key] = body['template'];
+        } else {
+          favorites.remove(key);
+        }
+      }
+      data['favorites_v2'] = favorites;
+      data['favorite_versions'] = versions;
+      data['favorite_revision'] = revision + 1;
+      await persist();
+      return _reply(
+        method == 'POST'
+            ? {'ok': true}
+            : {
+                'canonicalId': body['foodId'],
+                'favorite': body['favorite'],
+                'version': versions[body['foodId']],
+                'revision': revision + 1,
+                'data': favorites[body['foodId']],
+              },
+      );
+    }
     switch ((method, path)) {
       case ('GET', '/auth/me'):
         return _reply({'data': user});
@@ -151,6 +202,7 @@ class DemoBackend {
         return _reply({'data': []});
       case ('GET', '/ai/consent'):
         return _reply({
+          'available': true, // Simulated fixtures only; never a Google request.
           'enabled': data['consent'],
           'version': ApiService.aiConsentVersion,
         });

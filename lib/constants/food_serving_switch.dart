@@ -346,6 +346,9 @@ const Map<String, String> _gramsToBowlId = {
 };
 
 FoodItem? foodById(String id) {
+  if (FoodItem.catalogOverrides.containsKey(id)) {
+    return FoodItem.catalogOverrides[id];
+  }
   for (final f in foodDatabase) {
     if (f.id == id) return f;
   }
@@ -380,7 +383,8 @@ FoodItem _reload(FoodItem? f) {
 /// Normalizes to the **100g** (or primary per-100g) row for this dish family.
 FoodItem foodCanonicalGrams(FoodItem selected) {
   final s = _reload(selected);
-  final id = _kurdishIdToGramsCanonical[s.id] ??
+  final id =
+      _kurdishIdToGramsCanonical[s.id] ??
       kurdishSweetsFriedIdToGramsCanonical[s.id] ??
       s.id;
   return foodById(id) ?? s;
@@ -417,8 +421,8 @@ FoodItem foodForServingMode(FoodItem selected, FoodServingMode mode) {
       } else {
         final g = foodCanonicalGrams(sel);
         // 1) Explicit Kurdish / bakery piece variant.
-        final pid = _gramsToPieceId[g.id] ??
-            kurdishSweetsFriedGramsToPieceId[g.id];
+        final pid =
+            _gramsToPieceId[g.id] ?? kurdishSweetsFriedGramsToPieceId[g.id];
         if (pid != null) {
           out = foodById(pid) ?? sel;
         } else {
@@ -439,17 +443,13 @@ FoodItem foodForServingMode(FoodItem selected, FoodServingMode mode) {
       break;
     case FoodServingMode.bowl:
       final g = foodCanonicalGrams(sel);
-      final bid = _gramsToBowlId[g.id] ??
-          kurdishSweetsFriedGramsToBowlId[g.id];
+      final bid = _gramsToBowlId[g.id] ?? kurdishSweetsFriedGramsToBowlId[g.id];
       if (bid != null) {
         out = foodById(bid) ?? sel;
       } else {
         final perBowl = _gramsPerBowlFor(g);
         if (perBowl != null) {
-          out = g.asServingVariant(
-            idSuffix: 'syn_bw',
-            gramsPerUnit: perBowl,
-          );
+          out = g.asServingVariant(idSuffix: 'syn_bw', gramsPerUnit: perBowl);
         } else {
           out = sel;
         }

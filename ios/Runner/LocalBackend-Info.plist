@@ -7,6 +7,8 @@
 	<string>Connect to your Mac's private BNYAD development backend for fictional account and simulated AI testing. No production data is used.</string>
 	<key>NSHealthShareUsageDescription</key>
 	<string>With your permission, BNYAD Dev reads steps and optional walking/running distance on this device for activity and estimated walking calories. Health data is never uploaded or sent to AI.</string>
+	<key>NSHealthUpdateUsageDescription</key>
+	<string>BNYAD does not request permission to add or change Apple Health data. Step tracking only reads steps and optional walking/running distance.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>Allow camera access to scan food and estimate nutrition.</string>
 	<key>NSPhotoLibraryUsageDescription</key>

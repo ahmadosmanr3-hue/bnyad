@@ -829,14 +829,16 @@ class DashboardScreen extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(width: 10),
-                        Text(
-                          dateLabel,
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                            letterSpacing: 0.2,
-                            color: muted,
-                            fontFeatures: const [FontFeature.enable('lnum')],
+                        Flexible(
+                          child: Text(
+                            dateLabel,
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: 0.2,
+                              color: muted,
+                              fontFeatures: const [FontFeature.enable('lnum')],
+                            ),
                           ),
                         ),
                       ],

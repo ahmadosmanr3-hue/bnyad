@@ -65,6 +65,29 @@ void main() {
     },
   );
   test(
+    'Android private backend requires native debug guard and cannot arm live food',
+    () async {
+      debugDefaultTargetPlatformOverride = TargetPlatform.android;
+      var allowed = false;
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(
+            const MethodChannel('com.bnyad.app/steps'),
+            (call) async {
+              expect(call.method, 'localBackendAllowed');
+              return allowed;
+            },
+          );
+      final config = LocalBackendConfig.parse(url);
+      await expectLater(config.authorize(), throwsStateError);
+      allowed = true;
+      await config.authorize();
+      await expectLater(
+        LocalBackendConfig.parse(url, allowSupervisedFood: true).authorize(),
+        throwsStateError,
+      );
+    },
+  );
+  test(
     'readiness requires matching environment, mocks and explicit Google block',
     () {
       final config = LocalBackendConfig.parse(url);

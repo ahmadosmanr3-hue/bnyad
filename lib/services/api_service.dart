@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:nutrify/services/favorites_controller.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http_pkg;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -8,7 +9,7 @@ import 'package:nutrify/models/log_entry.dart';
 import 'package:nutrify/models/meal.dart';
 
 /// REST client for the active Next.js backend and compatible bearer-token API.
-class ApiService {
+class ApiService implements FavoritesApi {
   final String baseUrl;
   final bool aiEnabled;
   String? _token;
@@ -19,8 +20,10 @@ class ApiService {
   VoidCallback? onSessionInvalidated;
   static const aiConsentVersion = 'google-ai-2026-10-13-v1';
   String aiErrorCode = 'failed';
+  bool? aiServiceAvailable;
 
   Future<bool?> getAiConsent() async {
+    aiServiceAvailable = null;
     final owner = _token;
     if (!hasToken) return false;
     try {
@@ -28,10 +31,24 @@ class ApiService {
         Uri.parse('$baseUrl/ai/consent'),
         headers: _headers,
       );
-      if (_token != owner || response.statusCode != 200) return null;
+      if (_token != owner) return null;
+      if (response.statusCode != 200) {
+        aiErrorCode = response.statusCode == 404
+            ? 'serviceUpdate'
+            : 'unavailable';
+        return null;
+      }
       final body = jsonDecode(response.body) as Map<String, dynamic>;
+      aiServiceAvailable = body['available'] is bool
+          ? body['available'] as bool
+          : null;
+      if (aiServiceAvailable == false) {
+        aiErrorCode = 'disabled';
+        return null;
+      }
       return body['enabled'] == true && body['version'] == aiConsentVersion;
     } catch (_) {
+      aiErrorCode = 'unavailable';
       return null;
     }
   }
@@ -65,8 +82,9 @@ class ApiService {
       aiErrorCode = 'signIn';
       return null;
     }
-    if (await getAiConsent() != true || owner != _token) {
-      aiErrorCode = 'consentRequired';
+    final consent = await getAiConsent();
+    if (consent != true || owner != _token) {
+      if (consent == false) aiErrorCode = 'consentRequired';
       return null;
     }
     try {
@@ -87,17 +105,27 @@ class ApiService {
       }
       aiErrorCode = switch (response.statusCode) {
         401 => 'signIn',
-        403 => 'notAuthorized',
+        403 =>
+          body['code'] == 'ai_age_restricted'
+              ? 'adultProfile'
+              : 'notAuthorized',
         429 => switch (body['code']) {
           'ai_rate_limit' => 'rateLimit',
           'ai_daily_limit' => 'dailyLimit',
           'ai_budget_limit' => 'budgetLimit',
+          'ai_provider_quota' => 'providerQuota',
           _ => 'quota',
         },
         413 => 'tooLarge',
         422 => 'invalidResult',
         502 => 'invalidResult',
-        503 => 'unavailable',
+        503 => switch (body['code']) {
+          'ai_disabled' => 'disabled',
+          'ai_not_configured' ||
+          'ai_provider_access' ||
+          'ai_model_unavailable' => 'configuration',
+          _ => 'unavailable',
+        },
         _ => 'failed',
       };
     } catch (_) {
@@ -287,6 +315,48 @@ class ApiService {
     'Accept': 'application/json',
     if (_token != null) 'Authorization': 'Bearer $_token',
   };
+
+  Future<Map<String, dynamic>> _favoritesRequest(
+    String method, [
+    Map<String, dynamic>? body,
+  ]) async {
+    final owner = _token;
+    if (!hasToken) throw StateError('Sign in required');
+    final url = Uri.parse('$baseUrl/favorites');
+    final response = method == 'GET'
+        ? await _http.get(url, headers: _headers)
+        : method == 'PUT'
+        ? await _http.put(url, headers: _headers, body: jsonEncode(body))
+        : await _http.post(url, headers: _headers, body: jsonEncode(body));
+    if (owner != _token || response.statusCode != 200) {
+      throw StateError('Favorites could not synchronize');
+    }
+    return jsonDecode(response.body) as Map<String, dynamic>;
+  }
+
+  @override
+  Future<Map<String, dynamic>> readFavorites() => _favoritesRequest('GET');
+  @override
+  Future<Map<String, dynamic>> writeFavorite(Map<String, dynamic> intent) =>
+      _favoritesRequest('PUT', intent);
+  @override
+  Future<void> importFavorites(List<Map<String, dynamic>> favorites) async {
+    await _favoritesRequest('POST', {'favorites': favorites});
+  }
+
+  Future<Map<String, dynamic>?> readFoodCatalog({String? etag}) async {
+    try {
+      final r = await _http.get(
+        Uri.parse('$baseUrl/catalog'),
+        headers: {'Accept': 'application/json', 'If-None-Match': ?etag},
+      );
+      if (r.statusCode == 304) return {'notModified': true};
+      if (r.statusCode == 200) {
+        return jsonDecode(r.body) as Map<String, dynamic>;
+      }
+    } catch (_) {}
+    return null;
+  }
 
   // ─── Auth ──────────────────────────────────────────
 
@@ -587,6 +657,7 @@ class ApiService {
           if (entry.foodId.isNotEmpty) 'external_food_id': entry.foodId,
           'name': entry.name,
           'amount': entry.amount,
+          'amount_unit': entry.amountUnit,
           'calories': entry.calories,
           'protein': entry.protein,
           'carbs': entry.carbs,
@@ -729,46 +800,80 @@ class ApiService {
     return false;
   }
 
-  Future<void> registerFcmToken(String token) async {
+  Future<bool> registerFcmToken(String token) async {
+    final owner = _token;
+    if (!hasToken) return false;
     try {
-      await _http.post(
+      final response = await _http.post(
+        Uri.parse('$baseUrl/fcm-token'),
+        headers: _headers,
+        body: jsonEncode({
+          'token': token,
+          'platform': defaultTargetPlatform == TargetPlatform.iOS
+              ? 'ios'
+              : 'android',
+        }),
+      );
+      return owner == _token && response.statusCode == 200;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  Future<void> unregisterFcmToken(String token) async {
+    if (!hasToken) return;
+    try {
+      await _http.delete(
         Uri.parse('$baseUrl/fcm-token'),
         headers: _headers,
         body: jsonEncode({'token': token}),
       );
-    } catch (e) {
-      debugPrint('registerFcmToken error: $e');
-    }
+    } catch (_) {}
   }
 
   // ─── Subscription ─────────────────────────────────
+  Future<http_pkg.Response> getBarcodeProduct(String code) => _http
+      .get(
+        Uri.parse(
+          '$baseUrl/foods/barcode',
+        ).replace(queryParameters: {'code': code}),
+        headers: _headers,
+      )
+      .timeout(const Duration(seconds: 15));
 
   /// Returns the current user's premium status from the server, or `null` on error.
   /// Shape: `{ isPremium: bool, expiresAt: String?, daysLeft: int, plan: String? }`.
   Future<Map<String, dynamic>?> getSubscription() async {
+    final owner = _token;
+    if (!hasToken) return null;
     try {
-      final response = await _http.get(
-        Uri.parse('$baseUrl/subscription'),
-        headers: _headers,
-      );
+      final response = await _http
+          .get(Uri.parse('$baseUrl/subscription'), headers: _headers)
+          .timeout(const Duration(seconds: 15));
+      if (_token != owner) return null;
       if (response.statusCode == 200) {
         return jsonDecode(response.body) as Map<String, dynamic>;
       }
-    } catch (e) {
-      debugPrint('getSubscription error: $e');
+    } catch (_) {
+      // Keep existing access on a temporary verification/network failure.
     }
     return null;
   }
 
-  /// Records a successful in-app purchase to the server database.
+  /// Asks the backend to verify the authenticated user's store entitlement.
   Future<bool> postSubscription() async {
+    final owner = _token;
+    if (!hasToken) return false;
     try {
-      final response = await _http.post(
-        Uri.parse('$baseUrl/subscription'),
-        headers: _headers,
-        body: '{}',
-      );
-      return response.statusCode == 200 || response.statusCode == 201;
+      final response = await _http
+          .post(
+            Uri.parse('$baseUrl/subscription'),
+            headers: _headers,
+            body: '{}',
+          )
+          .timeout(const Duration(seconds: 15));
+      return _token == owner &&
+          (response.statusCode == 200 || response.statusCode == 201);
     } catch (_) {
       return false;
     }
@@ -779,11 +884,14 @@ class ApiService {
   /// Fetches notifications for the current user (their own + broadcasts).
   /// Pass [since] (ISO 8601) to only get newer ones.
   Future<List<Map<String, dynamic>>> getNotifications({String? since}) async {
+    final owner = _token;
+    if (!hasToken) return [];
     try {
       final uri = Uri.parse(
         '$baseUrl/notifications${since != null ? '?since=${Uri.encodeComponent(since)}' : ''}',
       );
       final response = await _http.get(uri, headers: _headers);
+      if (_token != owner) return [];
       if (response.statusCode == 200) {
         final body = jsonDecode(response.body) as Map<String, dynamic>;
         final data = (body['data'] ?? []) as List;
