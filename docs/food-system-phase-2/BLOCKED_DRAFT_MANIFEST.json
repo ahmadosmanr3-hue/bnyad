@@ -1,0 +1,9 @@
+{
+  "drafts": 350,
+  "batches": 4,
+  "releaseEligible": 0,
+  "rightsBlocked": 350,
+  "categoryAssignmentRequired": 331,
+  "sourceSha256": "0b0b6a08e2309e5030e0265c8302634f9bae560cdb82aeb245bb17de07659cb5",
+  "warning": "LOCAL research only. These batches intentionally fail production import validation. No serving conversion has been approved."
+}

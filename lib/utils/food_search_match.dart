@@ -4,6 +4,14 @@
 String normalizeForFoodSearch(String input) {
   if (input.isEmpty) return '';
   var s = input.replaceAll(RegExp(r'[\u200c\u200d\ufeff\u200b]'), '');
+  s = s.replaceAll(
+    RegExp(r'[\u0610-\u061a\u064b-\u065f\u0670\u06d6-\u06ed\u0640]'),
+    '',
+  );
+  s = s.replaceAllMapped(RegExp(r'[٠-٩۰-۹]'), (m) {
+    final n = m[0]!.codeUnitAt(0);
+    return String.fromCharCode(n >= 0x6f0 ? n - 0x6f0 + 48 : n - 0x660 + 48);
+  });
   s = s.replaceAll(RegExp(r'\s+'), ' ').trim();
   final buf = StringBuffer();
   for (var i = 0; i < s.length; i++) {
@@ -110,7 +118,8 @@ bool foodSearchFieldMatches(String? rawField, String normalizedQuery) {
   if (normalizedQuery.isEmpty) return true;
   if (h.contains(normalizedQuery)) return true;
 
-  if (normalizedQuery.length >= 4 && (normalizedQuery.length - h.length).abs() <= 4) {
+  if (normalizedQuery.length >= 4 &&
+      (normalizedQuery.length - h.length).abs() <= 4) {
     if (levenshtein(normalizedQuery, h) <= 2) return true;
   }
 

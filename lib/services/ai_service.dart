@@ -154,13 +154,19 @@ class AiService {
 
   Future<Map<String, dynamic>?> analyzeFood({
     required Uint8List imageBytes,
+    Uint8List? sideImageBytes,
+    Map<String, double>? container,
     required int dailyCalories,
     required int dailyProtein,
     required int dailyCarbs,
     required int dailyFat,
     required String lang,
   }) async {
-    final result = await api.generateAi('food', {'image': _image(imageBytes)});
+    final result = await api.generateAi('food', {
+      'image': _image(imageBytes),
+      if (container != null && container.isNotEmpty) 'container': container,
+      if (sideImageBytes != null) 'secondImage': _image(sideImageBytes),
+    });
     return result;
   }
 

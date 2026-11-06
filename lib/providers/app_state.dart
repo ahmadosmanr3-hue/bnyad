@@ -1,3 +1,4 @@
+import 'package:nutrify/services/recent_foods.dart';
 import 'package:nutrify/services/food_catalog.dart';
 import 'package:nutrify/services/favorites_controller.dart';
 import 'package:nutrify/constants/food_serving_switch.dart';
@@ -197,11 +198,14 @@ class AppState extends ChangeNotifier {
   final bool optionalDeviceServicesEnabled;
   bool get supportsOptionalDeviceServices =>
       optionalDeviceServicesEnabled && !kIsWeb;
-  Future<void> _syncStepsAccount() => steps.attach(
-    isLoggedIn
+  late final RecentFoods recentFoods = RecentFoods()
+    ..addListener(notifyListeners);
+  Future<void> _syncStepsAccount() async {
+    final owner = isLoggedIn
         ? '${_apiService.baseUrl}|${_isMockUser ? 'guest' : _apiService.userId}'
-        : null,
-  );
+        : null;
+    await Future.wait([steps.attach(owner), recentFoods.attach(owner)]);
+  }
 
   Future<void> initializeSession() async {
     _authLoading = true;
@@ -642,6 +646,7 @@ class AppState extends ChangeNotifier {
   bool get isMockUser => _isMockUser;
 
   void _clearData() {
+    unawaited(recentFoods.attach(null));
     steps.detach();
     if (_isMockUser) return;
 
@@ -1348,6 +1353,7 @@ class AppState extends ChangeNotifier {
     if (_isMockUser) {
       _dailyLog = [..._dailyLog, entry];
       await _saveGuestDailyLog();
+      unawaited(recentFoods.record(canonicalFavoriteId(entry.foodId)));
       _persistDailyNutritionSnapshot();
       notifyListeners();
       return true;
@@ -1357,7 +1363,10 @@ class AppState extends ChangeNotifier {
     final saved = await _apiService.addFoodLog(entry);
     if (!_apiService.hasToken || _apiService.userId != owner) return false;
     _saveFailed = saved == null;
-    if (saved != null) _dailyLog = [..._dailyLog, saved];
+    if (saved != null) {
+      _dailyLog = [..._dailyLog, saved];
+      unawaited(recentFoods.record(canonicalFavoriteId(saved.foodId)));
+    }
     if (saved != null) await _apiService.cacheCurrentData(logs: _dailyLog);
     _persistDailyNutritionSnapshot();
     notifyListeners();
@@ -2389,6 +2398,8 @@ class AppState extends ChangeNotifier {
 
   @override
   void dispose() {
+    recentFoods.removeListener(notifyListeners);
+    recentFoods.dispose();
     favoriteState.removeListener(notifyListeners);
     favoriteState.dispose();
     catalog.removeListener(notifyListeners);

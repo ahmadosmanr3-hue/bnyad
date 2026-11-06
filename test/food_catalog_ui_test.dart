@@ -147,6 +147,19 @@ void main() {
       await tester.pumpAndSettle();
       expect(state.favorites, isEmpty);
       expect(tester.takeException(), isNull);
+      // Returning from details must preserve the query matching the filtered list.
+      await tester.ensureVisible(
+        find
+            .byIcon(state.isRTL ? Icons.chevron_right : Icons.chevron_left)
+            .first,
+      );
+      await tester.tap(
+        find
+            .byIcon(state.isRTL ? Icons.chevron_right : Icons.chevron_left)
+            .first,
+      );
+      await tester.pumpAndSettle();
+      expect(find.widgetWithText(TextField, 'whole milk'), findsOneWidget);
       await tester.pumpWidget(const SizedBox());
       state.dispose();
       FoodItem.catalogOverrides = {};

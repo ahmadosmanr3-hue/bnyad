@@ -1,3 +1,6 @@
+import 'package:nutrify/utils/food_search_match.dart';
+import 'package:nutrify/widgets/measured_portion_dialog.dart';
+import 'package:nutrify/widgets/food_browse_tile.dart';
 import 'dart:async';
 import 'package:nutrify/widgets/food_favorite_button.dart';
 import 'package:flutter/material.dart';
@@ -526,6 +529,7 @@ class _FoodSearchSheet extends StatefulWidget {
 
 class _FoodSearchSheetState extends State<_FoodSearchSheet> {
   String _search = '';
+  final _searchController = TextEditingController();
   String? _selectedCategory;
   FoodPickGroup? _prepGroup;
   FoodPickGroup? _rootPrepGroup;
@@ -536,6 +540,12 @@ class _FoodSearchSheetState extends State<_FoodSearchSheet> {
   int _pieceCount = 1;
   int _bowlCount = 1;
   bool _withBones = false;
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
   @override
   void initState() {
@@ -637,9 +647,12 @@ class _FoodSearchSheetState extends State<_FoodSearchSheet> {
     final state = context.watch<AppState>();
     final t = state.t;
     final isDark = state.isDark;
-    final recent = state.dailyLog
-        .map((log) => state.canonicalFavoriteId(log.foodId))
-        .toSet();
+    final recent = {
+      ...state.recentFoods.ids,
+      ...state.dailyLog.reversed.map(
+        (log) => state.canonicalFavoriteId(log.foodId),
+      ),
+    };
     var filtered = state.catalog.browse().where((row) {
       final food = row.displayFood;
       if (_selectedCategory == '@favorites' &&
@@ -657,15 +670,25 @@ class _FoodSearchSheetState extends State<_FoodSearchSheet> {
       }
       return row.matchesQuery(_search);
     }).toList();
+    if (_selectedCategory == '@recent' && _search.trim().isEmpty) {
+      final order = recent.toList();
+      filtered.sort(
+        (a, b) => order
+            .indexOf(a.displayFood.canonicalKey)
+            .compareTo(order.indexOf(b.displayFood.canonicalKey)),
+      );
+    }
     if (_search.trim().isNotEmpty) {
-      final query = _search.trim().toLowerCase();
+      final query = normalizeForFoodSearch(_search);
       int score(FoodBrowseRow row) {
-        final n = row.nameForLang(state.lang).toLowerCase();
-        return n == query
-            ? 0
-            : n.startsWith(query)
-            ? 1
-            : 2;
+        final names = [
+          'en',
+          'ar',
+          'ku',
+        ].map((lang) => normalizeForFoodSearch(row.nameForLang(lang))).toList();
+        if (names.any((n) => n == query)) return 0;
+        if (names.any((n) => n.startsWith(query))) return 1;
+        return 2;
       }
 
       filtered.sort((a, b) => score(a).compareTo(score(b)));
@@ -790,6 +813,7 @@ class _FoodSearchSheetState extends State<_FoodSearchSheet> {
           ),
         if (widget.onScanBarcode != null) const SizedBox(height: 12),
         TextField(
+          controller: _searchController,
           onChanged: (v) => setState(() => _search = v),
           decoration: InputDecoration(
             prefixIcon: const Icon(Icons.search, color: Color(0xFF94A3B8)),
@@ -933,8 +957,27 @@ class _FoodSearchSheetState extends State<_FoodSearchSheet> {
                     final food = row.displayFood;
                     final hasPrep =
                         row.group != null && row.group!.options.length > 1;
-                    return GestureDetector(
-                      onTap: () {
+                    return FoodBrowseTile(
+                      name: row.nameForLang(widget.state.lang),
+                      category:
+                          '${widget.state.catalog.labelFor(food, widget.state.lang)} · ${food.source['type'] == 'usda'
+                              ? 'USDA'
+                              : food.source['type'] == 'manufacturer'
+                              ? food.source['brand'] ?? foodText(widget.state.lang, 'Product label', 'ملصق المنتج', 'زانیاریی بەرهەم')
+                              : foodText(widget.state.lang, 'Estimate', 'تقديري', 'خەمڵێنراو')}',
+                      nutrition:
+                          '${browseDisplayCalories(food)} \u2068${widget.state.t.kcal}\u2069 · ${ltrFragment('${food.nutritionReferenceG.round()} ${food.nutritionUnit}')}',
+                      hint: hasPrep
+                          ? widget.state.t.choosePreparationHint
+                          : null,
+                      actionLabel: foodText(
+                        widget.state.lang,
+                        'Choose portion',
+                        'اختيار الحصة',
+                        'پشک هەڵبژێرە',
+                      ),
+                      favorite: FoodFavoriteButton(food: food),
+                      onOpen: () {
                         if (hasPrep) {
                           setState(() {
                             _rootPrepGroup = row.group;
@@ -944,86 +987,6 @@ class _FoodSearchSheetState extends State<_FoodSearchSheet> {
                           _openFoodDetail(food);
                         }
                       },
-                      child: Container(
-                        margin: const EdgeInsets.only(bottom: 8),
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: isDark
-                              ? const Color(0xFF1E293B).withValues(alpha: 0.5)
-                              : Colors.white,
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                            color: isDark
-                                ? const Color(0xFF334155)
-                                : const Color(0xFFF1F5F9),
-                          ),
-                        ),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    row.nameForLang(widget.state.lang),
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.w700,
-                                      color: isDark
-                                          ? Colors.white
-                                          : const Color(0xFF1E293B),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    widget.state.catalog.labelFor(
-                                      food,
-                                      widget.state.lang,
-                                    ),
-                                    style: const TextStyle(
-                                      fontSize: 10,
-                                      color: Color(0xFF64748B),
-                                      letterSpacing: 1,
-                                    ),
-                                  ),
-                                  if (hasPrep)
-                                    Padding(
-                                      padding: const EdgeInsets.only(top: 4),
-                                      child: Text(
-                                        widget.state.t.choosePreparationHint,
-                                        style: TextStyle(
-                                          fontSize: 10,
-                                          fontWeight: FontWeight.w600,
-                                          color: isDark
-                                              ? AppTheme.indigoLight
-                                              : AppTheme.indigo,
-                                        ),
-                                      ),
-                                    ),
-                                ],
-                              ),
-                            ),
-                            FoodFavoriteButton(food: food),
-                            if (hasPrep)
-                              Icon(
-                                Icons.chevron_right,
-                                color: isDark
-                                    ? AppTheme.slate500
-                                    : AppTheme.slate600,
-                              )
-                            else
-                              Text(
-                                '${browseDisplayCalories(food)} ${widget.state.t.kcal}\n${food.nutritionReferenceG.round()} ${food.nutritionUnit}',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w700,
-                                  color: isDark
-                                      ? const Color(0xFF94A3B8)
-                                      : const Color(0xFF64748B),
-                                ),
-                              ),
-                          ],
-                        ),
-                      ),
                     );
                   },
                 ),
@@ -1500,6 +1463,31 @@ class _FoodSearchSheetState extends State<_FoodSearchSheet> {
                     )
                     .toList(),
               ),
+            OutlinedButton.icon(
+              icon: const Icon(Icons.straighten),
+              label: Text(
+                foodText(
+                  state.lang,
+                  'Define measured portion',
+                  'تحديد حصة مقاسة',
+                  'دیاریکردنی پشکی پێوانەکراو',
+                ),
+              ),
+              onPressed: () async {
+                final value = await showMeasuredPortion(
+                  context,
+                  liquid: food.isLiquid,
+                  pizza: food.categoryId == 'pizza',
+                  lang: state.lang,
+                );
+                if (mounted && value != null) {
+                  setState(() {
+                    _amountMode = FoodServingMode.grams;
+                    _amount = value;
+                  });
+                }
+              },
+            ),
             const SizedBox(height: 12),
             Row(
               children: [

@@ -27,9 +27,9 @@ void main() {
     FoodItem.catalogOverrides = {};
   });
   test(
-    'all 940 records parse, nutrition bases remain finite and trilingual',
+    'all 942 records parse, nutrition bases remain finite and trilingual',
     () {
-      expect(catalog.foods.length, 940);
+      expect(catalog.foods.length, 942);
       expect(catalog.categories.length, 60);
       for (final food in catalog.foods.values) {
         expect(food.isTrilingual, true);
@@ -107,7 +107,7 @@ void main() {
         }),
         throwsFormatException,
       );
-      expect(catalog.foods.length, 940);
+      expect(catalog.foods.length, 942);
     },
   );
   test(

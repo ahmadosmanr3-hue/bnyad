@@ -151,7 +151,7 @@ class FoodCatalog extends ChangeNotifier {
       if (disabled.contains(food.id) || disabled.contains(food.canonicalKey)) {
         continue;
       }
-      seen.add(food.canonicalKey);
+      if (!seen.add(food.canonicalKey)) continue;
       result.add(FoodBrowseRow(displayFood: food, group: row.group));
     }
     final legacyIds = foodDatabase.map((f) => f.id).toSet();

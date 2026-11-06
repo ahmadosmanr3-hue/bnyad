@@ -1,3 +1,6 @@
+import 'package:nutrify/models/food_item.dart';
+import 'package:nutrify/utils/catalog_scan_correction.dart';
+import 'package:nutrify/widgets/meal_photo_review.dart';
 import 'dart:typed_data';
 import 'package:nutrify/utils/ai_nutrition.dart';
 import 'package:nutrify/models/meal.dart';
@@ -14,14 +17,15 @@ import 'package:nutrify/utils/ai_trilingual_strings.dart';
 import 'package:nutrify/services/camera_access.dart';
 
 class ScannerScreen extends StatefulWidget {
-  const ScannerScreen({super.key});
+  const ScannerScreen({super.key, this.picker});
+  final ImagePicker? picker;
 
   @override
   State<ScannerScreen> createState() => _ScannerScreenState();
 }
 
 class _ScannerScreenState extends State<ScannerScreen> {
-  final ImagePicker _picker = ImagePicker();
+  late final ImagePicker _picker = widget.picker ?? ImagePicker();
   bool _isAnalyzing = false;
   Map<String, dynamic>? _scannedFood;
   double _scanGrams = 100;
@@ -58,6 +62,118 @@ class _ScannerScreenState extends State<ScannerScreen> {
     );
   }
 
+  Future<void> _correctComponent(int? index) async {
+    final state = context.read<AppState>();
+    final owner = state.sessionAccountId;
+    String query = '';
+    String tr(String en, String ar, String ku) => state.lang == 'ar'
+        ? ar
+        : state.lang == 'ku'
+        ? ku
+        : en;
+    final chosen = await showModalBottomSheet<FoodItem>(
+      context: context,
+      isScrollControlled: true,
+      builder: (context) => StatefulBuilder(
+        builder: (context, update) {
+          final seen = <String>{};
+          final foods = state.catalog.foods.values
+              .where(
+                (food) =>
+                    !food.isLiquid &&
+                    !state.catalog.disabled.contains(food.id) &&
+                    !state.catalog.disabled.contains(food.canonicalKey) &&
+                    food.matchesSearchQuery(query) &&
+                    seen.add(food.canonicalKey),
+              )
+              .toList();
+          return SafeArea(
+            child: SizedBox(
+              height: MediaQuery.sizeOf(context).height * .75,
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  children: [
+                    Text(
+                      tr(
+                        'Choose the correct catalog food',
+                        'اختر الطعام الصحيح من القائمة',
+                        'خواردنی دروست لە لیستەکە هەڵبژێرە',
+                      ),
+                    ),
+                    TextField(
+                      onChanged: (value) => update(() => query = value),
+                      decoration: InputDecoration(hintText: state.t.searchFood),
+                    ),
+                    Expanded(
+                      child: ListView.builder(
+                        itemCount: foods.length,
+                        itemBuilder: (context, i) => ListTile(
+                          title: Text(foods[i].getLocalizedName(state.lang)),
+                          subtitle: Text(
+                            '${foods[i].calories} ${state.t.kcal} / ${foods[i].nutritionReferenceG} g',
+                          ),
+                          onTap: () => Navigator.pop(context, foods[i]),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+    if (!mounted ||
+        chosen == null ||
+        state.sessionAccountId != owner ||
+        _scannedFood == null) {
+      return;
+    }
+    final components = parseAiFoodComponents(_scannedFood!);
+    final amounts = _componentGrams == null
+        ? <double>[_scanGrams]
+        : List<double>.from(_componentGrams!);
+    final target = index ?? 0;
+    if (index == null) {
+      components.clear();
+      components.add(catalogScanComponent(chosen, amounts.first));
+    } else {
+      components[target] = catalogScanComponent(chosen, amounts[target]);
+    }
+    // A correction can identify two detections as the same food: merge their
+    // measured masses and recompute once from the selected catalog reference.
+    for (var i = components.length - 1; i >= 0; i--) {
+      if (i != target &&
+          (components[i]['id'] == chosen.id ||
+              components[i]['foodId'] == chosen.id)) {
+        final total =
+            (components[target]['grams'] as num).toDouble() + amounts[i];
+        if (total <= 2000) {
+          components[target] = catalogScanComponent(chosen, total);
+          components.removeAt(i);
+          amounts.removeAt(i);
+          if (i < target) break;
+        }
+      }
+    }
+    setState(() {
+      _scannedFood = {
+        ..._scannedFood!,
+        'components': components,
+        'names': components.length == 1
+            ? components.first['names']
+            : {
+                'en': 'Reviewed meal',
+                'ar': 'وجبة بعد المراجعة',
+                'ku': 'ژەمی پێداچوونەوەکراو',
+              },
+      };
+      _initScanPortions(_scannedFood!);
+    });
+  }
+
   // Fridge scanner state
   bool _fridgeAnalyzing = false;
   Map<String, dynamic>? _fridgeResult;
@@ -66,6 +182,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
 
   Future<void> _pickAndAnalyze(ImageSource source) async {
     final state = context.read<AppState>();
+    final owner = state.sessionAccountId;
     if (source == ImageSource.camera &&
         !await ensureCameraAccess(context, state.lang)) {
       return;
@@ -89,7 +206,29 @@ class _ScannerScreenState extends State<ScannerScreen> {
       });
 
       final bytes = await image.readAsBytes();
-      await _analyzeImage(bytes);
+      if (!mounted) return;
+      final photos = await showMealPhotoReview(
+        context,
+        initial: bytes,
+        source: source,
+        picker: _picker,
+        lang: state.lang,
+      );
+      if (!mounted) return;
+      if (photos == null) {
+        setState(() => _isAnalyzing = false);
+        return;
+      }
+      if (state.sessionAccountId != owner) {
+        setState(() => _isAnalyzing = false);
+        return;
+      }
+      await _analyzeImage(
+        photos.$1,
+        side: photos.$2,
+        owner: owner,
+        container: photos.$3,
+      );
     } catch (e) {
       if (!mounted) return;
       final state = Provider.of<AppState>(context, listen: false);
@@ -100,10 +239,19 @@ class _ScannerScreenState extends State<ScannerScreen> {
     }
   }
 
-  Future<void> _analyzeImage(Uint8List bytes) async {
+  Future<void> _analyzeImage(
+    Uint8List bytes, {
+    Uint8List? side,
+    int? owner,
+    Map<String, double>? container,
+  }) async {
     final state = Provider.of<AppState>(context, listen: false);
     final isOnline = await state.checkConnectivity();
     if (!mounted) return;
+    if (owner != state.sessionAccountId) {
+      setState(() => _isAnalyzing = false);
+      return;
+    }
     if (!isOnline) {
       setState(() {
         _error = state.t.noInternet;
@@ -120,6 +268,8 @@ class _ScannerScreenState extends State<ScannerScreen> {
       final df = g?.fat ?? 70;
       final result = await state.ai.analyzeFood(
         imageBytes: bytes,
+        sideImageBytes: side,
+        container: container,
         dailyCalories: dc,
         dailyProtein: dp,
         dailyCarbs: dcr,
@@ -587,6 +737,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
                             _componentGrams![i],
                             isDark,
                             t,
+                            onIdentityChange: () => _correctComponent(i),
                             onGramsChanged: (g) {
                               setState(() {
                                 _componentGrams![i] = g;
@@ -623,6 +774,17 @@ class _ScannerScreenState extends State<ScannerScreen> {
                         ),
                       ],
                       if (!hasComponents) ...[
+                        TextButton.icon(
+                          onPressed: () => _correctComponent(null),
+                          icon: const Icon(Icons.edit_outlined),
+                          label: Text(
+                            state.lang == 'ar'
+                                ? 'تصحيح الطعام'
+                                : state.lang == 'ku'
+                                ? 'ڕاستکردنەوەی خواردن'
+                                : 'Correct food',
+                          ),
+                        ),
                         const SizedBox(height: 20),
                         _buildPortionAdjuster(t, isDark),
                       ],
@@ -1381,6 +1543,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
     bool isDark,
     dynamic t, {
     void Function(double grams)? onGramsChanged,
+    VoidCallback? onIdentityChange,
   }) {
     final name = trilingualString(
       component,
@@ -1420,6 +1583,18 @@ class _ScannerScreenState extends State<ScannerScreen> {
               color: isDark ? Colors.white : const Color(0xFF1E293B),
             ),
           ),
+          if (onIdentityChange != null)
+            TextButton.icon(
+              onPressed: onIdentityChange,
+              icon: const Icon(Icons.edit_outlined, size: 18),
+              label: Text(
+                lang == 'ar'
+                    ? 'تصحيح الطعام'
+                    : lang == 'ku'
+                    ? 'ڕاستکردنەوەی خواردن'
+                    : 'Correct food',
+              ),
+            ),
           if (onGramsChanged != null) ...[
             const SizedBox(height: 8),
             Row(
@@ -1431,8 +1606,8 @@ class _ScannerScreenState extends State<ScannerScreen> {
                   child: Slider(
                     value: clamped,
                     min: 5,
-                    max: 500,
-                    divisions: 99,
+                    max: 2000,
+                    divisions: 399,
                     label: '${userGrams.round()} ${t.grams}',
                     onChanged: (v) => onGramsChanged(v.roundToDouble()),
                   ),

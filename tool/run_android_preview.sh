@@ -16,11 +16,11 @@ test "$("$adb_bin" -s "$device_id" get-state)" = device
 test "$("$adb_bin" -s "$device_id" shell getprop ro.product.cpu.abi | tr -d '\r')" = arm64-v8a
 cd "$repo_root"
 "$flutter_bin" pub get
-(
-  cd android
-  ./gradlew -PbnyadOfflinePreview=true -Ptarget=lib/main_android_preview.dart \
-    -Ptarget-platform=android-arm64 :app:assembleDebug --console=plain
-)
+# Flutter writes versionCode/versionName from pubspec and bootstraps the ignored
+# Gradle wrapper. Direct Gradle invocation otherwise defaults a fresh clone to 1.
+ORG_GRADLE_PROJECT_bnyadOfflinePreview=true "$flutter_bin" build apk --debug \
+  --target-platform android-arm64 -t lib/main_android_preview.dart
+
 apk_path="$repo_root/build/app/outputs/flutter-apk/app-debug.apk"
 badging="$("$aapt_bin" dump badging "$apk_path")"
 permissions="$("$aapt_bin" dump permissions "$apk_path")"

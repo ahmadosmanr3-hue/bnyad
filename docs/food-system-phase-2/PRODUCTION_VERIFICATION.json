@@ -1,0 +1,31 @@
+{
+  "status": "PASS",
+  "foodsBefore": 940,
+  "foodsAfter": 942,
+  "revision": 3,
+  "newFoodIds": [
+    "usda_sr_171257",
+    "usda_sr_174807"
+  ],
+  "changesToExistingFoods": [
+    {
+      "id": "g1",
+      "fields": [
+        "synonyms",
+        "revision"
+      ]
+    },
+    {
+      "id": "usda_sr_172684",
+      "fields": [
+        "synonyms",
+        "revision"
+      ]
+    }
+  ],
+  "oldNutritionAndIdsPreserved": true,
+  "conditionalGetStatus": 304,
+  "unauthenticatedAdminAndAiStatus": 401,
+  "deployment": "dpl_7sVdFhvH8Knh71NqksNJkqhN3R4C",
+  "backendCommit": "61649220e410557e28c86047799df745437ad96e"
+}

@@ -1,0 +1,12 @@
+{
+  "primary_entries": 1340,
+  "deduplicated_contexts": 1133,
+  "duplicate_category_associations_collapsed": 207,
+  "technically_usable_contexts_pending_rights_review": 350,
+  "technical_review_contexts": 783,
+  "independently_sourced_new_foods_ready": 2,
+  "existing_matches_same_nutrition": 2,
+  "existing_name_matches_with_conflicting_or_unverified_nutrition": 128,
+  "live_catalog_foods": 940,
+  "live_revision": 2
+}

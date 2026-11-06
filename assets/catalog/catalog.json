@@ -3073,7 +3073,9 @@
           "estimated": true
         }
       ],
-      "synonyms": [],
+      "synonyms": [
+        "برنج قاوەیی"
+      ],
       "categoryId": "rice-grains",
       "source": {
         "type": "legacy_estimate",
@@ -38357,7 +38359,9 @@
         "Bread, rye",
         "Rye bread",
         "خبز جاودار",
-        "نانی جۆشەنی"
+        "نانی جۆشەنی",
+        "نانی چاودار",
+        "خبز الجاودار"
       ],
       "referenceAmount": 100,
       "nutritionUnit": "g",
@@ -54396,6 +54400,76 @@
         "description": "MEXT Standard Tables of Food Composition in Japan, eighth edition, 2023 supplement. Food 07111, raw pitaya, per 100g edible portion; total carbohydrate includes fiber. Values vary by variety.",
         "sourceId": "MEXT-07111",
         "url": "https://fooddb.mext.go.jp/details/details.pl?ITEM_NO=7_07111_7"
+      }
+    },
+    {
+      "id": "usda_sr_174807",
+      "canonicalId": "usda_sr_174807",
+      "names": {
+        "en": "Soup, egg drop, Chinese restaurant",
+        "ar": "شوربة بيض (مرجع مطعم صيني)",
+        "ku": "شۆربای هێلکە (سەرچاوەی چێشتخانەی چینی)"
+      },
+      "category": "Reference food",
+      "categoryId": "regional-soups",
+      "synonyms": [
+        "Egg Drop Soup",
+        "شوربة البيض",
+        "شۆربای هێلکە"
+      ],
+      "calories": 27.0,
+      "protein": 1.16,
+      "carbs": 4.29,
+      "fat": 0.61,
+      "referenceAmount": 100,
+      "nutritionUnit": "g",
+      "micros": {},
+      "portions": [],
+      "tags": [
+        "generic",
+        "usda"
+      ],
+      "source": {
+        "type": "usda",
+        "fdcId": 174807,
+        "license": "CC0-1.0",
+        "description": "Soup, egg drop, Chinese restaurant; USDA SR Legacy, per 100g. Not a certified equivalent of a local recipe.",
+        "url": "https://fdc.nal.usda.gov/food-details/174807/nutrients"
+      }
+    },
+    {
+      "id": "usda_sr_171257",
+      "canonicalId": "usda_sr_171257",
+      "names": {
+        "en": "Cream, sour, cultured",
+        "ar": "قشدة حامضة مخمّرة",
+        "ku": "خامەی ترشی پەروەردەکراو"
+      },
+      "category": "Reference food",
+      "categoryId": "dairy",
+      "synonyms": [
+        "Sour Cream",
+        "قشطة حامضة",
+        "ساور کریم"
+      ],
+      "calories": 198.0,
+      "protein": 2.44,
+      "carbs": 4.63,
+      "fat": 19.35,
+      "referenceAmount": 100,
+      "nutritionUnit": "g",
+      "micros": {},
+      "portions": [],
+      "tags": [
+        "generic",
+        "usda"
+      ],
+      "source": {
+        "type": "usda",
+        "fdcId": 171257,
+        "license": "CC0-1.0",
+        "description": "Cream, sour, cultured; USDA SR Legacy, per 100g. Not a certified equivalent of a local recipe.",
+        "url": "https://fdc.nal.usda.gov/food-details/171257/nutrients"
       }
     }
   ]

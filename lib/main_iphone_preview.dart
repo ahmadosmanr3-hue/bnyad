@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
@@ -37,8 +38,10 @@ Future<void> main() => runNativeOfflinePreview();
 /// Shared by the isolated iPhone and Android preview launchers only.
 Future<void> runNativeOfflinePreview() async {
   WidgetsFlutterBinding.ensureInitialized();
+  var stage = 'native authorization';
   try {
     await authorizeNativePreview();
+    stage = 'local preferences';
     HttpOverrides.global = OfflinePreviewHttpOverrides();
     SharedPreferences.setPrefix(
       defaultTargetPlatform == TargetPlatform.android
@@ -50,6 +53,7 @@ Future<void> runNativeOfflinePreview() async {
     backend.data['consent'] = false;
     await backend.persist();
     await backend.seedLocalHistory();
+    stage = 'local health preferences';
     final healthProfile = NativePreviewHealthProfile(LocalStepSettingsStore());
     await healthProfile.restore();
     UrlLauncherPlatform.instance = DemoUrlLauncher();
@@ -70,6 +74,7 @@ Future<void> runNativeOfflinePreview() async {
       stepDiagnostics: (message) =>
           debugPrint('BNYAD preview health: $message'),
     );
+    stage = 'fictional session';
     await state.initializeSession();
     // Local fixture session, not a production guest/authentication bypass.
     // Explicit login/onboarding/registration screens remain in local controls.
@@ -110,10 +115,11 @@ Future<void> runNativeOfflinePreview() async {
         ),
       ),
     );
-  } catch (_) {
+  } catch (error) {
+    debugPrint('Offline preview setup: $stage / ${error.runtimeType}');
     // Fail closed. No production fallback or misleading unreachable API login.
     runApp(
-      const MaterialApp(
+      MaterialApp(
         home: Scaffold(
           body: SafeArea(
             child: Padding(
@@ -121,7 +127,7 @@ Future<void> runNativeOfflinePreview() async {
               child: Text(
                 'BNYAD offline preview could not start. '
                 'Use the dedicated development bundle and preview configuration. '
-                'No production server was contacted.',
+                'No production server was contacted. Stage: $stage (${error.runtimeType}${error is PlatformException ? ' / ${error.code}' : ''}).',
               ),
             ),
           ),

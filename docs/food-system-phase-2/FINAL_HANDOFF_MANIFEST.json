@@ -1,0 +1,38 @@
+{
+  "JUULA_FOOD_INVENTORY.csv": {
+    "bytes": 3576191,
+    "sha256": "89066c688dbf8d865d09ceffecc86e1b615eaa1deff3f1861060bf1a240d24b7"
+  },
+  "JUULA_ARABIC_OBSERVATIONS.csv": {
+    "bytes": 951590,
+    "sha256": "e87ff334ff09fab556aedfe769a56bacf970445767f92073fd9042c80534f088"
+  },
+  "BNYAD_LIVE_CATALOG_SNAPSHOT.json": {
+    "bytes": 889225,
+    "sha256": "86ad0f3aa92f23c6d0fc8862d2c759ef31dfbf2131a92bae1270fdbfb9de2583"
+  },
+  "BNYAD_IMPORT_READY.json": {
+    "bytes": 2201,
+    "sha256": "f37a6ff155dc540a6ced5edc65215a8ac3c2ffffd7a3a62bf8c3c26fdd9f23ef"
+  },
+  "JUULA_VALIDATED_CANDIDATES.json": {
+    "bytes": 730361,
+    "sha256": "0b0b6a08e2309e5030e0265c8302634f9bae560cdb82aeb245bb17de07659cb5"
+  },
+  "JUULA_REVIEW_QUEUE.json": {
+    "bytes": 1359357,
+    "sha256": "8bd480249245adb0c411c60d1fa05c19a9a86b048e92d624686c0fd793a0bd9c"
+  },
+  "BNYAD_EXISTING_IMPROVEMENTS.json": {
+    "bytes": 815,
+    "sha256": "f4022e4f8ac0990b5c39d4854e82e109cd38ab2f12d2039a4c0bab7eb9b71ee2"
+  },
+  "BNYAD_CONFLICTS.json": {
+    "bytes": 51749,
+    "sha256": "2d501cfdd813f1c10822fafb3dbdbddfabcb952bbdc9ff1df33136274686aab1"
+  },
+  "BNYAD_FOOD_IMPORT_READINESS.md": {
+    "bytes": 14411,
+    "sha256": "47264a6ee13d5abe01e41bdc8c27d070508a88d2b0f6421ef0cc5752198a9770"
+  }
+}
