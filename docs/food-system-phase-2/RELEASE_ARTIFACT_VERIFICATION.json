@@ -1,0 +1,10 @@
+{
+  "ipaSha256": "2cdc43848aa11ff92c7a8203cdaef80cdfe3b0a8a97e2df1541570141605b471",
+  "version": "1.0.7",
+  "build": "23",
+  "bundle": "com.nutrify.bnyad",
+  "healthKit": true,
+  "exportedPushEnvironment": "production",
+  "ipaSignatureVerified": true,
+  "launchPlaceholderWarningAbsent": true
+}

@@ -1,5 +1,1 @@
-# Launch Screen Assets
-
-You can customize the launch screen with your own desired assets by replacing the image files in this directory.
-
-You can also do it by opening your Flutter project's Xcode project with `open ios/Runner.xcworkspace`, selecting `Runner/Assets.xcassets` in the Project Navigator and dropping in the desired images.
+BNYAD existing brand icon is used for the centered 160-point launch image. Each scale uses the original 512px asset with aspect-fit constraints; no template placeholder, remote asset, or new branding is introduced.

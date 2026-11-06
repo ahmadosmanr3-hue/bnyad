@@ -12,6 +12,54 @@ import 'package:nutrify/widgets/measured_portion_dialog.dart';
 
 void main() {
   test(
+    'measured rice, pizza and drink totals use their own reference basis',
+    () {
+      const rice = FoodItem(
+        id: 'qa-rice',
+        name: 'Fictional measured rice',
+        category: 'Rice',
+        calories: 130,
+        protein: 2.7,
+        carbs: 28,
+        fat: .3,
+      );
+      const pizza = FoodItem(
+        id: 'qa-pizza',
+        name: 'Fictional measured pizza',
+        category: 'Pizza',
+        calories: 266,
+        protein: 11,
+        carbs: 33,
+        fat: 10,
+      );
+      const drink = FoodItem(
+        id: 'qa-drink',
+        name: 'Fictional measured drink',
+        category: 'Drink',
+        nutritionUnit: 'ml',
+        calories: 46,
+        protein: 0,
+        carbs: 11.5,
+        fat: 0,
+      );
+      final spoonGrams = measuredPortionAmount(amountPerUnit: 13, count: 3);
+      expect(spoonGrams, 39);
+      expect(rice.calories * rice.macroRatio(spoonGrams), closeTo(50.7, .001));
+      final slicesGrams = measuredPortionAmount(amountPerUnit: 90, count: 2);
+      expect(
+        pizza.calories * pizza.macroRatio(slicesGrams),
+        closeTo(478.8, .001),
+      );
+      expect(
+        pizza.protein * pizza.macroRatio(slicesGrams),
+        closeTo(19.8, .001),
+      );
+      final canMl = measuredPortionAmount(amountPerUnit: 330, count: 1);
+      expect(drink.calories * drink.macroRatio(canMl), closeTo(151.8, .001));
+      expect(drink.carbs * drink.macroRatio(canMl), closeTo(37.95, .001));
+    },
+  );
+  test(
     'catalog correction scales verified mass nutrition and rejects volume guessing',
     () {
       const food = FoodItem(
