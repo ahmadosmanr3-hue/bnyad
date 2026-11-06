@@ -1,5 +1,7 @@
 # BNYAD 1.0.7 (23) — exact candidate verification
 
+> Subsequent authorization: the user directed public submission despite the remaining Android checks. See STORE_SUBMISSION_1.0.7.md for the verified store outcomes. The historical HOLD/checklist below remains evidence of what was and was not tested.
+
 November 6, 2026. **Public release: HOLD. Neither update was submitted for public review or production rollout.** User permitted public release only if judged ready; Samsung evidence remains unavailable, so both-platform readiness is not established.
 
 ## PASS — completed evidence

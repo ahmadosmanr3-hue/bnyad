@@ -1,0 +1,56 @@
+{
+  "date": "2026-11-06",
+  "version": "1.0.7",
+  "build": 23,
+  "storeName": "BNYAD: Calorie & Macro Tracker",
+  "authorization": "User explicitly instructed public submission despite remaining Android verification and lack of time. Earlier hold was superseded by that instruction; unverified tests remain unverified.",
+  "googlePlay": {
+    "status": "Published",
+    "submissionId": "15",
+    "productionTrackId": "4697570816641706133",
+    "productionReleaseId": "9",
+    "rollout": "full / 100 percent of targeted countries",
+    "evidence": "Submission details explicitly show 23 (1.0.7), Start full rollout, Status Published",
+    "consoleSubmittedLabel": "Nov 06, 2026, 2:00 pm",
+    "consolePublishedLabel": "Nov 06, 2026, 2:09 pm",
+    "url": "https://play.google.com/console/u/0/developers/5362702642120308085/app/4973400403852746672/publishing/submission-activity/15/details"
+  },
+  "apple": {
+    "status": "Waiting for Review",
+    "submissionId": "c6f16a19-3f35-4789-9907-f6818b57f2b9",
+    "buildId": "34613cfb-50ea-42ae-915d-de0163a48fa4",
+    "version": "1.0.7",
+    "build": 23,
+    "automaticReleaseAfterApproval": true,
+    "url": "https://appstoreconnect.apple.com/apps/6781387722/distribution/reviewsubmissions/details/c6f16a19-3f35-4789-9907-f6818b57f2b9"
+  },
+  "androidPhysicalEvidence": {
+    "manufacturer": "Xiaomi",
+    "model": "220333QPG",
+    "android": "11",
+    "sdk": 30,
+    "abis": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "armeabi"
+    ],
+    "publishedBaseline": "1.0.6 (22), installed by com.android.vending; user confirmed opens and baseline prepared",
+    "candidate23": "Not installed/physically verified before user stopped further checks",
+    "internalTrack": "Active; dedicated one-account list selected; previous 15-person list not selected; user reported enrolled; Play Store still showed Open for build22 during verification",
+    "unverified": [
+      "build23 upgrade persistence",
+      "build23 camera/two-photo workflow",
+      "Health Connect/real steps",
+      "Android push/OTP/subscription restore"
+    ]
+  },
+  "iosEvidence": "Exact TestFlight build23, device version verified; user-confirmed upgrade, data/session, food/search, camera, HealthKit, sandbox restore, WhatsApp OTP and locked push checks documented in INTERNAL_TEST_EVIDENCE.json.",
+  "sourceRuntime": {
+    "flutter": "ff4942b7aacb08eb5528b956dbd9b7f5de83e2db",
+    "backendDeployed": "61649220e410557e28c86047799df745437ad96e"
+  },
+  "newLiveGeminiRequests": 0,
+  "newFinancialPurchases": 0,
+  "newBackendDeploymentOrMigration": false,
+  "researchPreserved": true
+}
