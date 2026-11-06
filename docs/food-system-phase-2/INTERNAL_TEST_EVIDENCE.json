@@ -1,0 +1,65 @@
+{
+  "date": "2026-11-06",
+  "publicReleaseRequested": false,
+  "ios": {
+    "version": "1.0.7",
+    "build": 23,
+    "upload": "succeeded",
+    "processing": "complete",
+    "buildId": "34613cfb-50ea-42ae-915d-de0163a48fa4",
+    "status": "Compliance saved by owner; ready in existing five-person internal group; exact candidate installed",
+    "publishedUpgradeBaseline": {
+      "bundle": "com.nutrify.bnyad",
+      "version": "1.0.6",
+      "build": 22
+    },
+    "preparedIpaSha256": "2cdc43848aa11ff92c7a8203cdaef80cdfe3b0a8a97e2df1541570141605b471",
+    "installedCandidate": {
+      "bundle": "com.nutrify.bnyad",
+      "version": "1.0.7",
+      "build": 23,
+      "verification": "devicectl include-all-apps"
+    },
+    "physicalUserConfirmedPasses": [
+      "Upgrade from published 1.0.6 (22) preserved meals/history, favorites, Premium, step goal, language and session",
+      "Three-language food search, logging, favorites and Recent",
+      "Barcode camera and optional top/side photo capture/retake/remove; no analysis submitted",
+      "Real Health steps and walking calories",
+      "Existing sandbox restore and Premium after restart",
+      "Password login and persistence",
+      "Real WhatsApp OTP receipt, verification and session after restart",
+      "Locked-screen RC23 alert reception and tap-to-open"
+    ],
+    "pushEvidence": {
+      "notificationId": 9,
+      "title": "BNYAD RC23 LOCK-01",
+      "scope": "one authorized test account",
+      "firebaseAccepted": 1,
+      "firebaseFailed": 0,
+      "visibleDelivery": "user confirmed locked-screen and tap-to-open"
+    }
+  },
+  "android": {
+    "track": "internal-testing",
+    "trackId": "4701483632780787808",
+    "releaseId": "1",
+    "versionCode": 23,
+    "versionName": "1.0.7",
+    "upload": "accepted",
+    "release": "available to internal testers; zero testers configured",
+    "physicalSamsung": "unavailable; ADB empty",
+    "bundletoolValidation": "pass, official 1.18.3, production package, debug=false",
+    "aabSha256": "225a962767d9824ee144623fe8c4a4e4ae3fbe136ee4ffd28444d0f7d7148a0f"
+  },
+  "unverified": [
+    "Samsung exact native candidate and Health Connect",
+    "Android published-to-internal upgrade data preservation",
+    "Android OTP/password login and persistence",
+    "Android locked background push and tap routing",
+    "Android sandbox entitlement restore",
+    "Android physical camera, second photo, food/serving UI"
+  ],
+  "liveGeminiRequests": 0,
+  "publicReleaseDecision": "HOLD: iOS completed tested checks; both-platform public readiness not established because Samsung unavailable.",
+  "productionChanges": "One explicitly authorized recipient-only test push; user-authorized test authentication/registration and restore. No migration, catalog import, financial charge or deployment."
+}
