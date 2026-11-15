@@ -1,5 +1,7 @@
 # Physical-device release verification — 2026-11-16
 
+Follow-up: [live evaluation preparation](../../BNYAD_LIVE_GEMINI_EVALUATION.md) implements and offline-tests the local admission controller. Genuine paired-photo evaluation is still pending; no live calls were made.
+
 Overall: HOLD. iPhone development-device checks passed with owner confirmation; Samsung physical checks and the actual single/two-photo Gemini comparison remain incomplete. No production deployment, billing change, migration, mobile upload or store submission occurred.
 
 ## Tested source and build identity
