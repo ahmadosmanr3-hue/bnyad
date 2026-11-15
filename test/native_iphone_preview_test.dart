@@ -38,6 +38,12 @@ class ForegroundHealth extends FakeHealth {
   }
 }
 
+class UnavailableStepStore extends MemoryStepStore {
+  @override
+  Future<String?> read(String key) async =>
+      throw PlatformException(code: 'unavailable');
+}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   test(
@@ -71,6 +77,17 @@ void main() {
       ); // Genuine background never starts another read.
       expect(tracker.status, StepStatus.waitingForForeground);
       tracker.dispose();
+    },
+  );
+  test(
+    'optional Health profile storage failure does not block the offline preview',
+    () async {
+      debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+      addTearDown(() => debugDefaultTargetPlatformOverride = null);
+      await authorizeNativePreview();
+      final local = preview.NativePreviewHealthProfile(UnavailableStepStore());
+      await local.restore();
+      expect(local.value, isNull);
     },
   );
   const health = MethodChannel('com.bnyad.app/steps');

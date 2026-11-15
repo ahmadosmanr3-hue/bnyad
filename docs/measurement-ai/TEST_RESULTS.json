@@ -1,0 +1,77 @@
+{
+  "dates": [
+    "2026-11-15",
+    "2026-11-16"
+  ],
+  "flutterTests": 492,
+  "backendTests": 202,
+  "records": [
+    {
+      "check": "Flutter analysis",
+      "result": "PASS",
+      "localLog": "bnyad-delivery-analyze.txt",
+      "sha256": "ca75b80e37a21e6c79330ad6f30ebba842b809f3feba3912739a872430c04d6d"
+    },
+    {
+      "check": "Flutter unit/widget tests",
+      "result": "PASS",
+      "localLog": "bnyad-delivery-flutter.txt",
+      "sha256": "944ab3a20adae3094559def2e547edca499213a7da6728386f865ba80759fff6"
+    },
+    {
+      "check": "Backend tests",
+      "result": "PASS",
+      "localLog": "bnyad-delivery-backend.txt",
+      "sha256": "121abbcc2deebca4498e0d7af4c9ce602b56fce8010f8d992c605f91b9bdcc29"
+    },
+    {
+      "check": "Backend TypeScript",
+      "result": "PASS",
+      "localLog": "bnyad-delivery-typecheck.txt",
+      "sha256": "3d1237cd92ff34426e656cd9f2ced64ab230cc9f4673988ac046108fe1b82bb5"
+    },
+    {
+      "check": "Backend production build",
+      "result": "PASS",
+      "localLog": "bnyad-delivery-build.txt",
+      "sha256": "d3fca6a4a8b4fe26e64285d9b88032b5957d2faff956d47d5c5040b688089acc"
+    },
+    {
+      "check": "Android phone native",
+      "result": "PASS",
+      "localLog": "bnyad-pixel-verified.txt",
+      "sha256": "edbbecf67b2c79345684214b4756634f59bfec6fb66c28604c87b33d4abe52b7"
+    },
+    {
+      "check": "iPhone native",
+      "result": "PASS",
+      "localLog": "bnyad-iphone-verified.txt",
+      "sha256": "cf65fb57db0bbe6787c01f9a93fe2f8827925af482aba5d8c453678b6b7046a1"
+    },
+    {
+      "check": "Android tablet viewport native",
+      "result": "PASS",
+      "localLog": "bnyad-android-tablet.txt",
+      "sha256": "8e3202a2915dcc94b48d7d422b80c09624c5ce36f82435b5394df6cb49d79bc5"
+    },
+    {
+      "check": "Small iPhone native",
+      "result": "PASS",
+      "localLog": "bnyad-small-iphone.txt",
+      "sha256": "228e67469c85f2b78071b1b8de85b15425239922a41a32349b037a19b953f882"
+    },
+    {
+      "check": "Full-width iPad native",
+      "result": "PASS",
+      "localLog": "bnyad-ipad-full.txt",
+      "sha256": "7deec28435f4fc78a0c6c3c3396f350a2f089f46595c6c76b316ae974882278c"
+    },
+    {
+      "check": "320px Android native",
+      "result": "PASS",
+      "localLog": "bnyad-android-small-collected.txt",
+      "sha256": "172eaa07dab8f714eb7a744b58748f605d40da1e0fee77eeb1d97c2ca447373b"
+    }
+  ],
+  "scope": "Native UI uses fictional offline responses; no production network or live Gemini requests. See report for hardware, iPad device-family and evaluation limitations."
+}

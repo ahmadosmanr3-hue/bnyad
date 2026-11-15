@@ -658,6 +658,10 @@ class ApiService implements FavoritesApi {
           'name': entry.name,
           'amount': entry.amount,
           'amount_unit': entry.amountUnit,
+          if (entry.catalogCalculation) 'catalog_calculation': true,
+          if (entry.catalogComponents.isNotEmpty)
+            'catalog_components': entry.catalogComponents,
+          if (entry.catalogCalculation) 'with_bones': entry.withBones,
           'calories': entry.calories,
           'protein': entry.protein,
           'carbs': entry.carbs,

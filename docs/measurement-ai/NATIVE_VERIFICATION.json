@@ -1,0 +1,56 @@
+{
+  "productionNetworkUsed": false,
+  "liveGeminiRequests": 0,
+  "nativeRuns": {
+    "android-phone": {
+      "passed": true,
+      "suites": [
+        "Full app: measured portions, calculations, languages, RTL, dark theme, invalid quantities, rapid taps, navigation",
+        "Native photo-review UI: single and two injected images, retake/remove, six language/theme combinations"
+      ],
+      "evidence": "bnyad-pixel-verified.txt"
+    },
+    "iphone": {
+      "passed": true,
+      "suites": [
+        "Full app: measured portions, calculations, languages, RTL, dark theme, invalid quantities, rapid taps, navigation",
+        "Native photo-review UI: single and two injected images, retake/remove, six language/theme combinations"
+      ],
+      "evidence": "bnyad-iphone-verified.txt"
+    },
+    "android-tablet-viewport": {
+      "passed": true,
+      "suites": [
+        "Full app: measured portions, calculations, languages, RTL, dark theme, invalid quantities, rapid taps, navigation",
+        "Native photo-review UI: single and two injected images, retake/remove, six language/theme combinations"
+      ],
+      "evidence": "bnyad-android-tablet.txt"
+    },
+    "small-iphone": {
+      "passed": true,
+      "suites": [
+        "Full app: measured portions, calculations, languages, RTL, dark theme, invalid quantities, rapid taps, navigation",
+        "Native photo-review UI: single and two injected images, retake/remove, six language/theme combinations"
+      ],
+      "evidence": "bnyad-small-iphone.txt"
+    },
+    "android-320": {
+      "passed": true,
+      "suites": [
+        "Full app: measured portions, calculations, languages, RTL, dark theme, invalid quantities, rapid taps, navigation",
+        "Native photo-review UI: single and two injected images, retake/remove, six language/theme combinations"
+      ],
+      "evidence": "bnyad-android-small-collected.txt"
+    },
+    "ipad-full-width": {
+      "passed": true,
+      "suites": [
+        "Full app: measured portions, calculations, languages, RTL, dark theme, invalid quantities, rapid taps, navigation",
+        "Native photo-review UI: single and two injected images, retake/remove, six language/theme combinations"
+      ],
+      "evidence": "bnyad-ipad-full.txt"
+    }
+  },
+  "physicalDevicesTested": false,
+  "note": "Android tablet and 320px sizes use the existing emulator with temporary display overrides; restored afterward. iPad full-width uses a simulator-only family override, shipping iOS family remains iPhone only."
+}

@@ -31,10 +31,19 @@ Map<String, double> scaledAiScanMicros(
   final raw = scan['micros'];
   if (raw is Map) {
     for (final e in raw.entries) {
-      if (e.value is num && (e.value as num).isFinite && (e.value as num) >= 0) {
+      if (e.value is num &&
+          (e.value as num).isFinite &&
+          (e.value as num) >= 0) {
         result[e.key.toString()] = (e.value as num).toDouble() * grams / 100;
       }
     }
   }
   return result;
 }
+
+/// Keep a user's weighed amount when identity still needs review. No photo-only
+/// fallback may replace an explicitly supplied weight with the 100g UI default.
+double initialUnknownScanGrams(double? weighed) =>
+    weighed != null && weighed.isFinite && weighed > 0 && weighed <= 10000
+    ? weighed
+    : 100;

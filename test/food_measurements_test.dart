@@ -109,8 +109,15 @@ void main() {
         carbs: 12,
         fat: 8,
         timestamp: 1,
+        catalogComponents: const [
+          {'id': 'fixture', 'amount': 250},
+        ],
       );
       expect(LogEntry.fromMap('1', e.toMap()).amountUnit, 'ml');
+      expect(
+        LogEntry.fromMap('1', e.toMap()).catalogComponents,
+        e.catalogComponents,
+      );
       expect(
         LogEntry.fromMap('1', {'amount_unit': 'ml', 'amount': 250}).amountUnit,
         'ml',

@@ -1,4 +1,6 @@
 class LogEntry {
+  final bool catalogCalculation, withBones;
+  final List<Map<String, dynamic>> catalogComponents;
   final String id;
   final String foodId;
   final String name;
@@ -14,6 +16,9 @@ class LogEntry {
 
   LogEntry({
     required this.id,
+    this.catalogCalculation = false,
+    this.catalogComponents = const [],
+    this.withBones = false,
     required this.foodId,
     required this.name,
     required num amount,
@@ -47,6 +52,12 @@ class LogEntry {
 
     return LogEntry(
       id: id,
+      catalogCalculation: map['catalogCalculation'] == true,
+      catalogComponents: (map['catalogComponents'] as List? ?? [])
+          .whereType<Map>()
+          .map((component) => Map<String, dynamic>.from(component))
+          .toList(),
+      withBones: map['withBones'] == true,
       foodId:
           map['foodId']?.toString() ??
           map['external_food_id']?.toString() ??
@@ -75,6 +86,9 @@ class LogEntry {
 
   Map<String, dynamic> toMap() => {
     'foodId': foodId,
+    if (catalogCalculation) 'catalogCalculation': true,
+    if (catalogComponents.isNotEmpty) 'catalogComponents': catalogComponents,
+    if (withBones) 'withBones': true,
     'name': name,
     'amount': amount,
     'amountUnit': amountUnit,

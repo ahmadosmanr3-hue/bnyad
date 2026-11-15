@@ -148,8 +148,8 @@ class NativePreviewHealthProfile {
   NativePreviewHealthProfile(this.store);
   Future<void> restore() async {
     requireNativePreview();
-    final raw = await store.read(key);
     try {
+      final raw = await store.read(key);
       value = raw == null ? null : parseHealthTestProfile(jsonDecode(raw));
     } catch (_) {
       value = null;

@@ -1,0 +1,1845 @@
+{
+  "testDates": [
+    "2026-11-15",
+    "2026-11-16"
+  ],
+  "note": "Completed passing native runs with fictional offline data. Photo-review fixtures are simulated input, not real recognition. Raw captures remain locally in ignored build/measurement-evidence/raw. Native system picker screenshots are separately included.",
+  "screenshots": [
+    {
+      "file": "android_small_collected_android_ar-photo-side-dark.png",
+      "sha256": "d74f5f56ddef086c14786cf106bf441b79bd23e6320b4ec5b6b101acb08e1f5b",
+      "bytes": 1029239,
+      "includedInGit": true
+    },
+    {
+      "file": "android_small_collected_android_ar-photo-side-light.png",
+      "sha256": "f56c434da924fefc345cc33cef93e798dc728a52946b8e56967ee476d47657ac",
+      "bytes": 1031304,
+      "includedInGit": false
+    },
+    {
+      "file": "android_small_collected_android_ar-photo-single-dark.png",
+      "sha256": "ac53f2393aa7554324941c59e189fbb6998e73ea5c8421194ad24a406e74506e",
+      "bytes": 770910,
+      "includedInGit": false
+    },
+    {
+      "file": "android_small_collected_android_ar-photo-single-light.png",
+      "sha256": "8abab3ed66d9bad0526c5d48de6dd417fb91370fd40691a125e47eba3ca56719",
+      "bytes": 774923,
+      "includedInGit": false
+    },
+    {
+      "file": "android_small_collected_android_ar_Cheese-pizza,-regular-crust,-frozen-baked_large-plate.png",
+      "sha256": "7100eb0ce1f7a90f3229c4297952191a11153a919578c04b521978f2577e35d1",
+      "bytes": 133539,
+      "includedInGit": false
+    },
+    {
+      "file": "android_small_collected_android_ar_Cheese-pizza,-regular-crust,-frozen-baked_pizza.png",
+      "sha256": "5b5f5374b9d78afbc21d5a9ed4c8742fb4390ca0169d80810b3a69ae4fe2c7b2",
+      "bytes": 125985,
+      "includedInGit": false
+    },
+    {
+      "file": "android_small_collected_android_ar_Cheese-pizza,-regular-crust,-frozen-baked_small-bowl.png",
+      "sha256": "7100eb0ce1f7a90f3229c4297952191a11153a919578c04b521978f2577e35d1",
+      "bytes": 133539,
+      "includedInGit": false
+    },
+    {
+      "file": "android_small_collected_android_ar_Cheese-pizza,-regular-crust,-frozen-baked_tablespoon.png",
+      "sha256": "6026f1b1aaaa733cc9c77719c30079b0f26397f474e6cfe3822a9fce42008d76",
+      "bytes": 126029,
+      "includedInGit": false
+    },
+    {
+      "file": "android_small_collected_android_ar_White-rice,-cooked_large-plate.png",
+      "sha256": "389c210a44dcbffb260f98c73ba565eeaae0e92384a46aad87f485dbf59ded92",
+      "bytes": 133013,
+      "includedInGit": false
+    },
+    {
+      "file": "android_small_collected_android_ar_White-rice,-cooked_small-bowl.png",
+      "sha256": "389c210a44dcbffb260f98c73ba565eeaae0e92384a46aad87f485dbf59ded92",
+      "bytes": 133013,
+      "includedInGit": false
+    },
+    {
+      "file": "android_small_collected_android_ar_White-rice,-cooked_tablespoon.png",
+      "sha256": "a002b2f7972eb3b20f1f07baee2e07259bf6d9e9ef05cc98bc6ccb4485f50127",
+      "bytes": 127720,
+      "includedInGit": false
+    },
+    {
+      "file": "android_small_collected_android_ar_Whole-milk_bottle.png",
+      "sha256": "7dd2f4043cd996a236202347f610b2b355f06fad618a1a5eb89cac43de6a839e",
+      "bytes": 130955,
+      "includedInGit": false
+    },
+    {
+      "file": "android_small_collected_android_ar_Whole-milk_glass.png",
+      "sha256": "7dd2f4043cd996a236202347f610b2b355f06fad618a1a5eb89cac43de6a839e",
+      "bytes": 130955,
+      "includedInGit": false
+    },
+    {
+      "file": "android_small_collected_android_ar_Whole-milk_liter.png",
+      "sha256": "c083b66cc8da9c4d05a909b566fca8d1e25f7910f55d32b119dbf68822a391fa",
+      "bytes": 104413,
+      "includedInGit": false
+    },
+    {
+      "file": "android_small_collected_android_ar_usda_sr_168878_dark.png",
+      "sha256": "5a4a61185d950249c15aa95794e602708fc369eadb5bd2a9ce1af6426503e098",
+      "bytes": 131410,
+      "includedInGit": false
+    },
+    {
+      "file": "android_small_collected_android_ar_usda_sr_170317_dark.png",
+      "sha256": "8fbf753ff44fb2387aaa8405b1507136d8e220ef661bdd21d34e314c68954029",
+      "bytes": 124855,
+      "includedInGit": false
+    },
+    {
+      "file": "android_small_collected_android_ar_usda_sr_171265_dark.png",
+      "sha256": "c81f47800af59e16f4cad747fa2f7b3f32c5d73cc03aa8acfc1af58a87f4db02",
+      "bytes": 130295,
+      "includedInGit": false
+    },
+    {
+      "file": "android_small_collected_android_en-photo-side-dark.png",
+      "sha256": "808dade94c7abd2ea33aa26e2b19e76646189dd793a5cdcda71f77a7725b7c59",
+      "bytes": 830141,
+      "includedInGit": false
+    },
+    {
+      "file": "android_small_collected_android_en-photo-side-light.png",
+      "sha256": "386fa2ac4fbebcaad8edbd1af8ab5309c6a7206c89e42cdbe3b31d281c429ae6",
+      "bytes": 833660,
+      "includedInGit": false
+    },
+    {
+      "file": "android_small_collected_android_en-photo-single-dark.png",
+      "sha256": "5348dd7316c6f7010488800002c6ae1e1504e27807fa9a382b18516f74b29679",
+      "bytes": 759576,
+      "includedInGit": false
+    },
+    {
+      "file": "android_small_collected_android_en-photo-single-light.png",
+      "sha256": "de315c64468e15bebf7c135a1c0c559fd65681e729aabc74427ca661a38625a1",
+      "bytes": 764836,
+      "includedInGit": false
+    },
+    {
+      "file": "android_small_collected_android_en_Cheese-pizza,-regular-crust,-frozen-baked_large-plate.png",
+      "sha256": "4832a050bf4979c11e5b29b7386846fe295005dbd09a4d639c806c9c724cd4cc",
+      "bytes": 118292,
+      "includedInGit": false
+    },
+    {
+      "file": "android_small_collected_android_en_Cheese-pizza,-regular-crust,-frozen-baked_pizza.png",
+      "sha256": "9bae1afb878c64ab41d009f42befde52c8d32f253a7dbf1e4207ec393652b953",
+      "bytes": 112978,
+      "includedInGit": false
+    },
+    {
+      "file": "android_small_collected_android_en_Cheese-pizza,-regular-crust,-frozen-baked_small-bowl.png",
+      "sha256": "4832a050bf4979c11e5b29b7386846fe295005dbd09a4d639c806c9c724cd4cc",
+      "bytes": 118292,
+      "includedInGit": false
+    },
+    {
+      "file": "android_small_collected_android_en_Cheese-pizza,-regular-crust,-frozen-baked_tablespoon.png",
+      "sha256": "4c648c4664493b2f43225f48b30327c4b481ef0c18efe6dd8bb4fb2c2f84e22f",
+      "bytes": 113265,
+      "includedInGit": false
+    },
+    {
+      "file": "android_small_collected_android_en_White-rice,-cooked_large-plate.png",
+      "sha256": "5c4a63dc1049da75cf9137d32e6878263ff4dead89b54173f7a2d2ae1a473038",
+      "bytes": 117478,
+      "includedInGit": false
+    },
+    {
+      "file": "android_small_collected_android_en_White-rice,-cooked_small-bowl.png",
+      "sha256": "5c4a63dc1049da75cf9137d32e6878263ff4dead89b54173f7a2d2ae1a473038",
+      "bytes": 117478,
+      "includedInGit": false
+    },
+    {
+      "file": "android_small_collected_android_en_White-rice,-cooked_tablespoon.png",
+      "sha256": "abf2ef2395d8bb939aa282629ed06ec8365b3372d6f936a112be4e844e546365",
+      "bytes": 121821,
+      "includedInGit": false
+    },
+    {
+      "file": "android_small_collected_android_en_Whole-milk_bottle.png",
+      "sha256": "b65c16b9a0b4465d6d58518fe28aec810802cb5313b11b4b107c044e5af173a6",
+      "bytes": 120807,
+      "includedInGit": false
+    },
+    {
+      "file": "android_small_collected_android_en_Whole-milk_glass.png",
+      "sha256": "b65c16b9a0b4465d6d58518fe28aec810802cb5313b11b4b107c044e5af173a6",
+      "bytes": 120807,
+      "includedInGit": false
+    },
+    {
+      "file": "android_small_collected_android_en_Whole-milk_liter.png",
+      "sha256": "417e93f44d35c49defb9b93e4bed4f0d6cb00f560110a0211fe0eccd52c47300",
+      "bytes": 91084,
+      "includedInGit": false
+    },
+    {
+      "file": "android_small_collected_android_en_usda_sr_168878_dark.png",
+      "sha256": "275875eaa8ec319762730ddfae3897baf9fb81931c452bea099ca560495c8839",
+      "bytes": 115830,
+      "includedInGit": false
+    },
+    {
+      "file": "android_small_collected_android_en_usda_sr_170317_dark.png",
+      "sha256": "f5cb042350fa32a3c7c5650d23b7ce397198abd3da5a3707a501d00b6cf506a0",
+      "bytes": 112095,
+      "includedInGit": false
+    },
+    {
+      "file": "android_small_collected_android_en_usda_sr_171265_dark.png",
+      "sha256": "8967f52bd06ba3e248f7668ba58f1250dc1a0068b8aa02856126dac4fefc2cc1",
+      "bytes": 119921,
+      "includedInGit": false
+    },
+    {
+      "file": "android_small_collected_android_ku-photo-side-dark.png",
+      "sha256": "c109f06fff1ba6d4f3d6f5ae82cc7ea63aa0c88508606bf022771de9f44801d6",
+      "bytes": 982718,
+      "includedInGit": false
+    },
+    {
+      "file": "android_small_collected_android_ku-photo-side-light.png",
+      "sha256": "b7af65b82594f913bf62ae52ff8750b3dd065de656a543e7a03362e7236162e1",
+      "bytes": 984247,
+      "includedInGit": false
+    },
+    {
+      "file": "android_small_collected_android_ku-photo-single-dark.png",
+      "sha256": "42134587318c5a5a5f5049c8d1bc196148dc8943e4654ee0898ea721593bf541",
+      "bytes": 791300,
+      "includedInGit": false
+    },
+    {
+      "file": "android_small_collected_android_ku-photo-single-light.png",
+      "sha256": "f18c3279bcbc91be934ce0201317c7edd8b510c04aeb5ca706a4c00718727dc5",
+      "bytes": 794748,
+      "includedInGit": false
+    },
+    {
+      "file": "android_small_collected_android_ku_Cheese-pizza,-regular-crust,-frozen-baked_large-plate.png",
+      "sha256": "bdda8ef19dbcac99be762c1e4e9f7d624ed082881ee8c24fec54b722a66f234e",
+      "bytes": 138695,
+      "includedInGit": false
+    },
+    {
+      "file": "android_small_collected_android_ku_Cheese-pizza,-regular-crust,-frozen-baked_pizza.png",
+      "sha256": "0dfcddf53e5593bf8e56572f5d38bfa99ac6ec028fc46beb99ca8f2f44a869ee",
+      "bytes": 135173,
+      "includedInGit": false
+    },
+    {
+      "file": "android_small_collected_android_ku_Cheese-pizza,-regular-crust,-frozen-baked_small-bowl.png",
+      "sha256": "bdda8ef19dbcac99be762c1e4e9f7d624ed082881ee8c24fec54b722a66f234e",
+      "bytes": 138695,
+      "includedInGit": false
+    },
+    {
+      "file": "android_small_collected_android_ku_Cheese-pizza,-regular-crust,-frozen-baked_tablespoon.png",
+      "sha256": "f37b69270989f1ba84299693877fcaac973c5798828919231ec0f58e73e1e07e",
+      "bytes": 136582,
+      "includedInGit": false
+    },
+    {
+      "file": "android_small_collected_android_ku_White-rice,-cooked_large-plate.png",
+      "sha256": "1d8205d7d78e475b4d909e8488f88a5a9785b7be96f1ca9e0f18830d27f8a7e9",
+      "bytes": 138921,
+      "includedInGit": false
+    },
+    {
+      "file": "android_small_collected_android_ku_White-rice,-cooked_small-bowl.png",
+      "sha256": "359a96694cc2d9093cc808b2d199d2c900f058f897ebb3bc0edc9938d4cd9c32",
+      "bytes": 138253,
+      "includedInGit": false
+    },
+    {
+      "file": "android_small_collected_android_ku_White-rice,-cooked_tablespoon.png",
+      "sha256": "51d51c311c6b16bd2e73d3b5b95a7111bb8936771493c2259aac4de484cda27f",
+      "bytes": 137533,
+      "includedInGit": false
+    },
+    {
+      "file": "android_small_collected_android_ku_Whole-milk_bottle.png",
+      "sha256": "59a69aad8fe819458fda4f97efe60702f797c2257cf2891ea31fbf02a8ac0d41",
+      "bytes": 135523,
+      "includedInGit": false
+    },
+    {
+      "file": "android_small_collected_android_ku_Whole-milk_glass.png",
+      "sha256": "59a69aad8fe819458fda4f97efe60702f797c2257cf2891ea31fbf02a8ac0d41",
+      "bytes": 135523,
+      "includedInGit": false
+    },
+    {
+      "file": "android_small_collected_android_ku_Whole-milk_liter.png",
+      "sha256": "3b657231bf69d8a826fd23ac145b990cc2fec31f47c215986652c49466008eb6",
+      "bytes": 105037,
+      "includedInGit": true
+    },
+    {
+      "file": "android_small_collected_android_ku_usda_sr_168878_dark.png",
+      "sha256": "8981d75fc66588683f7dd333dc4ca23fd8fca3e55b82448c781ace39f5d6f724",
+      "bytes": 136369,
+      "includedInGit": false
+    },
+    {
+      "file": "android_small_collected_android_ku_usda_sr_170317_dark.png",
+      "sha256": "c46356c4667b531d28f074e7997aeb50ebb33ef87c4f9d02a85481144f43397c",
+      "bytes": 133939,
+      "includedInGit": false
+    },
+    {
+      "file": "android_small_collected_android_ku_usda_sr_171265_dark.png",
+      "sha256": "29fc67b0587d99f7f34653ebb6a71f319a2b7b8bc496566ebb998bbe3285705b",
+      "bytes": 134674,
+      "includedInGit": false
+    },
+    {
+      "file": "android_tablet_android_ar-photo-side-dark.png",
+      "sha256": "252b82a135fea30dfb91fe4d8529f244aa75c002d2e9f98b65d67ace7785179d",
+      "bytes": 799291,
+      "includedInGit": false
+    },
+    {
+      "file": "android_tablet_android_ar-photo-side-light.png",
+      "sha256": "a3a2c96e1011e7b458cd95da7488212d5669174bf24d40c6823bc35ee30cada4",
+      "bytes": 804218,
+      "includedInGit": false
+    },
+    {
+      "file": "android_tablet_android_ar-photo-single-dark.png",
+      "sha256": "ea984ff96525789a458a161fff8b792f8bacabb3fc5aa30115066438507f57fe",
+      "bytes": 481281,
+      "includedInGit": true
+    },
+    {
+      "file": "android_tablet_android_ar-photo-single-light.png",
+      "sha256": "ee83f46b764f6ce411dab09668a773940e1be07db78e0a7ff2bfeb8f48a353aa",
+      "bytes": 484947,
+      "includedInGit": false
+    },
+    {
+      "file": "android_tablet_android_ar_Cheese-pizza,-regular-crust,-frozen-baked_large-plate.png",
+      "sha256": "0d9199c07fbda1a298ce8ea4b52c59e19c6373efcbeab30f8b06da3c23a47a79",
+      "bytes": 285225,
+      "includedInGit": false
+    },
+    {
+      "file": "android_tablet_android_ar_Cheese-pizza,-regular-crust,-frozen-baked_pizza.png",
+      "sha256": "9a533a0b0d0e89ae77fedfb7a1d0567c095073bb0f53d17bdd40c5409cc02840",
+      "bytes": 258643,
+      "includedInGit": false
+    },
+    {
+      "file": "android_tablet_android_ar_Cheese-pizza,-regular-crust,-frozen-baked_small-bowl.png",
+      "sha256": "f5fb73ebcaa1efe90d6013a2fe7b714ef9125b205c9b10b0f5a0f210b63d3314",
+      "bytes": 287211,
+      "includedInGit": false
+    },
+    {
+      "file": "android_tablet_android_ar_Cheese-pizza,-regular-crust,-frozen-baked_tablespoon.png",
+      "sha256": "29b55ce1a2f4360e02190d3cab2bae341f82ac226c0b29e85d1bc8db9a993407",
+      "bytes": 259732,
+      "includedInGit": false
+    },
+    {
+      "file": "android_tablet_android_ar_White-rice,-cooked_large-plate.png",
+      "sha256": "a85f12c633efec08871397f0b579e05f77857312a8a103fb11580875d37d8eea",
+      "bytes": 264831,
+      "includedInGit": false
+    },
+    {
+      "file": "android_tablet_android_ar_White-rice,-cooked_small-bowl.png",
+      "sha256": "1a54c9f1ecc1db1551486bd070bb69df6904f58c7410194a48340981e1fcea56",
+      "bytes": 267156,
+      "includedInGit": false
+    },
+    {
+      "file": "android_tablet_android_ar_White-rice,-cooked_tablespoon.png",
+      "sha256": "af8945a224d3aa8678aca4e1ac7328bb1dd3f6c54bd651d8bb533f2121b278d5",
+      "bytes": 259530,
+      "includedInGit": false
+    },
+    {
+      "file": "android_tablet_android_ar_Whole-milk_bottle.png",
+      "sha256": "15ab940078c35a364214ce81ee932df3a9960c2f0623ab4c77b214523240d087",
+      "bytes": 251541,
+      "includedInGit": false
+    },
+    {
+      "file": "android_tablet_android_ar_Whole-milk_glass.png",
+      "sha256": "048541285aba844d89c84fb4f65ec83a33bfba1bec5609ec5504da2a9ba69278",
+      "bytes": 250130,
+      "includedInGit": false
+    },
+    {
+      "file": "android_tablet_android_ar_Whole-milk_liter.png",
+      "sha256": "9949f197db04015f26eb9a00e512f3735b12a8104fa10038ba532a1b39c30855",
+      "bytes": 183283,
+      "includedInGit": false
+    },
+    {
+      "file": "android_tablet_android_ar_usda_sr_168878_dark.png",
+      "sha256": "0aa8d4fb1dfc0f330ef65b90278e8570c2214152cd9441342e7f2da353b0360e",
+      "bytes": 254338,
+      "includedInGit": false
+    },
+    {
+      "file": "android_tablet_android_ar_usda_sr_170317_dark.png",
+      "sha256": "679079c526fd3c8524b143d5d329bd66623ac95de87a9e69f53454eb92ccfaab",
+      "bytes": 249230,
+      "includedInGit": false
+    },
+    {
+      "file": "android_tablet_android_ar_usda_sr_171265_dark.png",
+      "sha256": "909a58789274ce2e752ee53e15cdda3b01dfbc0abbf1f0016ec9da45e734629c",
+      "bytes": 218712,
+      "includedInGit": false
+    },
+    {
+      "file": "android_tablet_android_en-photo-side-dark.png",
+      "sha256": "abe71dcf87e534f8b6321abbb8a97e6e46bf6a4ac474a1ea9aec6c589c978e45",
+      "bytes": 804253,
+      "includedInGit": false
+    },
+    {
+      "file": "android_tablet_android_en-photo-side-light.png",
+      "sha256": "06b224f4f0763d7c10b07acd62500e3547be575beba5a7cff7787d824bd6a5ea",
+      "bytes": 808323,
+      "includedInGit": false
+    },
+    {
+      "file": "android_tablet_android_en-photo-single-dark.png",
+      "sha256": "df7e693508320cae921f757e60ac277c17ecc2f738d18542aaac63e862b166cb",
+      "bytes": 485659,
+      "includedInGit": false
+    },
+    {
+      "file": "android_tablet_android_en-photo-single-light.png",
+      "sha256": "9ab06e46de6524e86729dba958beb0c49750a55d8c0d5900d4aa338097c169be",
+      "bytes": 489998,
+      "includedInGit": false
+    },
+    {
+      "file": "android_tablet_android_en_Cheese-pizza,-regular-crust,-frozen-baked_large-plate.png",
+      "sha256": "a287f1287eddca6836d445ca34eac5081fb940db8cf076d50b9091d812b093bc",
+      "bytes": 318285,
+      "includedInGit": false
+    },
+    {
+      "file": "android_tablet_android_en_Cheese-pizza,-regular-crust,-frozen-baked_pizza.png",
+      "sha256": "9bac34a6b5e7d95e08444eb701b91a40d6afd1826b0e8d7e038dc33aa873c3e8",
+      "bytes": 314877,
+      "includedInGit": false
+    },
+    {
+      "file": "android_tablet_android_en_Cheese-pizza,-regular-crust,-frozen-baked_small-bowl.png",
+      "sha256": "ee1051ba66553028bdf651ecd25c250a7d4b14ca9d3a7c58c13993dd2a2cee06",
+      "bytes": 316916,
+      "includedInGit": false
+    },
+    {
+      "file": "android_tablet_android_en_Cheese-pizza,-regular-crust,-frozen-baked_tablespoon.png",
+      "sha256": "329bc262c8e88a4f143d568f27fc217145c4fe2963e9abc0986a3fcb4b435ece",
+      "bytes": 316042,
+      "includedInGit": false
+    },
+    {
+      "file": "android_tablet_android_en_White-rice,-cooked_large-plate.png",
+      "sha256": "51c85d24322cabfa371be2d0a18aa8fce6072053fb4fd77e0e5a4c920a79b581",
+      "bytes": 264644,
+      "includedInGit": false
+    },
+    {
+      "file": "android_tablet_android_en_White-rice,-cooked_small-bowl.png",
+      "sha256": "306031decfacfc91f6e996438e4a808afd476c58d542c7bfd49f88cc05bbe4ad",
+      "bytes": 264108,
+      "includedInGit": false
+    },
+    {
+      "file": "android_tablet_android_en_White-rice,-cooked_tablespoon.png",
+      "sha256": "f2ef30a23f8f61357c6f67dce345561f7503d3e814e172440d20ed994bcb1b44",
+      "bytes": 262942,
+      "includedInGit": false
+    },
+    {
+      "file": "android_tablet_android_en_Whole-milk_bottle.png",
+      "sha256": "9ad276346cfa19ef52200a5f5e01ecc1f99c256d7d30b5a49452a696f782876b",
+      "bytes": 245677,
+      "includedInGit": false
+    },
+    {
+      "file": "android_tablet_android_en_Whole-milk_glass.png",
+      "sha256": "655a9d37eb42e0354243b1689d15d545e14023e53e9b2a6f64f4954ce8d9a444",
+      "bytes": 245758,
+      "includedInGit": false
+    },
+    {
+      "file": "android_tablet_android_en_Whole-milk_liter.png",
+      "sha256": "4b19b6bd4f2f02e23fe6f945b84c23d899c9f7fbfb48c498bd23aea586157e30",
+      "bytes": 179094,
+      "includedInGit": false
+    },
+    {
+      "file": "android_tablet_android_en_usda_sr_168878_dark.png",
+      "sha256": "dbce869f25f4b6be70185dc1319cacb4b1d304bff9b12f6b26ea1cf11f3a27d9",
+      "bytes": 254792,
+      "includedInGit": false
+    },
+    {
+      "file": "android_tablet_android_en_usda_sr_170317_dark.png",
+      "sha256": "97f89956caadf41d09b985ef74958729d862d859c7f698251d9a990ee9438a65",
+      "bytes": 305677,
+      "includedInGit": false
+    },
+    {
+      "file": "android_tablet_android_en_usda_sr_171265_dark.png",
+      "sha256": "dc91a8ea3def0fc0df47aa501f86551c7976d5206c90870691dfc95d45e770ea",
+      "bytes": 236011,
+      "includedInGit": false
+    },
+    {
+      "file": "android_tablet_android_ku-photo-side-dark.png",
+      "sha256": "a73ef090a2a3eef4999944f7aebec726e25612e9ed24e803f921a9931301e2db",
+      "bytes": 833203,
+      "includedInGit": false
+    },
+    {
+      "file": "android_tablet_android_ku-photo-side-light.png",
+      "sha256": "cf631c1ec0abfa6c1b9bad8557f81b12f846d141ae425e9577c7cfe1db1fe277",
+      "bytes": 835500,
+      "includedInGit": false
+    },
+    {
+      "file": "android_tablet_android_ku-photo-single-dark.png",
+      "sha256": "b6b0e0d7e3bde831071c162c6728073becd6c71bdfcbe2564dc34d3b08c1f568",
+      "bytes": 511874,
+      "includedInGit": false
+    },
+    {
+      "file": "android_tablet_android_ku-photo-single-light.png",
+      "sha256": "c92ee0a845b91860c92bf59b06af2704cbea1024af3f27790eeb7a7ad45f0e6d",
+      "bytes": 515427,
+      "includedInGit": false
+    },
+    {
+      "file": "android_tablet_android_ku_Cheese-pizza,-regular-crust,-frozen-baked_large-plate.png",
+      "sha256": "326ec7943ab5f58797707dd0f81c24a869a3bf06b3a520a3162332a20417cf89",
+      "bytes": 312562,
+      "includedInGit": false
+    },
+    {
+      "file": "android_tablet_android_ku_Cheese-pizza,-regular-crust,-frozen-baked_pizza.png",
+      "sha256": "decd5e1461fabc41b184022a0881ffef23c2ade6541edd6172921ebf9eb1eee4",
+      "bytes": 282025,
+      "includedInGit": false
+    },
+    {
+      "file": "android_tablet_android_ku_Cheese-pizza,-regular-crust,-frozen-baked_small-bowl.png",
+      "sha256": "34b65801fe72e8c19bbd0fefb7c159a20e7421d1140afb6fca5ea87a7dc21d98",
+      "bytes": 312498,
+      "includedInGit": false
+    },
+    {
+      "file": "android_tablet_android_ku_Cheese-pizza,-regular-crust,-frozen-baked_tablespoon.png",
+      "sha256": "de2c3d22f08c0ba8881118a0738b198738081ce81e7df4ecdb6b25eaef8fb8d7",
+      "bytes": 284002,
+      "includedInGit": false
+    },
+    {
+      "file": "android_tablet_android_ku_White-rice,-cooked_large-plate.png",
+      "sha256": "0b260f9ed9d033ad98c0fec29851d3c7646657772d17529d9303e1d3190d7d7b",
+      "bytes": 290161,
+      "includedInGit": false
+    },
+    {
+      "file": "android_tablet_android_ku_White-rice,-cooked_small-bowl.png",
+      "sha256": "33c46d61da52e84784fa6b9fd09e311846a808b255c3dace7ccc4eb90bb635c6",
+      "bytes": 290522,
+      "includedInGit": false
+    },
+    {
+      "file": "android_tablet_android_ku_White-rice,-cooked_tablespoon.png",
+      "sha256": "242b1106b7bed89ed709eb2fd50681ba2f64ca0caf96e04e2434dbe5a008bda0",
+      "bytes": 283502,
+      "includedInGit": false
+    },
+    {
+      "file": "android_tablet_android_ku_Whole-milk_bottle.png",
+      "sha256": "c73982434261a4b0a6013340a45597f14ec77f3594b0e5c93c3d6f23826f0df9",
+      "bytes": 264243,
+      "includedInGit": false
+    },
+    {
+      "file": "android_tablet_android_ku_Whole-milk_glass.png",
+      "sha256": "8dfeeb60ad0f38526c793379a70da5eeea9f16f533d7a4de287fb5891890d8a1",
+      "bytes": 264835,
+      "includedInGit": false
+    },
+    {
+      "file": "android_tablet_android_ku_Whole-milk_liter.png",
+      "sha256": "a9d5b9b68c9c1903923094a9f9d9632137470a28315d944ff71699eafd86709b",
+      "bytes": 193112,
+      "includedInGit": false
+    },
+    {
+      "file": "android_tablet_android_ku_usda_sr_168878_dark.png",
+      "sha256": "f74e5e157d8bffeaf229866b3ffb07735d5c3bdde72c3bb3bef8859330a5de71",
+      "bytes": 256107,
+      "includedInGit": false
+    },
+    {
+      "file": "android_tablet_android_ku_usda_sr_170317_dark.png",
+      "sha256": "7d165fb72b9781af02b5d3ebca8b9578f5befd6bf04b6b18f053de0cc9d1aa51",
+      "bytes": 253845,
+      "includedInGit": true
+    },
+    {
+      "file": "android_tablet_android_ku_usda_sr_171265_dark.png",
+      "sha256": "0a2a9270681fd6d4c219bfc7fce82b93ee87ee4acb3a16a2f1373a3a6bf883d3",
+      "bytes": 231856,
+      "includedInGit": false
+    },
+    {
+      "file": "ipad_full_ios_ar-photo-side-dark.png",
+      "sha256": "be1f943eb46059d263b2ae5bb620adce3c3fd2e0d22d56c0b353b796584c37e3",
+      "bytes": 2008827,
+      "includedInGit": false
+    },
+    {
+      "file": "ipad_full_ios_ar-photo-side-light.png",
+      "sha256": "9fa663d3234aa58798b1459688452a6a21a2284b7df7dfe67f14352af9986adc",
+      "bytes": 2012768,
+      "includedInGit": true
+    },
+    {
+      "file": "ipad_full_ios_ar-photo-single-dark.png",
+      "sha256": "11d81c5619271c051d725c4c883b065ff13b3a75cbbf0476457cc176ad562ab7",
+      "bytes": 1213957,
+      "includedInGit": false
+    },
+    {
+      "file": "ipad_full_ios_ar-photo-single-light.png",
+      "sha256": "8e2c70eb2c3086a4eb7d2c3d01dcae83e84dc71c17d04624738592f92547c40e",
+      "bytes": 1218663,
+      "includedInGit": false
+    },
+    {
+      "file": "ipad_full_ios_ar_Cheese-pizza,-regular-crust,-frozen-baked_large-plate.png",
+      "sha256": "f44e594111b63c9a7cbdfd9eec3fde9ab0c58493deba7a11b3dc90185c6e7de1",
+      "bytes": 555323,
+      "includedInGit": false
+    },
+    {
+      "file": "ipad_full_ios_ar_Cheese-pizza,-regular-crust,-frozen-baked_pizza.png",
+      "sha256": "6a0b62cdd84ea99e20063999884bc23095751d6e17f642db482e5f030235a641",
+      "bytes": 524317,
+      "includedInGit": false
+    },
+    {
+      "file": "ipad_full_ios_ar_Cheese-pizza,-regular-crust,-frozen-baked_small-bowl.png",
+      "sha256": "d7ad7970bb3027b8c2d9a1f7761798006682b2adbbab6485dc77c69eb10446ac",
+      "bytes": 555761,
+      "includedInGit": false
+    },
+    {
+      "file": "ipad_full_ios_ar_Cheese-pizza,-regular-crust,-frozen-baked_tablespoon.png",
+      "sha256": "dcc694a5ca87a948c2b077942dd66aa2e39365f66ce474a43720fb2e3d3d6495",
+      "bytes": 526517,
+      "includedInGit": false
+    },
+    {
+      "file": "ipad_full_ios_ar_White-rice,-cooked_large-plate.png",
+      "sha256": "21043bec3332556d0cd2a095c22f22e8d98edfee5b7e49b105ffe07ea8ea87e8",
+      "bytes": 529144,
+      "includedInGit": false
+    },
+    {
+      "file": "ipad_full_ios_ar_White-rice,-cooked_small-bowl.png",
+      "sha256": "1424b6a38305442170e5a093f3f713126a715cc8dbb858a2d464e2ad52af74e9",
+      "bytes": 529556,
+      "includedInGit": false
+    },
+    {
+      "file": "ipad_full_ios_ar_White-rice,-cooked_tablespoon.png",
+      "sha256": "bf6930e4177e2f7f113a29164aee3c971d190b8722cb47d4892512d8d780dc5a",
+      "bytes": 518904,
+      "includedInGit": false
+    },
+    {
+      "file": "ipad_full_ios_ar_Whole-milk_bottle.png",
+      "sha256": "0ebcb418f31bc25b99ebac46a7c79e6a7198f084cc915ba6517fd808c4d85c7d",
+      "bytes": 517987,
+      "includedInGit": false
+    },
+    {
+      "file": "ipad_full_ios_ar_Whole-milk_glass.png",
+      "sha256": "02bfb387d6b73a6b77564c2bdf68dcb8ed3f5f402d6c5a04e51ad5248cfc513e",
+      "bytes": 516004,
+      "includedInGit": false
+    },
+    {
+      "file": "ipad_full_ios_ar_Whole-milk_liter.png",
+      "sha256": "6664715e7933370c6399de60c454173985b7b39399bd4a936234ad2b21df2782",
+      "bytes": 433259,
+      "includedInGit": false
+    },
+    {
+      "file": "ipad_full_ios_ar_usda_sr_168878_dark.png",
+      "sha256": "5c5148411d459ed071adeb9d12224f70e4e988220a31c80f70d3e51d57501ee2",
+      "bytes": 538834,
+      "includedInGit": false
+    },
+    {
+      "file": "ipad_full_ios_ar_usda_sr_170317_dark.png",
+      "sha256": "c019e90230ae4f7e6e2431c303315740e27a575dab688e47741e14f8607cea10",
+      "bytes": 540395,
+      "includedInGit": false
+    },
+    {
+      "file": "ipad_full_ios_ar_usda_sr_171265_dark.png",
+      "sha256": "2b6caa27b22bed61665a5cd0f0b372ee8d068e33fd195634869e4b643c432d8a",
+      "bytes": 527525,
+      "includedInGit": false
+    },
+    {
+      "file": "ipad_full_ios_en-photo-side-dark.png",
+      "sha256": "068b26d1e82a410de96591f936bf75fcb124add09edab048388ecec80390500a",
+      "bytes": 2017656,
+      "includedInGit": false
+    },
+    {
+      "file": "ipad_full_ios_en-photo-side-light.png",
+      "sha256": "7dc1e46e20db494436b946b22ae394a9605a6ca3e77197ccd4dbf6695baa41ed",
+      "bytes": 2024465,
+      "includedInGit": false
+    },
+    {
+      "file": "ipad_full_ios_en-photo-single-dark.png",
+      "sha256": "85bfeba3a6ddf11fe223008f0a42ac6f704a03a574d06d25c2f892abd1ec66b1",
+      "bytes": 1227594,
+      "includedInGit": false
+    },
+    {
+      "file": "ipad_full_ios_en-photo-single-light.png",
+      "sha256": "2523b3e8456b44faff751cfbee96887518a5361f2b2bef1988b919b6ed789345",
+      "bytes": 1233081,
+      "includedInGit": false
+    },
+    {
+      "file": "ipad_full_ios_en_Cheese-pizza,-regular-crust,-frozen-baked_large-plate.png",
+      "sha256": "1646d6a34656f28f0ea82089e010543b1a36ebe6b57c997ecab5ac2da972e3a0",
+      "bytes": 543131,
+      "includedInGit": false
+    },
+    {
+      "file": "ipad_full_ios_en_Cheese-pizza,-regular-crust,-frozen-baked_pizza.png",
+      "sha256": "9bca0f1066d3de1999a8e93e3f0acdd9032d10cd2ad23a70f1fe735434844fbe",
+      "bytes": 546822,
+      "includedInGit": false
+    },
+    {
+      "file": "ipad_full_ios_en_Cheese-pizza,-regular-crust,-frozen-baked_small-bowl.png",
+      "sha256": "5f5eeea987ec1910d74bef51e710cfe6efdff3d06fe9911e1ce83dde332f85bd",
+      "bytes": 541615,
+      "includedInGit": false
+    },
+    {
+      "file": "ipad_full_ios_en_Cheese-pizza,-regular-crust,-frozen-baked_tablespoon.png",
+      "sha256": "8988af6f38dec05f138c3bb40536a24cc47a5f7e572b9ecab072b33f13393bd5",
+      "bytes": 544955,
+      "includedInGit": false
+    },
+    {
+      "file": "ipad_full_ios_en_White-rice,-cooked_large-plate.png",
+      "sha256": "864cbaa2012ceeff88cb3feb117fdf79597a1c52c26f0facdcf66439e269d0f0",
+      "bytes": 528723,
+      "includedInGit": false
+    },
+    {
+      "file": "ipad_full_ios_en_White-rice,-cooked_small-bowl.png",
+      "sha256": "423fb71401beae79a936acb0059a5978c28c918804287e0e7e9f86a8e51c5f87",
+      "bytes": 528728,
+      "includedInGit": false
+    },
+    {
+      "file": "ipad_full_ios_en_White-rice,-cooked_tablespoon.png",
+      "sha256": "85998c842c0fb9eb3522bb5e1b7eb7165f694ff4df3b9bf3df3f30bcac81dd85",
+      "bytes": 522437,
+      "includedInGit": false
+    },
+    {
+      "file": "ipad_full_ios_en_Whole-milk_bottle.png",
+      "sha256": "3cb3cb1e44fe9908c0cde127fd079fd3c4d7243231125fd2852406b9badff2ea",
+      "bytes": 515945,
+      "includedInGit": false
+    },
+    {
+      "file": "ipad_full_ios_en_Whole-milk_glass.png",
+      "sha256": "54b35d0b77c173f319f65acaff9415abed7ede6dfc9c9509b381e63916db888a",
+      "bytes": 515132,
+      "includedInGit": false
+    },
+    {
+      "file": "ipad_full_ios_en_Whole-milk_liter.png",
+      "sha256": "76c4cef0cdcef081d49e3ed4c1e57dad4c40842bdc4368020c4217207002b616",
+      "bytes": 426344,
+      "includedInGit": false
+    },
+    {
+      "file": "ipad_full_ios_en_usda_sr_168878_dark.png",
+      "sha256": "d5cba2cd657ecc4c8cd3cb9e98d3a10d66ae5530afd3ec9eceeaa0516e836580",
+      "bytes": 563503,
+      "includedInGit": false
+    },
+    {
+      "file": "ipad_full_ios_en_usda_sr_170317_dark.png",
+      "sha256": "9822d918af8229f422235fd192790ae61fb96b0726ff24118f1f7885ed1009b4",
+      "bytes": 577356,
+      "includedInGit": false
+    },
+    {
+      "file": "ipad_full_ios_en_usda_sr_171265_dark.png",
+      "sha256": "90144e19e42a2ecc273bc098f5641f7316a54de9ee87981a6344a22c8ff0e13d",
+      "bytes": 554694,
+      "includedInGit": false
+    },
+    {
+      "file": "ipad_full_ios_ku-photo-side-dark.png",
+      "sha256": "020dfd20a76d31682396c6f0d481d39b7a0702849fd43cf8605a6f1ea0417703",
+      "bytes": 2034130,
+      "includedInGit": false
+    },
+    {
+      "file": "ipad_full_ios_ku-photo-side-light.png",
+      "sha256": "c4224bd5991745931d70d09b3f54eded227d590f749b6bd088adcd823188fec7",
+      "bytes": 2038082,
+      "includedInGit": false
+    },
+    {
+      "file": "ipad_full_ios_ku-photo-single-dark.png",
+      "sha256": "17263da720f64edadce277d9014db99dc29455cbde3bc45d760ea58eaca06314",
+      "bytes": 1236699,
+      "includedInGit": false
+    },
+    {
+      "file": "ipad_full_ios_ku-photo-single-light.png",
+      "sha256": "e4a632138ef010ab0dc3f7371bb83991c59c29d3a6f57845ec3e83404dc06d6d",
+      "bytes": 1242141,
+      "includedInGit": false
+    },
+    {
+      "file": "ipad_full_ios_ku_Cheese-pizza,-regular-crust,-frozen-baked_large-plate.png",
+      "sha256": "f317091177b22b6641153cb8a8222ea12a4ac72516fe1dbfb4fc6820dad28d91",
+      "bytes": 574038,
+      "includedInGit": false
+    },
+    {
+      "file": "ipad_full_ios_ku_Cheese-pizza,-regular-crust,-frozen-baked_pizza.png",
+      "sha256": "37c5c9830c343a265adc0e48ac255b191f88fe8b2109ed329c443ed482c2d0a7",
+      "bytes": 544084,
+      "includedInGit": false
+    },
+    {
+      "file": "ipad_full_ios_ku_Cheese-pizza,-regular-crust,-frozen-baked_small-bowl.png",
+      "sha256": "49257a47368cd7898bd3d5cdc4f7287d4284ec5db0236673302f3c65cfe3c449",
+      "bytes": 574502,
+      "includedInGit": false
+    },
+    {
+      "file": "ipad_full_ios_ku_Cheese-pizza,-regular-crust,-frozen-baked_tablespoon.png",
+      "sha256": "1f842675ed95d50ea93a0ddd3be064aaf4b8bdc62aa267ddc0727167ede9bad1",
+      "bytes": 545963,
+      "includedInGit": false
+    },
+    {
+      "file": "ipad_full_ios_ku_White-rice,-cooked_large-plate.png",
+      "sha256": "f44883c0cf43fb7a43031bf83af9da5b898e68df35603d00f092caa5b6b945a5",
+      "bytes": 544723,
+      "includedInGit": false
+    },
+    {
+      "file": "ipad_full_ios_ku_White-rice,-cooked_small-bowl.png",
+      "sha256": "3c5313bac80d0286278000e6631841b9214fb5858d0b905d087069b8f95fa853",
+      "bytes": 545005,
+      "includedInGit": false
+    },
+    {
+      "file": "ipad_full_ios_ku_White-rice,-cooked_tablespoon.png",
+      "sha256": "7a56ffed8dfc34c2237d7970d2f4b68e7e35a51e703cfc31196e1865c38ae48b",
+      "bytes": 537674,
+      "includedInGit": false
+    },
+    {
+      "file": "ipad_full_ios_ku_Whole-milk_bottle.png",
+      "sha256": "47e15094d2369d7db267df6173b5fcfdb118b5a37af346496378695761ecfd58",
+      "bytes": 529213,
+      "includedInGit": false
+    },
+    {
+      "file": "ipad_full_ios_ku_Whole-milk_glass.png",
+      "sha256": "d03362fec9499f8c8cb229e8f0a7a438dfd8a17405f5c64a837ccbf86d42d636",
+      "bytes": 530154,
+      "includedInGit": false
+    },
+    {
+      "file": "ipad_full_ios_ku_Whole-milk_liter.png",
+      "sha256": "3d44c13e5c509366b6edace877b35a8523523fd14f7dbd5a34c2e82604a499b1",
+      "bytes": 439078,
+      "includedInGit": false
+    },
+    {
+      "file": "ipad_full_ios_ku_usda_sr_168878_dark.png",
+      "sha256": "d494782d61bced490360a73f7e61a2d7f05504c1832f5f79e522db50a3204a8b",
+      "bytes": 555219,
+      "includedInGit": false
+    },
+    {
+      "file": "ipad_full_ios_ku_usda_sr_170317_dark.png",
+      "sha256": "d0be8b1cce49896942d309cb969050a76168a2515cb9f2b5ab75ed57ec190022",
+      "bytes": 580423,
+      "includedInGit": true
+    },
+    {
+      "file": "ipad_full_ios_ku_usda_sr_171265_dark.png",
+      "sha256": "a7db9fcfa606d6d61f5842c2550d3c43ab63e0dbd05d4b0d6ec123079396974b",
+      "bytes": 539915,
+      "includedInGit": false
+    },
+    {
+      "file": "iphone_verified_ios_ar-photo-side-dark.png",
+      "sha256": "00d410b41142b071eb4b1492469b168749a086a69891390b6a645665266d900d",
+      "bytes": 3644471,
+      "includedInGit": false
+    },
+    {
+      "file": "iphone_verified_ios_ar-photo-side-light.png",
+      "sha256": "ed21b4d88fcc613e9f30228ebff2c2c028b59045f6475b7d05eb339b803e4e60",
+      "bytes": 3649733,
+      "includedInGit": false
+    },
+    {
+      "file": "iphone_verified_ios_ar-photo-single-dark.png",
+      "sha256": "273963d157d185d799fc1fb79fd1b952e77911fd373ef2fec6fc2559c77820f7",
+      "bytes": 2022427,
+      "includedInGit": false
+    },
+    {
+      "file": "iphone_verified_ios_ar-photo-single-light.png",
+      "sha256": "7ebecf4f69935713ad8e9810b144bccca2c5fc2b038e341e3c01d4b000aea033",
+      "bytes": 2027143,
+      "includedInGit": false
+    },
+    {
+      "file": "iphone_verified_ios_ar_Cheese-pizza,-regular-crust,-frozen-baked_large-plate.png",
+      "sha256": "1cc51938cf249e5bb16bc5a2ea384e693afb31ea7591143d5a089b4502207757",
+      "bytes": 378826,
+      "includedInGit": false
+    },
+    {
+      "file": "iphone_verified_ios_ar_Cheese-pizza,-regular-crust,-frozen-baked_pizza.png",
+      "sha256": "a75e9d71ded77ee4e2a1d04e6214268967965ad81a6099f0329af8f26d15d2bc",
+      "bytes": 377387,
+      "includedInGit": false
+    },
+    {
+      "file": "iphone_verified_ios_ar_Cheese-pizza,-regular-crust,-frozen-baked_small-bowl.png",
+      "sha256": "407908dcd6576d2c18479ba1d57f5ba2431cea38e5afcde5ddfed329e398f83a",
+      "bytes": 379044,
+      "includedInGit": false
+    },
+    {
+      "file": "iphone_verified_ios_ar_Cheese-pizza,-regular-crust,-frozen-baked_tablespoon.png",
+      "sha256": "a9347f2e5f0f2120113f61dcfdfcf273f8c62d514f4207f1613bfa2f48d6daff",
+      "bytes": 390280,
+      "includedInGit": false
+    },
+    {
+      "file": "iphone_verified_ios_ar_White-rice,-cooked_large-plate.png",
+      "sha256": "d5982a6bc7c83bce0da81aa9ebc716f30e69511be9ef08953e96f1f77a36996d",
+      "bytes": 374480,
+      "includedInGit": false
+    },
+    {
+      "file": "iphone_verified_ios_ar_White-rice,-cooked_small-bowl.png",
+      "sha256": "076fcb6cb8723905f813739e2dc11c8315865531079f933aefbac07a9356df97",
+      "bytes": 374687,
+      "includedInGit": false
+    },
+    {
+      "file": "iphone_verified_ios_ar_White-rice,-cooked_tablespoon.png",
+      "sha256": "8421c8ef28b6f1552ab6322da0db2bd87d4917d6c8a5af6193c2c53b1d32da13",
+      "bytes": 390570,
+      "includedInGit": false
+    },
+    {
+      "file": "iphone_verified_ios_ar_Whole-milk_bottle.png",
+      "sha256": "5744ef602f874745dd5dde08690446199377b84b1d5d9a75af80405ee8574207",
+      "bytes": 365514,
+      "includedInGit": false
+    },
+    {
+      "file": "iphone_verified_ios_ar_Whole-milk_glass.png",
+      "sha256": "92281ec57fc79365c4518c7a2ea76561d39ef93935e82e146ba3f57267305132",
+      "bytes": 364790,
+      "includedInGit": false
+    },
+    {
+      "file": "iphone_verified_ios_ar_Whole-milk_liter.png",
+      "sha256": "4ca45ab234b0ced2cef8cde6422535daea3d2e53ed27ef8619791150ad2c7589",
+      "bytes": 340929,
+      "includedInGit": true
+    },
+    {
+      "file": "iphone_verified_ios_ar_usda_sr_168878_dark.png",
+      "sha256": "04dbd3bb6ac07d7c1f82b3fe60063e78b6b0e8168a3c8be3eef5424917aff7ac",
+      "bytes": 394089,
+      "includedInGit": false
+    },
+    {
+      "file": "iphone_verified_ios_ar_usda_sr_170317_dark.png",
+      "sha256": "09db46af50d2ebcb4040f51521ea53752bba9b35882fa183dd35a1ea2aed26eb",
+      "bytes": 399597,
+      "includedInGit": false
+    },
+    {
+      "file": "iphone_verified_ios_ar_usda_sr_171265_dark.png",
+      "sha256": "c4d78c52909a0060b07fa2c8e76b73c23bf8bad25624c4b02512434d143588fa",
+      "bytes": 385149,
+      "includedInGit": false
+    },
+    {
+      "file": "iphone_verified_ios_en-photo-side-dark.png",
+      "sha256": "9a23301efd69348b79e97718fa28c693f49da13107cb723281d41c88707b462f",
+      "bytes": 3645892,
+      "includedInGit": false
+    },
+    {
+      "file": "iphone_verified_ios_en-photo-side-light.png",
+      "sha256": "7ce0294c1c5695b029c2de57da7a780fbc70ccb9f08460bbd9c60855ac9923bd",
+      "bytes": 3654657,
+      "includedInGit": false
+    },
+    {
+      "file": "iphone_verified_ios_en-photo-single-dark.png",
+      "sha256": "42528d46a7c0a930516c84385e28cc7aa04d5bb7298121ba8885b368267e465a",
+      "bytes": 2037871,
+      "includedInGit": false
+    },
+    {
+      "file": "iphone_verified_ios_en-photo-single-light.png",
+      "sha256": "628103f47c885a4267a1dab108bea03d8a9bbe3364561cd813f43bedcb3ab383",
+      "bytes": 2046183,
+      "includedInGit": false
+    },
+    {
+      "file": "iphone_verified_ios_en_Cheese-pizza,-regular-crust,-frozen-baked_large-plate.png",
+      "sha256": "fcf2b1a236098e4b289d18e875e5df1b91b1db727294befefe18e29d9f1b8e6e",
+      "bytes": 383222,
+      "includedInGit": false
+    },
+    {
+      "file": "iphone_verified_ios_en_Cheese-pizza,-regular-crust,-frozen-baked_pizza.png",
+      "sha256": "fb5933dd53cf24f54e3e17a5a8ad32a323ad28291ce29aaaa1a54079f6918c76",
+      "bytes": 372614,
+      "includedInGit": false
+    },
+    {
+      "file": "iphone_verified_ios_en_Cheese-pizza,-regular-crust,-frozen-baked_small-bowl.png",
+      "sha256": "d622e52ea7793e4f23a4d3cf1cf5d4f867fedafc9bfdad4d4c1a49f08ae5771a",
+      "bytes": 383529,
+      "includedInGit": false
+    },
+    {
+      "file": "iphone_verified_ios_en_Cheese-pizza,-regular-crust,-frozen-baked_tablespoon.png",
+      "sha256": "22dbe4ed02c811bcd1b860295be5fd46d4467a7fbada772f174c51b9a964a09c",
+      "bytes": 372630,
+      "includedInGit": false
+    },
+    {
+      "file": "iphone_verified_ios_en_White-rice,-cooked_large-plate.png",
+      "sha256": "7ce2fa700fac6e333d8b4e4b5714ab6fd0660cd2cf9a2d35c857a254344559f5",
+      "bytes": 376254,
+      "includedInGit": false
+    },
+    {
+      "file": "iphone_verified_ios_en_White-rice,-cooked_small-bowl.png",
+      "sha256": "6999b061969e4875c5aac185cb62b74113580095b710a85f0355d9bb138943d5",
+      "bytes": 376538,
+      "includedInGit": false
+    },
+    {
+      "file": "iphone_verified_ios_en_White-rice,-cooked_tablespoon.png",
+      "sha256": "a1572b979c8bca3b1377c4b45d5612a2c9344cdc97fcf54e3c1ead639a066674",
+      "bytes": 398351,
+      "includedInGit": true
+    },
+    {
+      "file": "iphone_verified_ios_en_Whole-milk_bottle.png",
+      "sha256": "93f93836835cca43b289d2598a7ec9bc4dff6d695e73ea9b0745e1854d76ba9a",
+      "bytes": 365123,
+      "includedInGit": false
+    },
+    {
+      "file": "iphone_verified_ios_en_Whole-milk_glass.png",
+      "sha256": "b54877312e30bf44dc726c11747ab6cd4943e5200fcc3734297f5e6431135c07",
+      "bytes": 365460,
+      "includedInGit": false
+    },
+    {
+      "file": "iphone_verified_ios_en_Whole-milk_liter.png",
+      "sha256": "290a9ef80bf081e45573c855e4dedf8d70d64d4b76b04c51f73fc57839d0df8d",
+      "bytes": 332315,
+      "includedInGit": false
+    },
+    {
+      "file": "iphone_verified_ios_en_usda_sr_168878_dark.png",
+      "sha256": "84a08271aab1e6f2a9cb1a11dfcfdc892da7028158ed0bb3d29cb49353196f64",
+      "bytes": 391274,
+      "includedInGit": false
+    },
+    {
+      "file": "iphone_verified_ios_en_usda_sr_170317_dark.png",
+      "sha256": "89b5c066643318dbfb1ef3101b18c3ccb45b52222bea41f121d304993ab261df",
+      "bytes": 392136,
+      "includedInGit": false
+    },
+    {
+      "file": "iphone_verified_ios_en_usda_sr_171265_dark.png",
+      "sha256": "159496ce798a13c3401bee9e8ccf35901e1c656e3caf82aef46158398940742e",
+      "bytes": 382726,
+      "includedInGit": false
+    },
+    {
+      "file": "iphone_verified_ios_ku-photo-side-dark.png",
+      "sha256": "89dc624c5a1be6fca20fdbaafbd23fb3370a2de3aa831aabca11910edb63812a",
+      "bytes": 3667963,
+      "includedInGit": false
+    },
+    {
+      "file": "iphone_verified_ios_ku-photo-side-light.png",
+      "sha256": "23f101beeafaa977ff586e176194e033ba0deb9c1291c25936224caa54edc6ba",
+      "bytes": 3676446,
+      "includedInGit": true
+    },
+    {
+      "file": "iphone_verified_ios_ku-photo-single-dark.png",
+      "sha256": "1d5f05048632f502c21e28c0d88dc5e2fbbe11d3c11a48b6c19a1901da42e37f",
+      "bytes": 2059290,
+      "includedInGit": false
+    },
+    {
+      "file": "iphone_verified_ios_ku-photo-single-light.png",
+      "sha256": "d6675dcceff22efbc4b4f3a8727bde87625a2eadc99b7b73f41c80afab4a8647",
+      "bytes": 2066803,
+      "includedInGit": false
+    },
+    {
+      "file": "iphone_verified_ios_ku_Cheese-pizza,-regular-crust,-frozen-baked_large-plate.png",
+      "sha256": "790584e884418c5507d9afcf28a4a32b2dbfbe55c21ef1f56d5aa6bdd357edcd",
+      "bytes": 384528,
+      "includedInGit": false
+    },
+    {
+      "file": "iphone_verified_ios_ku_Cheese-pizza,-regular-crust,-frozen-baked_pizza.png",
+      "sha256": "4e01c64d7d80e218a9a3b06f22b84698edba69606e2cd4704b54b0022f2b7b47",
+      "bytes": 379208,
+      "includedInGit": false
+    },
+    {
+      "file": "iphone_verified_ios_ku_Cheese-pizza,-regular-crust,-frozen-baked_small-bowl.png",
+      "sha256": "c36bc13d41e87ed68e77a665049d46419d8d80b3cb9b1256a36ec02571462df7",
+      "bytes": 385179,
+      "includedInGit": false
+    },
+    {
+      "file": "iphone_verified_ios_ku_Cheese-pizza,-regular-crust,-frozen-baked_tablespoon.png",
+      "sha256": "9e7702022949fc8bb1e7dfe351864b7f9e1b71f52d70612b555a3587c18f57b0",
+      "bytes": 379972,
+      "includedInGit": false
+    },
+    {
+      "file": "iphone_verified_ios_ku_White-rice,-cooked_large-plate.png",
+      "sha256": "a4253eba3d1d57d2be05c08faf3508f819e91f529f2614022b679e99b4c5d0af",
+      "bytes": 379894,
+      "includedInGit": false
+    },
+    {
+      "file": "iphone_verified_ios_ku_White-rice,-cooked_small-bowl.png",
+      "sha256": "59033acea5aab7bdd4e58342a6d3faf76400c000a3e96add231557bc415e5bc8",
+      "bytes": 380568,
+      "includedInGit": false
+    },
+    {
+      "file": "iphone_verified_ios_ku_White-rice,-cooked_tablespoon.png",
+      "sha256": "942d24aceae3505a1c0e5d7ef493260419d0b084efb6a569d796ba7f690120ef",
+      "bytes": 396428,
+      "includedInGit": false
+    },
+    {
+      "file": "iphone_verified_ios_ku_Whole-milk_bottle.png",
+      "sha256": "b79ad5453cb5ae3994dcd3786e6ce64baf1f8d641556bffad1d019da10eb5f34",
+      "bytes": 354317,
+      "includedInGit": false
+    },
+    {
+      "file": "iphone_verified_ios_ku_Whole-milk_glass.png",
+      "sha256": "37119d16c6c6fd67dbffe027fb47ba8485e86ff22688bba0d2196e116a2a2ee5",
+      "bytes": 355279,
+      "includedInGit": false
+    },
+    {
+      "file": "iphone_verified_ios_ku_Whole-milk_liter.png",
+      "sha256": "0d1963cc151f124d1c707be8751a473c99cafbd1ca76548887c1083a23115828",
+      "bytes": 343576,
+      "includedInGit": false
+    },
+    {
+      "file": "iphone_verified_ios_ku_usda_sr_168878_dark.png",
+      "sha256": "a847eddbd53a95dca47f1b9d852a6f60374e257ea82bd257f1b8b361fcd7c607",
+      "bytes": 399722,
+      "includedInGit": false
+    },
+    {
+      "file": "iphone_verified_ios_ku_usda_sr_170317_dark.png",
+      "sha256": "36ce3dd69fa3d65e0570e8b7a4e4d8d1d9c6ab09c046ab49365f27d6fb245424",
+      "bytes": 401233,
+      "includedInGit": false
+    },
+    {
+      "file": "iphone_verified_ios_ku_usda_sr_171265_dark.png",
+      "sha256": "916d16321176903fc2b1ccc0108504ef684ac4b1051842aeb309fa3e9382716c",
+      "bytes": 374966,
+      "includedInGit": true
+    },
+    {
+      "file": "pixel_verified_android_ar-photo-side-dark.png",
+      "sha256": "2a9b3495c04d54a157de78dffed82320e8677c1312960b83ec184f3b3cc325be",
+      "bytes": 1138316,
+      "includedInGit": true
+    },
+    {
+      "file": "pixel_verified_android_ar-photo-side-light.png",
+      "sha256": "ef70bee1f09bd046d0a13cf3ece407f6129014c29c7a59fa9f6305692c82d886",
+      "bytes": 1144304,
+      "includedInGit": false
+    },
+    {
+      "file": "pixel_verified_android_ar-photo-single-dark.png",
+      "sha256": "13d0af1166f63faecc4a99e29db02aabdde06a8cbf9a3b613dcb663e2bcc3d9f",
+      "bytes": 671943,
+      "includedInGit": false
+    },
+    {
+      "file": "pixel_verified_android_ar-photo-single-light.png",
+      "sha256": "eab76b2652b1d02fb70255558b63fe246a9c89e544572fef9297ef586d9b21ca",
+      "bytes": 676511,
+      "includedInGit": false
+    },
+    {
+      "file": "pixel_verified_android_ar_Cheese-pizza,-regular-crust,-frozen-baked_large-plate.png",
+      "sha256": "c3cb5fad7b60bdc2a8d8386c625e7f88187a47b3b917122622674041609f2b51",
+      "bytes": 190426,
+      "includedInGit": false
+    },
+    {
+      "file": "pixel_verified_android_ar_Cheese-pizza,-regular-crust,-frozen-baked_pizza.png",
+      "sha256": "9e94bc94592cfa41ecddafa0063b928773ce06e291576657c95827e08ecabdb2",
+      "bytes": 182494,
+      "includedInGit": false
+    },
+    {
+      "file": "pixel_verified_android_ar_Cheese-pizza,-regular-crust,-frozen-baked_small-bowl.png",
+      "sha256": "f6e82e7a1f82628b5c147937df1b9f53e4b9982165020d6b3cc3e61380b9835f",
+      "bytes": 190585,
+      "includedInGit": false
+    },
+    {
+      "file": "pixel_verified_android_ar_Cheese-pizza,-regular-crust,-frozen-baked_tablespoon.png",
+      "sha256": "38eefad3cc06ef625bf5779c07002d81b484f7c4cb73a7d5830dd9a51d2db8c6",
+      "bytes": 181744,
+      "includedInGit": false
+    },
+    {
+      "file": "pixel_verified_android_ar_White-rice,-cooked_large-plate.png",
+      "sha256": "c72701f688361c8fe598b21c3aa0a79df0b8670438c2e042701b4d6e659b3115",
+      "bytes": 189839,
+      "includedInGit": false
+    },
+    {
+      "file": "pixel_verified_android_ar_White-rice,-cooked_small-bowl.png",
+      "sha256": "d74219998ddd1b17302acc963fd40631f3d782a1aa8bd512938ea0e3fad42d33",
+      "bytes": 190007,
+      "includedInGit": false
+    },
+    {
+      "file": "pixel_verified_android_ar_White-rice,-cooked_tablespoon.png",
+      "sha256": "89bd917cf965262a44f3c2a0552c991db0f78b884d8d08c63aed4dd1b7927d9f",
+      "bytes": 196467,
+      "includedInGit": false
+    },
+    {
+      "file": "pixel_verified_android_ar_Whole-milk_bottle.png",
+      "sha256": "94ba845fca5b18b00062fbc4a8be489308db65f9fbf5581ad06accce1c1706ec",
+      "bytes": 190704,
+      "includedInGit": false
+    },
+    {
+      "file": "pixel_verified_android_ar_Whole-milk_glass.png",
+      "sha256": "dfe455063fafee9bf5edbda0bd15211e232cd7cc07b850deeb8b85ab59b2b704",
+      "bytes": 189931,
+      "includedInGit": false
+    },
+    {
+      "file": "pixel_verified_android_ar_Whole-milk_liter.png",
+      "sha256": "a9abd4c0e7e0f5eaaf8a7b0794fc95aa8fcd6fa6164e36c73855cd2eed16878a",
+      "bytes": 140426,
+      "includedInGit": true
+    },
+    {
+      "file": "pixel_verified_android_ar_usda_sr_168878_dark.png",
+      "sha256": "9e221fa3cd2b0b39469b7d33e04aeb0ebe94715d1ec1251f3e955c856909835c",
+      "bytes": 187412,
+      "includedInGit": false
+    },
+    {
+      "file": "pixel_verified_android_ar_usda_sr_170317_dark.png",
+      "sha256": "e16c7c3869295c3c6f754a5a95dca2daf3c95989e63b1ef66fa222b5f614399e",
+      "bytes": 181674,
+      "includedInGit": false
+    },
+    {
+      "file": "pixel_verified_android_ar_usda_sr_171265_dark.png",
+      "sha256": "a918d36e5895c429b3eca4fae813c635fb972dec21959acddbb503950448f945",
+      "bytes": 186794,
+      "includedInGit": false
+    },
+    {
+      "file": "pixel_verified_android_en-photo-side-dark.png",
+      "sha256": "a89b015b485e6cf02b09b58f768b80d29a1306c1d663fadee2b9b710959c002e",
+      "bytes": 1142599,
+      "includedInGit": false
+    },
+    {
+      "file": "pixel_verified_android_en-photo-side-light.png",
+      "sha256": "064282f0612507c2a70c34f2c150da4dc0fb20baa59b55a6b20052b4962b44d0",
+      "bytes": 1148791,
+      "includedInGit": false
+    },
+    {
+      "file": "pixel_verified_android_en-photo-single-dark.png",
+      "sha256": "96337e450d83a90fbb6e79bb443ce83d53d6b0ceea6a12bbcc128bb8f38341c5",
+      "bytes": 680332,
+      "includedInGit": false
+    },
+    {
+      "file": "pixel_verified_android_en-photo-single-light.png",
+      "sha256": "f29728bdf4578f6e35453d42b033146cb1b02f5d69190e6e6bf851936376d397",
+      "bytes": 685426,
+      "includedInGit": false
+    },
+    {
+      "file": "pixel_verified_android_en_Cheese-pizza,-regular-crust,-frozen-baked_large-plate.png",
+      "sha256": "4885bbc28aba6baf32e8e0f9c5bb4512521cde8349151c163111366b411219f6",
+      "bytes": 184634,
+      "includedInGit": false
+    },
+    {
+      "file": "pixel_verified_android_en_Cheese-pizza,-regular-crust,-frozen-baked_pizza.png",
+      "sha256": "1f95f734ef53b67ce5eaa87f6612de29ac26d848784281a77a66a047f02d004a",
+      "bytes": 186471,
+      "includedInGit": false
+    },
+    {
+      "file": "pixel_verified_android_en_Cheese-pizza,-regular-crust,-frozen-baked_small-bowl.png",
+      "sha256": "6d7036a86aff035807458f814793eab9cfca5aec717e086c3facd88b4fa1738f",
+      "bytes": 184752,
+      "includedInGit": false
+    },
+    {
+      "file": "pixel_verified_android_en_Cheese-pizza,-regular-crust,-frozen-baked_tablespoon.png",
+      "sha256": "1450d8a1f6c880f1ca81c42ca61c9f1eacf5e0ee152df6ece9934763ddba028f",
+      "bytes": 185949,
+      "includedInGit": false
+    },
+    {
+      "file": "pixel_verified_android_en_White-rice,-cooked_large-plate.png",
+      "sha256": "6ede645657492aebf92cdede7639c1bf816ba57d2db0c8084d790051927851a9",
+      "bytes": 182959,
+      "includedInGit": false
+    },
+    {
+      "file": "pixel_verified_android_en_White-rice,-cooked_small-bowl.png",
+      "sha256": "7487e67bd443ef30d9e3e4b4f5544e253f3e284e8ed95f1018b320030d0b5a9b",
+      "bytes": 183065,
+      "includedInGit": false
+    },
+    {
+      "file": "pixel_verified_android_en_White-rice,-cooked_tablespoon.png",
+      "sha256": "e19760a52e19d7557f13a67ce871cd708d19e45f43a75244b5b745400fa26b09",
+      "bytes": 193412,
+      "includedInGit": true
+    },
+    {
+      "file": "pixel_verified_android_en_Whole-milk_bottle.png",
+      "sha256": "d912a22335e45bf1256dc8efe098b7acabbbf7399387dad26eac35095bb7b01d",
+      "bytes": 176447,
+      "includedInGit": false
+    },
+    {
+      "file": "pixel_verified_android_en_Whole-milk_glass.png",
+      "sha256": "fefd77181e6b5aa4d629400d9333ba078169e12f9f17738e3b22d9772d5be53d",
+      "bytes": 176694,
+      "includedInGit": false
+    },
+    {
+      "file": "pixel_verified_android_en_Whole-milk_liter.png",
+      "sha256": "9d2d1dd7646fff358be07d14c53e29cdae8745e9fe88ada6ac49b6021273e2b8",
+      "bytes": 128915,
+      "includedInGit": false
+    },
+    {
+      "file": "pixel_verified_android_en_usda_sr_168878_dark.png",
+      "sha256": "271f4171b65e98e648b13197fe7342df981a56766fca6722bc9caa10d65ea1ac",
+      "bytes": 180214,
+      "includedInGit": false
+    },
+    {
+      "file": "pixel_verified_android_en_usda_sr_170317_dark.png",
+      "sha256": "c0efbe6659d836c334960c93e4147d96ea0d0742e37c45590fc166eef44495cd",
+      "bytes": 185861,
+      "includedInGit": false
+    },
+    {
+      "file": "pixel_verified_android_en_usda_sr_171265_dark.png",
+      "sha256": "806837ccadbad21b2d220338776b9ae7f02f9b88531720e075a98ddb17f8c652",
+      "bytes": 173659,
+      "includedInGit": false
+    },
+    {
+      "file": "pixel_verified_android_ku-photo-side-dark.png",
+      "sha256": "4d8f3199ed3d48be70565cb2f9540b4a123a62b9b9932976df9daf5e61ac5f7e",
+      "bytes": 1174955,
+      "includedInGit": false
+    },
+    {
+      "file": "pixel_verified_android_ku-photo-side-light.png",
+      "sha256": "be927ff86fc7055394bf92e1dd9277563a5a9beb5373ec4acb7505a1b97acd35",
+      "bytes": 1177248,
+      "includedInGit": false
+    },
+    {
+      "file": "pixel_verified_android_ku-photo-single-dark.png",
+      "sha256": "2fc6efb692a5cd08f40ff0a5acdb9e6c842f67f73b996cb4da19eda60a496d73",
+      "bytes": 717900,
+      "includedInGit": false
+    },
+    {
+      "file": "pixel_verified_android_ku-photo-single-light.png",
+      "sha256": "641c2e4231b3b7a28023be83940742c73e150082982dd7ac715578fd584ef893",
+      "bytes": 720549,
+      "includedInGit": false
+    },
+    {
+      "file": "pixel_verified_android_ku_Cheese-pizza,-regular-crust,-frozen-baked_large-plate.png",
+      "sha256": "8f63f11d643df86e9db94d399db9a835a87f985aae1b156366709a6cd2e2d920",
+      "bytes": 188846,
+      "includedInGit": false
+    },
+    {
+      "file": "pixel_verified_android_ku_Cheese-pizza,-regular-crust,-frozen-baked_pizza.png",
+      "sha256": "ca55cdf1d66647a13954ea1b9d72c735fc4b72f15091c9fb31fa6c052f6cef68",
+      "bytes": 188573,
+      "includedInGit": false
+    },
+    {
+      "file": "pixel_verified_android_ku_Cheese-pizza,-regular-crust,-frozen-baked_small-bowl.png",
+      "sha256": "5592d3b0de9753bfea7b9f9f65f693520c3678b53243604468962162e4252891",
+      "bytes": 190109,
+      "includedInGit": false
+    },
+    {
+      "file": "pixel_verified_android_ku_Cheese-pizza,-regular-crust,-frozen-baked_tablespoon.png",
+      "sha256": "d22674f5c4c87d0752734abadf68fe85348b4e5619da4b64e5088c05582fbf8a",
+      "bytes": 189489,
+      "includedInGit": false
+    },
+    {
+      "file": "pixel_verified_android_ku_White-rice,-cooked_large-plate.png",
+      "sha256": "ec347f029306387af4c097091534cae97f814b7f1c674ea861d229afc5bccab6",
+      "bytes": 198909,
+      "includedInGit": false
+    },
+    {
+      "file": "pixel_verified_android_ku_White-rice,-cooked_small-bowl.png",
+      "sha256": "f901614e26ebf6c69769b5134a43f6dacc57e483ae90ca077b7e8d6a178aec39",
+      "bytes": 199968,
+      "includedInGit": false
+    },
+    {
+      "file": "pixel_verified_android_ku_White-rice,-cooked_tablespoon.png",
+      "sha256": "51dbcb4efa0f98e7fc9f08c56315545ae1ac1015fb713e10a1d8aa98e398fed6",
+      "bytes": 206581,
+      "includedInGit": false
+    },
+    {
+      "file": "pixel_verified_android_ku_Whole-milk_bottle.png",
+      "sha256": "d8e72ab4bade4f308593921ece49b12b22d90e61a019cd02e3569d8edcc89627",
+      "bytes": 179977,
+      "includedInGit": false
+    },
+    {
+      "file": "pixel_verified_android_ku_Whole-milk_glass.png",
+      "sha256": "2f8b42ea806bd614cf61ee173cb6fa5612b8779602d74209b86aa9fa99386d2b",
+      "bytes": 181249,
+      "includedInGit": false
+    },
+    {
+      "file": "pixel_verified_android_ku_Whole-milk_liter.png",
+      "sha256": "9dee4f3576caf2af1a2cdc8f2f5a782d6b885cbb259c7eb9ef8fa8b0e40217d7",
+      "bytes": 144268,
+      "includedInGit": false
+    },
+    {
+      "file": "pixel_verified_android_ku_usda_sr_168878_dark.png",
+      "sha256": "6801925f7f97a24a76688c9763bc05b83117bfce98e7d198b4ac0109ebc6239b",
+      "bytes": 196714,
+      "includedInGit": false
+    },
+    {
+      "file": "pixel_verified_android_ku_usda_sr_170317_dark.png",
+      "sha256": "ded45fd5b1a230734818d1d75a59263655474b80589995142155ad939c4f3dda",
+      "bytes": 187452,
+      "includedInGit": true
+    },
+    {
+      "file": "pixel_verified_android_ku_usda_sr_171265_dark.png",
+      "sha256": "01598c290eb73100986866094bb88c06ca7c1777fe6bf5d880d3e35e468e8373",
+      "bytes": 178969,
+      "includedInGit": false
+    },
+    {
+      "file": "small_iphone_ios_ar-photo-side-dark.png",
+      "sha256": "f208a41bdfd3dd0d7519cf14a8f4255907372bf31fd35ef5aad1870f63943dee",
+      "bytes": 3611567,
+      "includedInGit": false
+    },
+    {
+      "file": "small_iphone_ios_ar-photo-side-light.png",
+      "sha256": "44d3fa06a8a3a678675641d802f1868d54ad1e3030ee17f6c589a84e8fb7ede0",
+      "bytes": 3622400,
+      "includedInGit": true
+    },
+    {
+      "file": "small_iphone_ios_ar-photo-single-dark.png",
+      "sha256": "32e35a30f841c9c675c6c52b29005b25f3e9e585994aaee431f34cb2884350e6",
+      "bytes": 2000313,
+      "includedInGit": false
+    },
+    {
+      "file": "small_iphone_ios_ar-photo-single-light.png",
+      "sha256": "99ccb1ac40251582966a050626d2c925abb4bc72665dc29882898f08eba209eb",
+      "bytes": 2006676,
+      "includedInGit": false
+    },
+    {
+      "file": "small_iphone_ios_ar_Cheese-pizza,-regular-crust,-frozen-baked_large-plate.png",
+      "sha256": "b82f49ec1e6bda63264c9dbdc853fa1c0e55ef3be3d14240e4db59c0a315d1ea",
+      "bytes": 354958,
+      "includedInGit": false
+    },
+    {
+      "file": "small_iphone_ios_ar_Cheese-pizza,-regular-crust,-frozen-baked_pizza.png",
+      "sha256": "f168ab6ea483c06981aaba652b8740078787bbe63d716e0c09f967c96b3e3e3b",
+      "bytes": 353747,
+      "includedInGit": false
+    },
+    {
+      "file": "small_iphone_ios_ar_Cheese-pizza,-regular-crust,-frozen-baked_small-bowl.png",
+      "sha256": "bfc224eb2140b10105e91b7859a5ce325c4ea3cd0fa73d79738d4907b5d9481f",
+      "bytes": 355132,
+      "includedInGit": false
+    },
+    {
+      "file": "small_iphone_ios_ar_Cheese-pizza,-regular-crust,-frozen-baked_tablespoon.png",
+      "sha256": "b2756265254daa16b8b75f5754da3b5bafe6d3cbf770dc4253dbccd3b821cf07",
+      "bytes": 353838,
+      "includedInGit": false
+    },
+    {
+      "file": "small_iphone_ios_ar_White-rice,-cooked_large-plate.png",
+      "sha256": "133cc3ca5bd4fb45783b3989219656e83b7a3284fb3ea12f3ceeb61cce92e3b6",
+      "bytes": 354355,
+      "includedInGit": false
+    },
+    {
+      "file": "small_iphone_ios_ar_White-rice,-cooked_small-bowl.png",
+      "sha256": "cfee1f35ccb2634b893e58997e5a32302ffa3c4da06180d1a7e69fa0425b2f28",
+      "bytes": 354529,
+      "includedInGit": false
+    },
+    {
+      "file": "small_iphone_ios_ar_White-rice,-cooked_tablespoon.png",
+      "sha256": "bc7ed2242516881747facacf8baa0e0ab3dbe619cb970641832f53631928d44d",
+      "bytes": 358078,
+      "includedInGit": false
+    },
+    {
+      "file": "small_iphone_ios_ar_Whole-milk_bottle.png",
+      "sha256": "44528857509f976ae2151a6c80b88f33dbbbdb092b043cc29a74ae750a4ebacc",
+      "bytes": 325284,
+      "includedInGit": false
+    },
+    {
+      "file": "small_iphone_ios_ar_Whole-milk_glass.png",
+      "sha256": "44528857509f976ae2151a6c80b88f33dbbbdb092b043cc29a74ae750a4ebacc",
+      "bytes": 325284,
+      "includedInGit": false
+    },
+    {
+      "file": "small_iphone_ios_ar_Whole-milk_liter.png",
+      "sha256": "ebd92b6ce245e2dbd6fd97933a76913763ce817e9183373649d4f0a7febc351f",
+      "bytes": 312319,
+      "includedInGit": false
+    },
+    {
+      "file": "small_iphone_ios_ar_usda_sr_168878_dark.png",
+      "sha256": "c616107797a30b755aba0b3b894d92eabc5ba83bae4a6a43a1b87498922e41b8",
+      "bytes": 348464,
+      "includedInGit": false
+    },
+    {
+      "file": "small_iphone_ios_ar_usda_sr_170317_dark.png",
+      "sha256": "b6a67759dab7aa8e9f6f081ecab06b5837431de0b3e4490b6a8df669867e6661",
+      "bytes": 354529,
+      "includedInGit": false
+    },
+    {
+      "file": "small_iphone_ios_ar_usda_sr_171265_dark.png",
+      "sha256": "d18119519d5bd1f6f547adeecb966eb63e7213ab1f57688b76793e2f28b341f0",
+      "bytes": 328404,
+      "includedInGit": false
+    },
+    {
+      "file": "small_iphone_ios_en-photo-side-dark.png",
+      "sha256": "f3065ea3b9dc48c623022b27b8d80b471b70e4c7fe243ad33bfc3a4ed5a18edf",
+      "bytes": 3601403,
+      "includedInGit": false
+    },
+    {
+      "file": "small_iphone_ios_en-photo-side-light.png",
+      "sha256": "9484129ebf75165c33653ab0f56faa38785ab78696da5b347ffe46c4fbccd7cf",
+      "bytes": 3612259,
+      "includedInGit": false
+    },
+    {
+      "file": "small_iphone_ios_en-photo-single-dark.png",
+      "sha256": "a52999873926b71b5d8dce9ef8c71ef38a3d1d56b616ce5cd6a30202f2e72da5",
+      "bytes": 2013408,
+      "includedInGit": false
+    },
+    {
+      "file": "small_iphone_ios_en-photo-single-light.png",
+      "sha256": "ec61cd28d549a45b534611e0c66337c9541e9890f4bb29e2bbcafe5d2c333e97",
+      "bytes": 2021813,
+      "includedInGit": false
+    },
+    {
+      "file": "small_iphone_ios_en_Cheese-pizza,-regular-crust,-frozen-baked_large-plate.png",
+      "sha256": "ff0a972f604b8c800e6c4dae2cb25b6475d70c6412343573fa4c1acb527d1a96",
+      "bytes": 349861,
+      "includedInGit": false
+    },
+    {
+      "file": "small_iphone_ios_en_Cheese-pizza,-regular-crust,-frozen-baked_pizza.png",
+      "sha256": "0a5456733cadd08b10e901e80f1e47c33cc7097b6e5931cb2ca3c1a1189a10df",
+      "bytes": 336680,
+      "includedInGit": false
+    },
+    {
+      "file": "small_iphone_ios_en_Cheese-pizza,-regular-crust,-frozen-baked_small-bowl.png",
+      "sha256": "74e4ef4504e12dd1b3636137a8f3d8d69ca1f02f290fb8108173911ed7dbccd0",
+      "bytes": 350050,
+      "includedInGit": false
+    },
+    {
+      "file": "small_iphone_ios_en_Cheese-pizza,-regular-crust,-frozen-baked_tablespoon.png",
+      "sha256": "2df39ed042de1a6c7675129bbd75a4907b521568fac14c8e86706bc33516e075",
+      "bytes": 336743,
+      "includedInGit": false
+    },
+    {
+      "file": "small_iphone_ios_en_White-rice,-cooked_large-plate.png",
+      "sha256": "638c2114ff3780927f2aa61a2e37ab37cc38493e617468e30764b78b27cb1ae4",
+      "bytes": 348951,
+      "includedInGit": false
+    },
+    {
+      "file": "small_iphone_ios_en_White-rice,-cooked_small-bowl.png",
+      "sha256": "9b24ad0c2a95a4ba1d745594bd1433568f9bfff4eaa805d04c071608c164db0d",
+      "bytes": 349140,
+      "includedInGit": false
+    },
+    {
+      "file": "small_iphone_ios_en_White-rice,-cooked_tablespoon.png",
+      "sha256": "eab4079fbdbca2731ffca25929141d7cbc28a6cb9844a6a68055145067a9f361",
+      "bytes": 352225,
+      "includedInGit": false
+    },
+    {
+      "file": "small_iphone_ios_en_Whole-milk_bottle.png",
+      "sha256": "49af93f672adfeba427401963c76401345b0e03dbbb49b33e4715c53bea7dadc",
+      "bytes": 318829,
+      "includedInGit": false
+    },
+    {
+      "file": "small_iphone_ios_en_Whole-milk_glass.png",
+      "sha256": "49af93f672adfeba427401963c76401345b0e03dbbb49b33e4715c53bea7dadc",
+      "bytes": 318829,
+      "includedInGit": false
+    },
+    {
+      "file": "small_iphone_ios_en_Whole-milk_liter.png",
+      "sha256": "0dc3616d27019c51c85700df97de69e218ed846946f30287fdb0124fa842e3e2",
+      "bytes": 299346,
+      "includedInGit": false
+    },
+    {
+      "file": "small_iphone_ios_en_usda_sr_168878_dark.png",
+      "sha256": "22ba960aabc3a9cc965a5d936b79fb9c2762c217f1173c6d021c2bb2c01b82bf",
+      "bytes": 363047,
+      "includedInGit": false
+    },
+    {
+      "file": "small_iphone_ios_en_usda_sr_170317_dark.png",
+      "sha256": "c62875b36750b4935477dfead97aa8db28ddbc4b93c9fd8b44674fdf4f4daf6d",
+      "bytes": 351784,
+      "includedInGit": false
+    },
+    {
+      "file": "small_iphone_ios_en_usda_sr_171265_dark.png",
+      "sha256": "7cdd35b3fc2be00f01ba47f5ac4d8748606dc6895706abb54f321fc8c9d95840",
+      "bytes": 332567,
+      "includedInGit": false
+    },
+    {
+      "file": "small_iphone_ios_ku-photo-side-dark.png",
+      "sha256": "566f289b3b7b0a6d9ec58e9ba2d6cda092cae60bce7c2e18dc3a884d4a8b2212",
+      "bytes": 3629115,
+      "includedInGit": false
+    },
+    {
+      "file": "small_iphone_ios_ku-photo-side-light.png",
+      "sha256": "42e69a62941b91482a1c6bcf9769d658255ddb9794453dfc9e9b1a282c317489",
+      "bytes": 3637878,
+      "includedInGit": false
+    },
+    {
+      "file": "small_iphone_ios_ku-photo-single-dark.png",
+      "sha256": "3bea7c46436ae744fc8c21f2b8cc2425979c8ea1ac36f7e559247b37bb6f54e8",
+      "bytes": 2030747,
+      "includedInGit": false
+    },
+    {
+      "file": "small_iphone_ios_ku-photo-single-light.png",
+      "sha256": "9cdf29dc1af0db97f9e1241afc4f601ce5cf71e45b8d5e746017429d19a8473f",
+      "bytes": 2037989,
+      "includedInGit": false
+    },
+    {
+      "file": "small_iphone_ios_ku_Cheese-pizza,-regular-crust,-frozen-baked_large-plate.png",
+      "sha256": "91be168d49333c1518e32f1fdaac9f07e407227fd8f2db5c66eacce449471a77",
+      "bytes": 357947,
+      "includedInGit": false
+    },
+    {
+      "file": "small_iphone_ios_ku_Cheese-pizza,-regular-crust,-frozen-baked_pizza.png",
+      "sha256": "2826b7369faeaace259d0d363e646e434c16a4ad6b60b3d675ed7365411ba9de",
+      "bytes": 347508,
+      "includedInGit": false
+    },
+    {
+      "file": "small_iphone_ios_ku_Cheese-pizza,-regular-crust,-frozen-baked_small-bowl.png",
+      "sha256": "d5f9fa49c6ff72de7a148541571e83283e26c231576b76975335e3e4288bbbb9",
+      "bytes": 358580,
+      "includedInGit": false
+    },
+    {
+      "file": "small_iphone_ios_ku_Cheese-pizza,-regular-crust,-frozen-baked_tablespoon.png",
+      "sha256": "c823418f02631349ad20de0bd30ccf87e30fe2c9590b15b30b7f0e1d5461e1b0",
+      "bytes": 348192,
+      "includedInGit": false
+    },
+    {
+      "file": "small_iphone_ios_ku_White-rice,-cooked_large-plate.png",
+      "sha256": "5fdf5f6aeeb1aac6006e573afc4960feff64b2e5450f907caf263a0438a85eae",
+      "bytes": 357393,
+      "includedInGit": false
+    },
+    {
+      "file": "small_iphone_ios_ku_White-rice,-cooked_small-bowl.png",
+      "sha256": "05ed962b292610e0ccd6aee06fcb8b1e48ec73aeb947c14b972e6616c83620cd",
+      "bytes": 358026,
+      "includedInGit": false
+    },
+    {
+      "file": "small_iphone_ios_ku_White-rice,-cooked_tablespoon.png",
+      "sha256": "03dea789a8f32669e592bc00dbcf0ef3fd06b478719a048136939f12290ffc77",
+      "bytes": 356159,
+      "includedInGit": true
+    },
+    {
+      "file": "small_iphone_ios_ku_Whole-milk_bottle.png",
+      "sha256": "0b527c03952a3cc466a329bb3afcfbc22d1d8e50abe97866ced72979e7110440",
+      "bytes": 323837,
+      "includedInGit": false
+    },
+    {
+      "file": "small_iphone_ios_ku_Whole-milk_glass.png",
+      "sha256": "0b527c03952a3cc466a329bb3afcfbc22d1d8e50abe97866ced72979e7110440",
+      "bytes": 323837,
+      "includedInGit": false
+    },
+    {
+      "file": "small_iphone_ios_ku_Whole-milk_liter.png",
+      "sha256": "c1e5b43798da414d243550d8a0a9e2f44557f353264b6f6a6547eac625f87cd6",
+      "bytes": 313861,
+      "includedInGit": false
+    },
+    {
+      "file": "small_iphone_ios_ku_usda_sr_168878_dark.png",
+      "sha256": "31030b970bca7847813ef07bb9baa4f8adaa9d2517a398b18170748c14e0acb1",
+      "bytes": 373064,
+      "includedInGit": false
+    },
+    {
+      "file": "small_iphone_ios_ku_usda_sr_170317_dark.png",
+      "sha256": "90e847f8827ba8a66e499ddd074e6b42cb9c83734cead1413176bad73b7bc69e",
+      "bytes": 349058,
+      "includedInGit": false
+    },
+    {
+      "file": "small_iphone_ios_ku_usda_sr_171265_dark.png",
+      "sha256": "5a3ff90dc4bf233b2bdc2b8e9f8f637f21ba7cec34ee89dcb59e4e3af69f0a5d",
+      "bytes": 326902,
+      "includedInGit": false
+    }
+  ]
+}

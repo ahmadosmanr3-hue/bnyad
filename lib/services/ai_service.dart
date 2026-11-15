@@ -163,6 +163,7 @@ class AiService {
     required String lang,
   }) async {
     final result = await api.generateAi('food', {
+      'recognitionVersion': 2,
       'image': _image(imageBytes),
       if (container != null && container.isNotEmpty) 'container': container,
       if (sideImageBytes != null) 'secondImage': _image(sideImageBytes),

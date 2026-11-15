@@ -115,6 +115,10 @@ class _MealPhotoReviewState extends State<_MealPhotoReview> {
                 style: Theme.of(sheetContext).textTheme.titleLarge,
               ),
               const SizedBox(height: 12),
+              Text(tr('Use an upright, focused top view in even light. The optional side view must show the same meal and container, not another portion.',
+                'استخدم صورة علوية واضحة ومعتدلة بإضاءة متوازنة. يجب أن تُظهر الصورة الجانبية الوجبة والوعاء نفسيهما، لا حصة أخرى.',
+                'وێنەیەکی ڕوون و ڕاست لە سەرەوە بە ڕووناکیی هاوسەنگ بگرە. وێنەی تەنیشت دەبێت هەمان ژەم و دەفر نیشان بدات، نەک پشکێکی تر.')),
+              const SizedBox(height: 12),
               Image.memory(
                 top,
                 height: 160,

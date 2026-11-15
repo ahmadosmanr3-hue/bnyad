@@ -1,5 +1,5 @@
 import 'package:nutrify/utils/food_search_match.dart';
-import 'package:nutrify/widgets/measured_portion_dialog.dart';
+import 'package:nutrify/widgets/portion_editor.dart';
 import 'package:nutrify/widgets/food_browse_tile.dart';
 import 'dart:async';
 import 'package:nutrify/widgets/food_favorite_button.dart';
@@ -17,7 +17,6 @@ import 'package:nutrify/theme/app_theme.dart';
 import 'package:nutrify/widgets/barcode_scan_flow.dart';
 import 'package:nutrify/utils/meat_bone_adjustment.dart';
 import 'package:nutrify/utils/micro_nutrient_calculator.dart';
-import 'package:nutrify/utils/responsive.dart';
 
 class FoodLogScreen extends StatefulWidget {
   const FoodLogScreen({super.key});
@@ -535,6 +534,8 @@ class _FoodSearchSheetState extends State<_FoodSearchSheet> {
   FoodPickGroup? _rootPrepGroup;
   bool _detailFromPrepStep = false;
   FoodItem? _selected;
+  bool _portionValid = true;
+  bool _savingPortion = false;
   FoodServingMode _amountMode = FoodServingMode.grams;
   double _amount = 100;
   int _pieceCount = 1;
@@ -557,21 +558,11 @@ class _FoodSearchSheetState extends State<_FoodSearchSheet> {
     });
   }
 
-  static String _weightFieldText(double w) {
-    try {
-      if (!w.isFinite) return '?';
-      if (w == w.roundToDouble()) return '${w.round()}';
-      return w.toStringAsFixed(1);
-    } catch (_) {
-      return '?';
-    }
-  }
-
   /// Web hot reload can leave doubles invalid; avoids `.round()` on undefined/NaN.
   double _sanitizeGrams(double g) {
     try {
       if (!g.isFinite || g <= 0) return 100.0;
-      return g.clamp(1.0, 100000.0);
+      return g;
     } catch (_) {
       return 100.0;
     }
@@ -610,37 +601,10 @@ class _FoodSearchSheetState extends State<_FoodSearchSheet> {
     }
   }
 
-  int _roundGramsDisplay(double g) {
-    try {
-      if (!g.isFinite) return 100;
-      return g.round().clamp(0, 1000000000);
-    } catch (_) {
-      return 100;
-    }
-  }
-
-  /// Piece: foods with a real piece/scoop/bowl weight, plus breads.
-  bool _canPieceFor(FoodItem f) {
-    if (f.usesDiscreteUnitsOnly) return true;
-    if (kurdishHasPieceMode(f)) return true;
-    if (f.category == 'Bread') return true;
-    if (f.category == 'FastFood' || f.category == 'Supplement') {
-      return defaultPieceGramsFor(f) != null;
-    }
-    return false;
-  }
-
-  /// Gram slider: disabled for foods that are defined only per piece/slice (bakery `bf*p` / `bf*s`).
-  bool _canGramsFor(FoodItem f) => !f.usesDiscreteUnitsOnly;
-
   /// Piece/slice-only rows always use piece mode in the sheet (never the gram slider).
   FoodServingMode _effectiveServingMode(FoodItem selected) {
-    if (selected.usesDiscreteUnitsOnly) return FoodServingMode.piece;
     return _amountMode;
   }
-
-  /// Bowl: only Kurdish dishes with a real bowl line (rice, qara, etc.). No generic 150g bowl for other foods.
-  bool _canBowlFor(FoodItem f) => kurdishHasBowlMode(f);
 
   @override
   Widget build(BuildContext context) {
@@ -1027,12 +991,9 @@ class _FoodSearchSheetState extends State<_FoodSearchSheet> {
         _rootPrepGroup = null;
       }
       _selected = resolved;
-      final usePiece =
-          resolved.usesDiscreteUnitsOnly ||
-          (prefersPieceDefaultServing(resolved) &&
-              kurdishHasPieceMode(resolved));
-      _amountMode = usePiece ? FoodServingMode.piece : FoodServingMode.grams;
-      _amount = defaultGramAmountFor(resolved).clamp(10, 1000);
+      _portionValid = true;
+      _amountMode = FoodServingMode.grams;
+      _amount = defaultGramAmountFor(resolved);
       _pieceCount = 1;
       _bowlCount = 1;
       _withBones = false;
@@ -1232,75 +1193,6 @@ class _FoodSearchSheetState extends State<_FoodSearchSheet> {
     return _sanitizeGrams(raw);
   }
 
-  Future<void> _editFoodAmount(FoodItem food) async {
-    final lang = widget.state.lang;
-    String input = '';
-    bool liters = false;
-    String? error;
-    final value = await showDialog<double>(
-      context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, update) => AlertDialog(
-          title: Text(widget.state.t.amount),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                autofocus: true,
-                onChanged: (v) => input = v,
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-                textDirection: TextDirection.ltr,
-                decoration: InputDecoration(
-                  labelText: food.isLiquid
-                      ? (liters ? 'L' : 'mL')
-                      : widget.state.t.grams,
-                  errorText: error,
-                ),
-              ),
-              if (food.isLiquid)
-                DropdownButton<bool>(
-                  value: liters,
-                  items: const [
-                    DropdownMenuItem(value: false, child: Text('mL')),
-                    DropdownMenuItem(value: true, child: Text('L')),
-                  ],
-                  onChanged: (v) => update(() => liters = v ?? false),
-                ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text(widget.state.t.cancel),
-            ),
-            TextButton(
-              onPressed: () {
-                final number = parseLocalizedDouble(input),
-                    base = number == null ? null : number * (liters ? 1000 : 1);
-                if (base == null || base <= 0 || base > 100000) {
-                  update(
-                    () => error = foodText(
-                      lang,
-                      'Enter a positive amount up to 100,000 g/mL.',
-                      'أدخل كمية موجبة لا تتجاوز 100000 غ/مل.',
-                      'بڕێکی ئەرێنی تا ١٠٠٠٠٠ گرام/مل بنووسە.',
-                    ),
-                  );
-                  return;
-                }
-                Navigator.pop(context, base);
-              },
-              child: Text(widget.state.t.save),
-            ),
-          ],
-        ),
-      ),
-    );
-    if (value != null && mounted) setState(() => _amount = value);
-  }
-
   Widget _buildDetail(dynamic t, bool isDark, AppState state) {
     final selected = _selected!;
     final mode = _effectiveServingMode(selected);
@@ -1438,100 +1330,16 @@ class _FoodSearchSheetState extends State<_FoodSearchSheet> {
                   ),
                 ],
               ),
-            if (food.portions.isNotEmpty)
-              Wrap(
-                spacing: 6,
-                runSpacing: 4,
-                children: food.portions
-                    .map(
-                      (p) => ActionChip(
-                        label: Text(
-                          (food.isLiquid && p['amount'] == 1000
-                                  ? '1 L'
-                                  : p['names']?[state.lang == 'ckb'
-                                            ? 'ku'
-                                            : state.lang] ??
-                                        p['names']?['en'] ??
-                                        '')
-                              .toString(),
-                        ),
-                        onPressed: () => setState(() {
-                          _amountMode = FoodServingMode.grams;
-                          _amount = (p['amount'] as num).toDouble();
-                        }),
-                      ),
-                    )
-                    .toList(),
-              ),
-            OutlinedButton.icon(
-              icon: const Icon(Icons.straighten),
-              label: Text(
-                foodText(
-                  state.lang,
-                  'Define measured portion',
-                  'تحديد حصة مقاسة',
-                  'دیاریکردنی پشکی پێوانەکراو',
-                ),
-              ),
-              onPressed: () async {
-                final value = await showMeasuredPortion(
-                  context,
-                  liquid: food.isLiquid,
-                  pizza: food.categoryId == 'pizza',
-                  lang: state.lang,
-                );
-                if (mounted && value != null) {
-                  setState(() {
-                    _amountMode = FoodServingMode.grams;
-                    _amount = value;
-                  });
-                }
-              },
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: _modeButton(
-                    food.isLiquid ? 'mL' : t.byGrams,
-                    mode == FoodServingMode.grams,
-                    _canGramsFor(selected)
-                        ? () => setState(
-                            () => _amountMode = FoodServingMode.grams,
-                          )
-                        : null,
-                    isDark,
-                    enabled: _canGramsFor(selected),
-                  ),
-                ),
-                const SizedBox(width: 6),
-                Expanded(
-                  child: _modeButton(
-                    t.byPiece,
-                    mode == FoodServingMode.piece,
-                    _canPieceFor(selected)
-                        ? () => setState(
-                            () => _amountMode = FoodServingMode.piece,
-                          )
-                        : null,
-                    isDark,
-                    enabled: _canPieceFor(selected),
-                  ),
-                ),
-                const SizedBox(width: 6),
-                Expanded(
-                  child: _modeButton(
-                    t.byBowl,
-                    mode == FoodServingMode.bowl,
-                    _canBowlFor(selected)
-                        ? () =>
-                              setState(() => _amountMode = FoodServingMode.bowl)
-                        : null,
-                    isDark,
-                    enabled: _canBowlFor(selected),
-                  ),
-                ),
-              ],
+            PortionEditor(
+              key: ValueKey('portion-editor-${food.canonicalKey}'),
+              food: food,
+              lang: state.lang,
+              amount: totalGrams,
+              onChanged: (value) => setState(() {
+                _portionValid = value != null;
+                _amountMode = FoodServingMode.grams;
+                if (value != null) _amount = value;
+              }),
             ),
             if (meatSupportsBoneChoice(food)) ...[
               const SizedBox(height: 14),
@@ -1582,326 +1390,93 @@ class _FoodSearchSheetState extends State<_FoodSearchSheet> {
             ],
             const SizedBox(height: 16),
 
-            if (mode == FoodServingMode.grams) ...[
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Flexible(
-                    child: Text(
-                      '${t.amount} (${food.isLiquid ? 'mL' : t.grams})',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 1,
-                        color: isDark
-                            ? const Color(0xFF64748B)
-                            : const Color(0xFF94A3B8),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Flexible(
-                    child: scaleDownText(
-                      '${_roundGramsDisplay(_amount)} ${food.isLiquid ? 'mL' : t.grams}',
-                      textAlign: TextAlign.end,
-                      style: const TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.w900,
-                        color: AppTheme.indigo,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Slider(
-                value: _amount.clamp(10, 1000),
-                min: 10,
-                max: 1000,
-                divisions: 99,
-                activeColor: AppTheme.indigo,
-                inactiveColor: isDark
-                    ? const Color(0xFF1E293B)
-                    : const Color(0xFFF1F5F9),
-                onChanged: (v) => setState(() => _amount = v),
-              ),
-              TextButton.icon(
-                onPressed: () => _editFoodAmount(food),
-                icon: const Icon(Icons.edit_outlined, size: 18),
-                label: Text(
-                  foodText(
-                    state.lang,
-                    'Enter amount',
-                    'إدخال الكمية',
-                    'نووسینی بڕ',
-                  ),
-                ),
-              ),
-            ] else if (mode == FoodServingMode.piece) ...[
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          t.perPiece,
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
-                            color: isDark
-                                ? const Color(0xFF64748B)
-                                : const Color(0xFF94A3B8),
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 14,
-                            vertical: 14,
-                          ),
-                          decoration: BoxDecoration(
-                            color: isDark
-                                ? const Color(0xFF1E293B)
-                                : const Color(0xFFF8FAFC),
-                            borderRadius: BorderRadius.circular(14),
-                            border: Border.all(
-                              color: isDark
-                                  ? const Color(0xFF334155)
-                                  : const Color(0xFFE2E8F0),
-                            ),
-                          ),
-                          child: Text(
-                            '${_weightFieldText(food.nutritionReferenceG)} ${food.isLiquid ? 'mL' : t.grams}',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w800,
-                              color: isDark
-                                  ? Colors.white
-                                  : const Color(0xFF1E293B),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Text(
-                        t.pieces,
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                          color: isDark
-                              ? const Color(0xFF64748B)
-                              : const Color(0xFF94A3B8),
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Row(
-                        children: [
-                          _counterBtn('-', () {
-                            if (_pieceCount > 1) setState(() => _pieceCount--);
-                          }, isDark),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 10),
-                            child: Text(
-                              '$_pieceCount',
-                              style: TextStyle(
-                                fontSize: 22,
-                                fontWeight: FontWeight.w900,
-                                color: AppTheme.indigo,
-                              ),
-                            ),
-                          ),
-                          _counterBtn(
-                            '+',
-                            () => setState(() => _pieceCount++),
-                            isDark,
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Center(
-                child: Text(
-                  '${t.total}: ${_roundGramsDisplay(totalGrams)} ${food.isLiquid ? 'mL' : t.grams}',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w800,
-                    color: AppTheme.indigo,
-                  ),
-                ),
-              ),
-            ] else ...[
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          t.perBowl,
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
-                            color: isDark
-                                ? const Color(0xFF64748B)
-                                : const Color(0xFF94A3B8),
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 14,
-                            vertical: 14,
-                          ),
-                          decoration: BoxDecoration(
-                            color: isDark
-                                ? const Color(0xFF1E293B)
-                                : const Color(0xFFF8FAFC),
-                            borderRadius: BorderRadius.circular(14),
-                            border: Border.all(
-                              color: isDark
-                                  ? const Color(0xFF334155)
-                                  : const Color(0xFFE2E8F0),
-                            ),
-                          ),
-                          child: Text(
-                            '${_weightFieldText(food.nutritionReferenceG)} ${food.isLiquid ? 'mL' : t.grams}',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w800,
-                              color: isDark
-                                  ? Colors.white
-                                  : const Color(0xFF1E293B),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Text(
-                        t.bowls,
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                          color: isDark
-                              ? const Color(0xFF64748B)
-                              : const Color(0xFF94A3B8),
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Row(
-                        children: [
-                          _counterBtn('-', () {
-                            if (_bowlCount > 1) setState(() => _bowlCount--);
-                          }, isDark),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 10),
-                            child: Text(
-                              '$_bowlCount',
-                              style: TextStyle(
-                                fontSize: 22,
-                                fontWeight: FontWeight.w900,
-                                color: AppTheme.indigo,
-                              ),
-                            ),
-                          ),
-                          _counterBtn(
-                            '+',
-                            () => setState(() => _bowlCount++),
-                            isDark,
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Center(
-                child: Text(
-                  '${t.total}: ${_roundGramsDisplay(totalGrams)} ${food.isLiquid ? 'mL' : t.grams}',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w800,
-                    color: AppTheme.indigo,
-                  ),
-                ),
-              ),
-            ],
-            const SizedBox(height: 16),
-            Row(
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
               children: [
-                _miniStat(t.calories, (food.calories * ratio).round(), isDark),
-                const SizedBox(width: 8),
-                _miniStat(t.protein, (food.protein * ratio).round(), isDark),
-                const SizedBox(width: 8),
-                _miniStat(t.carbs, (food.carbs * ratio).round(), isDark),
-                const SizedBox(width: 8),
-                _miniStat(t.fat, (food.fat * ratio).round(), isDark),
+                for (final item in [
+                  (t.calories, food.calories),
+                  (t.protein, food.protein),
+                  (t.carbs, food.carbs),
+                  (t.fat, food.fat),
+                ])
+                  SizedBox(
+                    width: 130,
+                    child: Card(
+                      child: Padding(
+                        padding: const EdgeInsets.all(12),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(item.$1),
+                            Text(
+                              _portionValid
+                                  ? (item.$2 * ratio).toStringAsFixed(1)
+                                  : '—',
+                              textDirection: TextDirection.ltr,
+                              style: const TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
               ],
             ),
             const SizedBox(height: 24),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () async {
-                  final boneMult = meatLogMacroMultiplier(
-                    food,
-                    withBones: _withBones,
-                  );
-                  final saved = await state.addLogEntry(
-                    LogEntry(
-                      id: DateTime.now().millisecondsSinceEpoch.toString(),
-                      foodId: food.id,
-                      name:
-                          food.getLocalizedName(state.lang) +
-                          meatBoneSuffixForLang(
-                            state.lang,
+                onPressed: !_portionValid || _savingPortion
+                    ? null
+                    : () async {
+                        if (_savingPortion || !_portionValid) return;
+                        setState(() => _savingPortion = true);
+                        final boneMult = meatLogMacroMultiplier(
+                          food,
+                          withBones: _withBones,
+                        );
+                        final saved = await state.addLogEntry(
+                          LogEntry(
+                            id: DateTime.now().millisecondsSinceEpoch
+                                .toString(),
+                            foodId: food.id,
+                            catalogCalculation: true,
                             withBones: _withBones,
+                            name:
+                                food.getLocalizedName(state.lang) +
+                                meatBoneSuffixForLang(
+                                  state.lang,
+                                  withBones: _withBones,
+                                ),
+                            amount: totalGrams,
+                            amountUnit: food.nutritionUnit,
+                            calories: food.calories * ratio,
+                            protein: food.protein * ratio,
+                            carbs: food.carbs * ratio,
+                            fat: food.fat * ratio,
+                            timestamp: DateTime.now().millisecondsSinceEpoch,
+                            mealId: widget.mealId,
+                            micros: scaleMicrosFromFood(
+                              food,
+                              totalGrams,
+                              boneMult: boneMult,
+                            ),
                           ),
-                      amount: totalGrams,
-                      amountUnit: food.nutritionUnit,
-                      calories: food.calories * ratio,
-                      protein: food.protein * ratio,
-                      carbs: food.carbs * ratio,
-                      fat: food.fat * ratio,
-                      timestamp: DateTime.now().millisecondsSinceEpoch,
-                      mealId: widget.mealId,
-                      micros: scaleMicrosFromFood(
-                        food,
-                        totalGrams,
-                        boneMult: boneMult,
-                      ),
-                    ),
-                  );
-                  if (!mounted) return;
-                  if (!saved) {
-                    ScaffoldMessenger.of(
-                      context,
-                    ).showSnackBar(SnackBar(content: Text(t.saveFailed)));
-                    return;
-                  }
-                  Navigator.pop(context);
-                },
+                        );
+                        if (!mounted) return;
+                        setState(() => _savingPortion = false);
+                        if (!saved) {
+                          ScaffoldMessenger.of(
+                            context,
+                          ).showSnackBar(SnackBar(content: Text(t.saveFailed)));
+                          return;
+                        }
+                        Navigator.pop(context);
+                      },
                 child: Text(t.addFood),
               ),
             ),
@@ -1961,70 +1536,6 @@ class _FoodSearchSheetState extends State<_FoodSearchSheet> {
               ),
             ),
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget _counterBtn(String label, VoidCallback onTap, bool isDark) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 36,
-        height: 36,
-        decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Center(
-          child: Text(
-            label,
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w900,
-              color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF475569),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _miniStat(String label, int value, bool isDark) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 10),
-        decoration: BoxDecoration(
-          color: isDark
-              ? const Color(0xFF1E293B).withValues(alpha: 0.5)
-              : const Color(0xFFF8FAFC),
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Column(
-          children: [
-            Text(
-              label,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 9,
-                fontWeight: FontWeight.w700,
-                color: isDark
-                    ? const Color(0xFF64748B)
-                    : const Color(0xFF94A3B8),
-              ),
-            ),
-            const SizedBox(height: 4),
-            scaleDownText(
-              '$value',
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w900,
-                color: isDark ? Colors.white : const Color(0xFF1E293B),
-              ),
-            ),
-          ],
         ),
       ),
     );

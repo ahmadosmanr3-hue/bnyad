@@ -13,6 +13,12 @@ import 'package:nutrify/utils/ai_nutrition.dart';
 import 'package:nutrify/models/meal.dart';
 
 void main() {
+  test('uncertain identity preserves the explicitly weighed food amount', () {
+    expect(initialUnknownScanGrams(275), 275);
+    expect(initialUnknownScanGrams(null), 100);
+    expect(initialUnknownScanGrams(double.nan), 100);
+  });
+
   TestWidgetsFlutterBinding.ensureInitialized();
   setUp(() {
     SharedPreferences.setMockInitialValues({});
@@ -105,7 +111,10 @@ void main() {
       expect(r.headers['Authorization'], 'Bearer fixture-token');
       final body = jsonDecode(r.body) as Map<String, dynamic>;
       expect(body['operation'], 'food');
-      expect((body['input'] as Map).keys.toSet(), {'image'});
+      expect((body['input'] as Map).keys.toSet(), {
+        'recognitionVersion',
+        'image',
+      });
       expect(r.body.contains('API_KEY'), false);
       expect(r.body.contains('dailyCalories'), false);
     },

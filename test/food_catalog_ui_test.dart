@@ -123,25 +123,14 @@ void main() {
           'goldens/catalog_detail_${lang}_${width.toInt()}_${dark ? 'dark' : 'light'}.png',
         ),
       );
-      final enterLabel = {
-        'en': 'Enter amount',
-        'ar': 'إدخال الكمية',
-        'ku': 'نووسینی بڕ',
-      }[lang]!;
-      await tester.ensureVisible(find.text(enterLabel));
-      await tester.tap(find.text(enterLabel));
-      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.byKey(const ValueKey('portion-base')));
+      await tester.tap(find.byKey(const ValueKey('portion-base')));
+      await tester.ensureVisible(find.byKey(const ValueKey('portion-weight')));
       await tester.enterText(
-        find.byType(TextField).last,
-        lang == 'en' ? '0.25' : '٠٫٢٥',
+        find.byKey(const ValueKey('portion-weight')),
+        lang == 'en' ? '250' : '٢٥٠',
       );
-      await tester.tap(find.byType(DropdownButton<bool>));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('L').last);
-      await tester.pumpAndSettle();
-      await tester.tap(find.text(state.t.save).last);
-      await tester.pumpAndSettle();
-      expect(find.text('250 mL'), findsWidgets);
       await tester.ensureVisible(find.byKey(key));
       await tester.tap(find.byKey(key));
       await tester.pumpAndSettle();

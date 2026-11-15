@@ -34,7 +34,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
   List<double>? _componentGrams;
   String? _error;
 
-  void _initScanPortions(Map<String, dynamic> scan) {
+  void _initScanPortions(Map<String, dynamic> scan, {double? weighedGrams}) {
     final components = parseAiFoodComponents(scan);
     if (components.isNotEmpty) {
       _componentGrams = components
@@ -43,7 +43,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
       _scanGrams = _componentGrams!.fold(0.0, (a, b) => a + b);
     } else {
       _componentGrams = null;
-      _scanGrams = 100;
+      _scanGrams = initialUnknownScanGrams(weighedGrams);
     }
   }
 
@@ -136,6 +136,23 @@ class _ScannerScreenState extends State<ScannerScreen> {
         ? <double>[_scanGrams]
         : List<double>.from(_componentGrams!);
     final target = index ?? 0;
+    if (amounts[target] > 2000 ||
+        amounts[target] <= 0 ||
+        !amounts[target].isFinite) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            tr(
+              'For corrections above 2000 g, use Food Log and enter separate measured portions.',
+              'للتصحيحات فوق 2000 غ، استخدم سجل الطعام وأدخل حصصًا مقاسة منفصلة.',
+              'بۆ ڕاستکردنەوەی سەرووی ٢٠٠٠ گرام، تۆماری خواردن بەکاربهێنە و پشکە پێوانەکراوەکان جیا بنووسە.',
+            ),
+          ),
+        ),
+      );
+      return;
+    }
+
     if (index == null) {
       components.clear();
       components.add(catalogScanComponent(chosen, amounts.first));
@@ -162,6 +179,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
       _scannedFood = {
         ..._scannedFood!,
         'components': components,
+        'recognition_unresolved': false,
         'names': components.length == 1
             ? components.first['names']
             : {
@@ -283,7 +301,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
           _scannedFood = null;
         } else {
           _scannedFood = result;
-          _initScanPortions(result);
+          _initScanPortions(result, weighedGrams: container?['foodGrams']);
           _error = null;
         }
         _isAnalyzing = false;
@@ -593,6 +611,47 @@ class _ScannerScreenState extends State<ScannerScreen> {
                   legacyKey: 'name',
                   lang: 'en',
                 );
+                if (scan['recognition_unresolved'] == true) {
+                  final identification = Map<String, dynamic>.from(
+                    scan['identification'] as Map? ?? {},
+                  );
+                  return Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Text(
+                            dishName,
+                            style: Theme.of(context).textTheme.titleLarge,
+                          ),
+                          Text(dishDesc),
+                          for (final candidate
+                              in (identification['candidates'] as List? ?? []))
+                            ListTile(
+                              leading: const Icon(Icons.help_outline),
+                              title: Text(
+                                (candidate[state.lang] ?? candidate['en'])
+                                    .toString(),
+                              ),
+                            ),
+                          Text(
+                            state.lang == 'ar'
+                                ? 'الهوية والكمية غير مؤكدتين. اختر الطعام ووزنه قبل الحفظ؛ لم تُحسب قيم غذائية تخمينية.'
+                                : state.lang == 'ku'
+                                ? 'ناسنامە و بڕەکە دڵنیانین. پێش تۆمارکردن خواردن و کێشەکەی هەڵبژێرە؛ بەهای خۆراکی دانەنراوە.'
+                                : 'Identity and portion need review. Choose the food and its weight before logging. No nutrition was invented.',
+                          ),
+                          OutlinedButton.icon(
+                            onPressed: () => _correctComponent(null),
+                            icon: const Icon(Icons.search),
+                            label: Text(state.t.searchFood),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }
                 final ratio = _scanGrams / 100.0;
                 final cal100 = (scan['calories'] as num?)?.toDouble() ?? 0;
                 final pro100 = (scan['protein'] as num?)?.toDouble() ?? 0;
@@ -806,6 +865,17 @@ class _ScannerScreenState extends State<ScannerScreen> {
                               LogEntry(
                                 id: DateTime.now().millisecondsSinceEpoch
                                     .toString(),
+                                catalogComponents: [
+                                  for (var i = 0; i < components.length; i++)
+                                    {
+                                      'id':
+                                          components[i]['foodId'] ??
+                                          components[i]['id'],
+                                      'amount':
+                                          _componentGrams?[i] ??
+                                          components[i]['grams'],
+                                    },
+                                ],
                                 foodId:
                                     'scanned-${stableName.isNotEmpty ? stableName : dishName}',
                                 name: dishName.isNotEmpty
