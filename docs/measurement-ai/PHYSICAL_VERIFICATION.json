@@ -1,0 +1,35 @@
+{
+  "date": "2026-11-16",
+  "device": "iPhone 15",
+  "os": "26.6.2",
+  "bundleId": "com.nutrify.bnyad.dev",
+  "sourceTip": "0c2e8b304adab659b1ce468dd2f494f2981803fd",
+  "nativeBuildSha256": "da69457389227583f5172447a1507fb46c121a6232564c6aee5f99599d5b985b",
+  "buildMode": "Profile development-signed offline",
+  "healthKitEntitlementVerified": true,
+  "physicalAndroid": "unavailable",
+  "codexVerified": [
+    "source and remote commits",
+    "signed development bundle identity and HealthKit entitlement",
+    "installation and launch",
+    "published app remains installed"
+  ],
+  "ownerConfirmed": [
+    "rice spoons",
+    "biryani bowls and plates",
+    "pizza and drink quantities",
+    "controls clear",
+    "physical camera and photo-library workflows",
+    "second capture/retake/remove/cancel",
+    "restart preserves language and step goal",
+    "real steps and walking estimate load",
+    "no crash"
+  ],
+  "physicalVisualScreenshotsCommitted": false,
+  "liveGeminiHttpRequests": 0,
+  "existingPrivateLedgerCount": 21,
+  "approvedAdditionalHttpAllowance": 12,
+  "approvedMaximumCostUsd": 0.1,
+  "evaluationState": "prepare only; no paired images; not armed",
+  "releaseStatus": "HOLD"
+}
