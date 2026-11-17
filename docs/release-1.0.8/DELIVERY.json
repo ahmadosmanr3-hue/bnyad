@@ -1,0 +1,51 @@
+{
+  "recorded_at": "2026-11-17T05:05:25.102582+00:00",
+  "version": "1.0.8",
+  "build": 24,
+  "branch": "codex/bnyad-food-system-phase-2",
+  "main_build_source_commit": "3d81ba888a4eed92857f0b60297378959577a799",
+  "backend_deployed_runtime_commit": "673845b4c71d5072bc5d87a639071a6080a147c5",
+  "backend_handoff_commit": "ca9c489d9bf69fa1b3665fb2ec9ff7dfc2007720",
+  "vercel": {
+    "deployment": "dpl_DTKNnj3i1oCnJx2JTpvVJJbjSfyt",
+    "state": "READY",
+    "domain": "https://nutrify-api-lovat.vercel.app",
+    "uploaded_source_files_verified_by_sha1": 180,
+    "source_mismatches": 0,
+    "error_fatal_log_groups_returned_last_30_minutes": 0
+  },
+  "google_play": {
+    "application_id": "com.bnyad.app",
+    "release": 10,
+    "track": "Production",
+    "status": "Changes in review",
+    "rollout_percent_after_approval": 100,
+    "managed_publishing": false,
+    "url": "https://play.google.com/console/u/0/developers/5362702642120308085/app/4973400403852746672/publishing"
+  },
+  "apple": {
+    "bundle_id": "com.nutrify.bnyad",
+    "status": "Waiting for Review",
+    "build_id": "075805cb-350d-4e1d-9fa5-29a21baa8ed0",
+    "submission_id": "036ec644-7914-4292-afc8-874726b0b90e",
+    "submitted_local": "2026-11-17 07:59 Asia/Baghdad",
+    "release_after_approval": "automatic, all users",
+    "url": "https://appstoreconnect.apple.com/apps/6781387722/distribution/reviewsubmissions/details/036ec644-7914-4292-afc8-874726b0b90e"
+  },
+  "public_availability_confirmed": false,
+  "new_google_ai_requests": 0,
+  "database_migrations": 0,
+  "artifacts": {
+    "android_aab": {
+      "file": "app-release.aab",
+      "bytes": 75098026,
+      "sha256": "4830696a12e756f47e4dbcb554e144b6d6f346d615fc21431cf6f9122a8b9ada"
+    },
+    "local_exported_ios_ipa": {
+      "file": "BNYAD.ipa",
+      "bytes": 30521530,
+      "sha256": "ea42cf32ad156ec35ad3857542081dc59a88f5bc08fe1857a11fe79e6868a719"
+    }
+  },
+  "note": "iOS was uploaded by Xcode from the verified archive; the IPA digest identifies the retained local export, not a claim about Apple-repackaged bytes."
+}

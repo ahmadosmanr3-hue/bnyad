@@ -1,0 +1,36 @@
+[
+  {
+    "path": "/api/up",
+    "method": "GET",
+    "status": 200
+  },
+  {
+    "path": "/api/catalog",
+    "method": "GET",
+    "status": 200,
+    "foods": 942,
+    "identicalFoodRecords": true,
+    "identicalRevision": true,
+    "sha256": "577cda35b9189834055fab46b21088c4bb5b4d90dabbc05b990b8d042498708f"
+  },
+  {
+    "path": "/api/auth/me",
+    "method": "GET",
+    "status": 401
+  },
+  {
+    "path": "/api/ai/consent",
+    "method": "GET",
+    "status": 401
+  },
+  {
+    "path": "/api/ai/generate",
+    "method": "POST",
+    "status": 401
+  },
+  {
+    "path": "/api/local-development/readiness",
+    "method": "GET",
+    "status": 404
+  }
+]
