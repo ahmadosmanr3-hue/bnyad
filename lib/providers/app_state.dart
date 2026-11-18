@@ -1393,6 +1393,31 @@ class AppState extends ChangeNotifier {
     return saved;
   }
 
+  Future<bool> addReviewedScan(Map<String, dynamic> body) async {
+    if (!_isLoggedIn) return false;
+    final owner = _apiService.userId;
+    final saved = await _apiService.addReviewedScan(body);
+    if (!_apiService.hasToken || _apiService.userId != owner) return false;
+    _saveFailed = saved == null;
+    if (saved == null) {
+      if (_apiService.scanSaveError == 'catalog_changed') {
+        await catalog.load(refresh: true);
+      }
+      notifyListeners();
+      return false;
+    }
+    // Retry receipts return the original rows. Never append them twice locally.
+    final ids = saved.map((e) => e.id).toSet();
+    _dailyLog = [..._dailyLog.where((e) => !ids.contains(e.id)), ...saved];
+    for (final entry in saved) {
+      unawaited(recentFoods.record(canonicalFavoriteId(entry.foodId)));
+    }
+    await _apiService.cacheCurrentData(logs: _dailyLog);
+    _persistDailyNutritionSnapshot();
+    notifyListeners();
+    return true;
+  }
+
   Future<bool> saveMealPlan(MealPlanData plan) async {
     if (_isMockUser) {
       _currentMealPlan = plan;

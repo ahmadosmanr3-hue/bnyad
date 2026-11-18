@@ -1,4 +1,7 @@
 import 'dart:convert';
+import 'package:flutter/services.dart';
+import 'package:nutrify/models/food_item.dart';
+import 'package:nutrify/models/scan_meal_draft.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -74,6 +77,12 @@ class DemoBackend {
     final body = request.body.isEmpty
         ? <String, dynamic>{}
         : jsonDecode(request.body) as Map<String, dynamic>;
+    if (path == '/catalog' && method == 'GET') {
+      final snapshot =
+          jsonDecode(await rootBundle.loadString('assets/catalog/catalog.json'))
+              as Map<String, dynamic>;
+      return _reply({...snapshot, 'revision': snapshot['revision'] ?? 1});
+    }
     if (path == '/auth/check-phone') {
       return _reply({'registered': !body['phone'].toString().endsWith('11')});
     }
@@ -170,6 +179,63 @@ class DemoBackend {
         (data['logs'] as List).add(row);
         await persist();
         return _reply({'data': row}, 201);
+      case ('POST', '/logs/scan'):
+        // Fictional preview only. Production always uses the authenticated
+        // server transaction; never send fixture data through a real transport.
+        final snapshot =
+            jsonDecode(
+                  await rootBundle.loadString('assets/catalog/catalog.json'),
+                )
+                as Map;
+        final foods = {
+          for (final raw in snapshot['foods'] as List)
+            raw['id'].toString(): FoodItem.fromJson(
+              Map<String, dynamic>.from(raw),
+            ),
+        };
+        final draft = ScanMealDraft(
+          title: body['title']?.toString() ?? '',
+          mode: body['mode']?.toString() ?? '',
+        );
+        for (final row in body['items'] as List? ?? []) {
+          final f = foods[row['id']];
+          if (f == null || f.nutritionUnit != row['unit']) {
+            return _reply({'message': 'Invalid fixture food'}, 422);
+          }
+          draft.items.add(
+            ScanFoodPortion(f, (row['amount'] as num?)?.toDouble()),
+          );
+        }
+        if (body['confirmed'] != true || !draft.valid) {
+          return _reply({'message': 'Review required'}, 422);
+        }
+        final receipts = Map<String, dynamic>.from(
+          data['scan_receipts'] as Map? ?? {},
+        );
+        final key = body['requestId'].toString();
+        if (receipts[key] != null) return _reply({'data': receipts[key]}, 201);
+        final saved = <Map<String, dynamic>>[];
+        for (final p in draft.items) {
+          final row = {
+            'id': 'demo-${data['nextId']}',
+            'external_food_id': p.food.id,
+            'name': draft.mode == 'dish'
+                ? draft.title
+                : p.food.getLocalizedName(body['lang'].toString()),
+            'amount': p.amount,
+            'amount_unit': p.food.nutritionUnit,
+            ...p.totals,
+            'logged_at': body['logged_at'],
+            'consumed_at': body['consumed_at'],
+          };
+          data['nextId'] = (data['nextId'] as int) + 1;
+          saved.add(row);
+        }
+        (data['logs'] as List).addAll(saved);
+        receipts[key] = saved;
+        data['scan_receipts'] = receipts;
+        await persist();
+        return _reply({'data': saved, 'totals': draft.totals}, 201);
       case ('GET', '/water'):
         return _reply({
           'data': {

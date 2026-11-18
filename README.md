@@ -22,7 +22,7 @@ Build-time configuration uses `API_BASE_URL`, `RC_ANDROID_PUBLIC_KEY` and `RC_IO
 
 ## Backend ownership
 
-`vercel-api/` mirrors the Next.js/Prisma/PostgreSQL backend. The authoritative deployment repository is [bnyad-backend](https://github.com/ahmadosmanr3-hue/bnyad-backend), using `vercel-api` as the deployment root. The documented API/mobile default is `https://nutrify-api-lovat.vercel.app/api`.
+`vercel-api/` is a legacy backend snapshot and is not the release source. Do not deploy it; use the current dedicated backend repository. The authoritative deployment repository is [bnyad-backend](https://github.com/ahmadosmanr3-hue/bnyad-backend), using `vercel-api` as the deployment root. The documented API/mobile default is `https://nutrify-api-lovat.vercel.app/api`.
 
 `bnyad-api/` is an optional full Laravel deployment. `laravel-backend/` is a reference layer. Production was not migrated to Laravel.
 

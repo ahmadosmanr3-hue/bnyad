@@ -1,8 +1,8 @@
-import 'package:nutrify/models/food_item.dart';
-import 'package:nutrify/utils/catalog_scan_correction.dart';
+import 'package:nutrify/models/scan_meal_draft.dart';
+import 'package:nutrify/screens/scan_result_editor.dart';
+import 'package:nutrify/l10n/scan_result_strings.dart';
 import 'package:nutrify/widgets/meal_photo_review.dart';
 import 'dart:typed_data';
-import 'package:nutrify/utils/ai_nutrition.dart';
 import 'package:nutrify/models/meal.dart';
 import 'package:nutrify/widgets/ai_consent.dart';
 import 'package:nutrify/utils/ai_strings.dart';
@@ -28,168 +28,55 @@ class _ScannerScreenState extends State<ScannerScreen> {
   late final ImagePicker _picker = widget.picker ?? ImagePicker();
   bool _isAnalyzing = false;
   Map<String, dynamic>? _scannedFood;
-  double _scanGrams = 100;
-
-  /// Per-ingredient grams when AI returns composite [components].
-  List<double>? _componentGrams;
+  ScanMealDraft? _scanDraft;
+  int? _scanOwner;
+  double? _weighedGrams;
   String? _error;
 
-  void _initScanPortions(Map<String, dynamic> scan, {double? weighedGrams}) {
-    final components = parseAiFoodComponents(scan);
-    if (components.isNotEmpty) {
-      _componentGrams = components
-          .map((c) => (c['grams'] as num?)?.toDouble() ?? 50)
-          .toList();
-      _scanGrams = _componentGrams!.fold(0.0, (a, b) => a + b);
-    } else {
-      _componentGrams = null;
-      _scanGrams = initialUnknownScanGrams(weighedGrams);
-    }
-  }
-
-  ({int cal, int pro, int carb, int fat}) _scaledComponentMacros(
-    Map<String, dynamic> component,
-    double userGrams,
-  ) {
-    final origG = (component['grams'] as num?)?.toDouble() ?? 0;
-    final baseG = origG > 0 ? origG : 100;
-    final ratio = userGrams / baseG;
-    return (
-      cal: (((component['calories'] as num?)?.toDouble() ?? 0) * ratio).round(),
-      pro: (((component['protein'] as num?)?.toDouble() ?? 0) * ratio).round(),
-      carb: (((component['carbs'] as num?)?.toDouble() ?? 0) * ratio).round(),
-      fat: (((component['fat'] as num?)?.toDouble() ?? 0) * ratio).round(),
-    );
-  }
-
-  Future<void> _correctComponent(int? index) async {
+  Future<void> _reviewScan() async {
     final state = context.read<AppState>();
     final owner = state.sessionAccountId;
-    String query = '';
-    String tr(String en, String ar, String ku) => state.lang == 'ar'
-        ? ar
-        : state.lang == 'ku'
-        ? ku
-        : en;
-    final chosen = await showModalBottomSheet<FoodItem>(
-      context: context,
-      isScrollControlled: true,
-      builder: (context) => StatefulBuilder(
-        builder: (context, update) {
-          final seen = <String>{};
-          final foods = state.catalog.foods.values
-              .where(
-                (food) =>
-                    !food.isLiquid &&
-                    !state.catalog.disabled.contains(food.id) &&
-                    !state.catalog.disabled.contains(food.canonicalKey) &&
-                    food.matchesSearchQuery(query) &&
-                    seen.add(food.canonicalKey),
-              )
-              .toList();
-          return SafeArea(
-            child: SizedBox(
-              height: MediaQuery.sizeOf(context).height * .75,
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  children: [
-                    Text(
-                      tr(
-                        'Choose the correct catalog food',
-                        'اختر الطعام الصحيح من القائمة',
-                        'خواردنی دروست لە لیستەکە هەڵبژێرە',
-                      ),
-                    ),
-                    TextField(
-                      onChanged: (value) => update(() => query = value),
-                      decoration: InputDecoration(hintText: state.t.searchFood),
-                    ),
-                    Expanded(
-                      child: ListView.builder(
-                        itemCount: foods.length,
-                        itemBuilder: (context, i) => ListTile(
-                          title: Text(foods[i].getLocalizedName(state.lang)),
-                          subtitle: Text(
-                            '${foods[i].calories} ${state.t.kcal} / ${foods[i].nutritionReferenceG} g',
-                          ),
-                          onTap: () => Navigator.pop(context, foods[i]),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          );
-        },
-      ),
+    final scan = _scannedFood;
+    if (scan == null || owner == null || owner != _scanOwner) return;
+    await state.catalog.load();
+    if (!mounted || owner != state.sessionAccountId) return;
+    final draft = _scanDraft ??= ScanMealDraft.fromScan(
+      scan,
+      state.catalog.foods,
+      state.catalog.disabled,
+      state.lang,
     );
-    if (!mounted ||
-        chosen == null ||
-        state.sessionAccountId != owner ||
-        _scannedFood == null) {
-      return;
-    }
-    final components = parseAiFoodComponents(_scannedFood!);
-    final amounts = _componentGrams == null
-        ? <double>[_scanGrams]
-        : List<double>.from(_componentGrams!);
-    final target = index ?? 0;
-    if (amounts[target] > 2000 ||
-        amounts[target] <= 0 ||
-        !amounts[target].isFinite) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            tr(
-              'For corrections above 2000 g, use Food Log and enter separate measured portions.',
-              'للتصحيحات فوق 2000 غ، استخدم سجل الطعام وأدخل حصصًا مقاسة منفصلة.',
-              'بۆ ڕاستکردنەوەی سەرووی ٢٠٠٠ گرام، تۆماری خواردن بەکاربهێنە و پشکە پێوانەکراوەکان جیا بنووسە.',
-            ),
+    draft.weighedGrams = _weighedGrams;
+    final saved = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        builder: (_) => Consumer<AppState>(
+          builder: (_, current, _) => ScanResultEditor(
+            draft: draft,
+            foods: current.catalog.foods,
+            disabled: current.catalog.disabled,
+            lang: state.lang,
+            simulated: scan['simulated'] == true,
+            onSave: (d) async {
+              if (state.sessionAccountId != owner ||
+                  state.catalog.revision == null) {
+                return false;
+              }
+              return state.addReviewedScan(
+                d.toRequest(state.catalog.revision!, state.lang),
+              );
+            },
           ),
         ),
-      );
-      return;
+      ),
+    );
+    if (!mounted) return;
+    if (saved == true) {
+      setState(() {
+        _scannedFood = null;
+        _scanDraft = null;
+      });
+      state.setActiveTab(MainShellTab.foodLog);
     }
-
-    if (index == null) {
-      components.clear();
-      components.add(catalogScanComponent(chosen, amounts.first));
-    } else {
-      components[target] = catalogScanComponent(chosen, amounts[target]);
-    }
-    // A correction can identify two detections as the same food: merge their
-    // measured masses and recompute once from the selected catalog reference.
-    for (var i = components.length - 1; i >= 0; i--) {
-      if (i != target &&
-          (components[i]['id'] == chosen.id ||
-              components[i]['foodId'] == chosen.id)) {
-        final total =
-            (components[target]['grams'] as num).toDouble() + amounts[i];
-        if (total <= 2000) {
-          components[target] = catalogScanComponent(chosen, total);
-          components.removeAt(i);
-          amounts.removeAt(i);
-          if (i < target) break;
-        }
-      }
-    }
-    setState(() {
-      _scannedFood = {
-        ..._scannedFood!,
-        'components': components,
-        'recognition_unresolved': false,
-        'names': components.length == 1
-            ? components.first['names']
-            : {
-                'en': 'Reviewed meal',
-                'ar': 'وجبة بعد المراجعة',
-                'ku': 'ژەمی پێداچوونەوەکراو',
-              },
-      };
-      _initScanPortions(_scannedFood!);
-    });
   }
 
   // Fridge scanner state
@@ -220,6 +107,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
       setState(() {
         _isAnalyzing = true;
         _scannedFood = null;
+        _scanDraft = null;
         _error = null;
       });
 
@@ -294,18 +182,22 @@ class _ScannerScreenState extends State<ScannerScreen> {
         dailyFat: df,
         lang: state.lang,
       );
-      if (!mounted) return;
+      if (!mounted || owner != state.sessionAccountId) return;
       setState(() {
         if (result == null) {
           _error = AiStrings.get(state.lang, state.aiErrorCode);
           _scannedFood = null;
+          _scanDraft = null;
         } else {
           _scannedFood = result;
-          _initScanPortions(result, weighedGrams: container?['foodGrams']);
+          _scanOwner = owner;
+          _weighedGrams = container?['foodGrams'];
+          _scanDraft = null;
           _error = null;
         }
         _isAnalyzing = false;
       });
+      if (result != null) await _reviewScan();
     } catch (e) {
       if (!mounted) return;
       final errStr = e.toString();
@@ -588,330 +480,12 @@ class _ScannerScreenState extends State<ScannerScreen> {
               ),
             ),
 
-          // Results
           if (_scannedFood != null)
-            Builder(
-              builder: (context) {
-                final scan = Map<String, dynamic>.from(_scannedFood!);
-                final dishName = trilingualString(
-                  scan,
-                  mapKey: 'names',
-                  legacyKey: 'name',
-                  lang: state.lang,
-                );
-                final dishDesc = trilingualString(
-                  scan,
-                  mapKey: 'descriptions',
-                  legacyKey: 'description',
-                  lang: state.lang,
-                );
-                final stableName = trilingualString(
-                  scan,
-                  mapKey: 'names',
-                  legacyKey: 'name',
-                  lang: 'en',
-                );
-                if (scan['recognition_unresolved'] == true) {
-                  final identification = Map<String, dynamic>.from(
-                    scan['identification'] as Map? ?? {},
-                  );
-                  return Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          Text(
-                            dishName,
-                            style: Theme.of(context).textTheme.titleLarge,
-                          ),
-                          Text(dishDesc),
-                          for (final candidate
-                              in (identification['candidates'] as List? ?? []))
-                            ListTile(
-                              leading: const Icon(Icons.help_outline),
-                              title: Text(
-                                (candidate[state.lang] ?? candidate['en'])
-                                    .toString(),
-                              ),
-                            ),
-                          Text(
-                            state.lang == 'ar'
-                                ? 'الهوية والكمية غير مؤكدتين. اختر الطعام ووزنه قبل الحفظ؛ لم تُحسب قيم غذائية تخمينية.'
-                                : state.lang == 'ku'
-                                ? 'ناسنامە و بڕەکە دڵنیانین. پێش تۆمارکردن خواردن و کێشەکەی هەڵبژێرە؛ بەهای خۆراکی دانەنراوە.'
-                                : 'Identity and portion need review. Choose the food and its weight before logging. No nutrition was invented.',
-                          ),
-                          OutlinedButton.icon(
-                            onPressed: () => _correctComponent(null),
-                            icon: const Icon(Icons.search),
-                            label: Text(state.t.searchFood),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                }
-                final ratio = _scanGrams / 100.0;
-                final cal100 = (scan['calories'] as num?)?.toDouble() ?? 0;
-                final pro100 = (scan['protein'] as num?)?.toDouble() ?? 0;
-                final carb100 = (scan['carbs'] as num?)?.toDouble() ?? 0;
-                final fat100 = (scan['fat'] as num?)?.toDouble() ?? 0;
-                final components = parseAiFoodComponents(scan);
-                final hasComponents =
-                    components.isNotEmpty && _componentGrams != null;
-                late final int calScaled;
-                late final int proScaled;
-                late final int carbScaled;
-                late final int fatScaled;
-                late final double displayGrams;
-                if (hasComponents) {
-                  var cal = 0, pro = 0, carb = 0, fat = 0;
-                  for (var i = 0; i < components.length; i++) {
-                    final m = _scaledComponentMacros(
-                      components[i],
-                      _componentGrams![i],
-                    );
-                    cal += m.cal;
-                    pro += m.pro;
-                    carb += m.carb;
-                    fat += m.fat;
-                  }
-                  calScaled = cal;
-                  proScaled = pro;
-                  carbScaled = carb;
-                  fatScaled = fat;
-                  displayGrams = _componentGrams!.fold(0.0, (a, b) => a + b);
-                } else {
-                  calScaled = (cal100 * ratio).round();
-                  proScaled = (pro100 * ratio).round();
-                  carbScaled = (carb100 * ratio).round();
-                  fatScaled = (fat100 * ratio).round();
-                  displayGrams = _scanGrams;
-                }
-                return Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: isDark
-                        ? const Color(0xFF0F172A).withValues(alpha: 0.6)
-                        : Colors.white,
-                    borderRadius: BorderRadius.circular(32),
-                    border: Border.all(
-                      color: isDark
-                          ? const Color(0xFF1E293B).withValues(alpha: 0.5)
-                          : const Color(0xFFF1F5F9),
-                    ),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        dishName,
-                        maxLines: 3,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w800,
-                          height: 1.25,
-                          color: isDark
-                              ? Colors.white
-                              : const Color(0xFF1E293B),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 5,
-                        ),
-                        decoration: BoxDecoration(
-                          color: isDark
-                              ? AppTheme.indigo.withValues(alpha: 0.2)
-                              : AppTheme.lightSurfaceTint,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(
-                          t.aiAnalyzed,
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
-                            color: isDark
-                                ? AppTheme.indigoLight
-                                : AppTheme.indigo,
-                          ),
-                        ),
-                      ),
-                      if (dishDesc.isNotEmpty) ...[
-                        const SizedBox(height: 12),
-                        Text(
-                          dishDesc,
-                          style: TextStyle(
-                            fontSize: 13,
-                            height: 1.5,
-                            color: isDark
-                                ? const Color(0xFF94A3B8)
-                                : const Color(0xFF64748B),
-                          ),
-                        ),
-                      ],
-                      const SizedBox(height: 16),
-                      Text(
-                        t.totalMacros,
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: 1.2,
-                          color: isDark
-                              ? const Color(0xFF64748B)
-                              : const Color(0xFF94A3B8),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      _buildMacroGrid(
-                        t: t,
-                        isDark: isDark,
-                        calories: calScaled,
-                        protein: proScaled,
-                        carbs: carbScaled,
-                        fat: fatScaled,
-                      ),
-                      if (hasComponents) ...[
-                        const SizedBox(height: 18),
-                        Text(
-                          t.ingredientBreakdown,
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w900,
-                            letterSpacing: 1.2,
-                            color: isDark
-                                ? const Color(0xFF64748B)
-                                : const Color(0xFF94A3B8),
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        ...List.generate(components.length, (i) {
-                          return _buildComponentRow(
-                            components[i],
-                            state.lang,
-                            _componentGrams![i],
-                            isDark,
-                            t,
-                            onIdentityChange: () => _correctComponent(i),
-                            onGramsChanged: (g) {
-                              setState(() {
-                                _componentGrams![i] = g;
-                                _scanGrams = _componentGrams!.fold(
-                                  0.0,
-                                  (a, b) => a + b,
-                                );
-                              });
-                            },
-                          );
-                        }),
-                      ] else if (components.isNotEmpty) ...[
-                        const SizedBox(height: 18),
-                        Text(
-                          t.ingredientBreakdown,
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w900,
-                            letterSpacing: 1.2,
-                            color: isDark
-                                ? const Color(0xFF64748B)
-                                : const Color(0xFF94A3B8),
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        ...components.map(
-                          (c) => _buildComponentRow(
-                            c,
-                            state.lang,
-                            (c['grams'] as num?)?.toDouble() ?? 100,
-                            isDark,
-                            t,
-                          ),
-                        ),
-                      ],
-                      if (!hasComponents) ...[
-                        TextButton.icon(
-                          onPressed: () => _correctComponent(null),
-                          icon: const Icon(Icons.edit_outlined),
-                          label: Text(
-                            state.lang == 'ar'
-                                ? 'تصحيح الطعام'
-                                : state.lang == 'ku'
-                                ? 'ڕاستکردنەوەی خواردن'
-                                : 'Correct food',
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-                        _buildPortionAdjuster(t, isDark),
-                      ],
-                      const SizedBox(height: 16),
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton.icon(
-                          onPressed: () async {
-                            if (!await confirmAiEstimate(
-                                  context,
-                                  state,
-                                  details:
-                                      '$dishName\n${displayGrams.round()} ${t.grams}',
-                                ) ||
-                                !mounted) {
-                              return;
-                            }
-                            final saved = await state.addLogEntry(
-                              LogEntry(
-                                id: DateTime.now().millisecondsSinceEpoch
-                                    .toString(),
-                                catalogComponents: [
-                                  for (var i = 0; i < components.length; i++)
-                                    {
-                                      'id':
-                                          components[i]['foodId'] ??
-                                          components[i]['id'],
-                                      'amount':
-                                          _componentGrams?[i] ??
-                                          components[i]['grams'],
-                                    },
-                                ],
-                                foodId:
-                                    'scanned-${stableName.isNotEmpty ? stableName : dishName}',
-                                name: dishName.isNotEmpty
-                                    ? dishName
-                                    : t.unknownFood,
-                                amount: displayGrams,
-                                calories: calScaled,
-                                protein: proScaled,
-                                carbs: carbScaled,
-                                fat: fatScaled,
-                                timestamp:
-                                    DateTime.now().millisecondsSinceEpoch,
-                                micros: scaledAiScanMicros(
-                                  scan,
-                                  displayGrams,
-                                  hasComponents ? _componentGrams : null,
-                                ),
-                              ),
-                            );
-                            if (!mounted || !saved) return;
-                            setState(() {
-                              _scannedFood = null;
-                              _componentGrams = null;
-                            });
-                            state.setActiveTab(MainShellTab.foodLog);
-                          },
-                          icon: const Icon(Icons.add, size: 20),
-                          label: Text(
-                            '${t.logAsEaten} · ${displayGrams.round()} ${t.grams}',
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              },
+            OutlinedButton.icon(
+              key: const ValueKey('review-scan-result'),
+              onPressed: _reviewScan,
+              icon: const Icon(Icons.edit_note),
+              label: Text(ScanResultStrings(state.lang).title),
             ),
           const SizedBox(height: 24),
 
@@ -1434,327 +1008,6 @@ class _ScannerScreenState extends State<ScannerScreen> {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildPortionAdjuster(dynamic t, bool isDark) {
-    final clamped = _scanGrams.clamp(10.0, 1000.0);
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: isDark
-            ? const Color(0xFF1E293B).withValues(alpha: 0.4)
-            : const Color(0xFFF8FAFC),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                t.barcodeAmountLabel,
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
-                  color: isDark
-                      ? const Color(0xFFCBD5E1)
-                      : const Color(0xFF475569),
-                ),
-              ),
-              Text(
-                '${_scanGrams.round()} ${t.grams}',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w900,
-                  color: AppTheme.indigo,
-                ),
-              ),
-            ],
-          ),
-          Row(
-            children: [
-              _portionStepButton(Icons.remove, () {
-                setState(
-                  () => _scanGrams = (_scanGrams - 10).clamp(10.0, 1000.0),
-                );
-              }, isDark),
-              Expanded(
-                child: Slider(
-                  value: clamped.toDouble(),
-                  min: 10,
-                  max: 1000,
-                  divisions: 99,
-                  onChanged: (v) =>
-                      setState(() => _scanGrams = v.roundToDouble()),
-                ),
-              ),
-              _portionStepButton(Icons.add, () {
-                setState(
-                  () => _scanGrams = (_scanGrams + 10).clamp(10.0, 1000.0),
-                );
-              }, isDark),
-            ],
-          ),
-          Wrap(
-            spacing: 8,
-            children: [50, 100, 150, 200, 300].map((g) {
-              final active = _scanGrams.round() == g;
-              return GestureDetector(
-                onTap: () => setState(() => _scanGrams = g.toDouble()),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: active
-                        ? AppTheme.indigo
-                        : (isDark ? const Color(0xFF0F172A) : Colors.white),
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(
-                      color: active
-                          ? AppTheme.indigo
-                          : (isDark
-                                ? const Color(0xFF334155)
-                                : const Color(0xFFE2E8F0)),
-                    ),
-                  ),
-                  child: Text(
-                    '$g${t.grams}',
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                      color: active
-                          ? Colors.white
-                          : (isDark
-                                ? const Color(0xFFCBD5E1)
-                                : const Color(0xFF475569)),
-                    ),
-                  ),
-                ),
-              );
-            }).toList(),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _portionStepButton(IconData icon, VoidCallback onTap, bool isDark) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(10),
-      child: Container(
-        width: 34,
-        height: 34,
-        decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF0F172A) : Colors.white,
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(
-            color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
-          ),
-        ),
-        child: Icon(icon, size: 18, color: AppTheme.indigo),
-      ),
-    );
-  }
-
-  Widget _buildMacroGrid({
-    required dynamic t,
-    required bool isDark,
-    required int calories,
-    required int protein,
-    required int carbs,
-    required int fat,
-  }) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final twoCol = constraints.maxWidth < 360;
-        final children = [
-          _scanStat(t.calories, calories, AppTheme.indigo, isDark),
-          _scanStat(t.protein, protein, AppTheme.rose, isDark),
-          _scanStat(t.carbs, carbs, AppTheme.amber, isDark),
-          _scanStat(t.fat, fat, AppTheme.emerald, isDark),
-        ];
-        if (!twoCol) {
-          return Row(
-            children: [
-              children[0],
-              const SizedBox(width: 8),
-              children[1],
-              const SizedBox(width: 8),
-              children[2],
-              const SizedBox(width: 8),
-              children[3],
-            ],
-          );
-        }
-        return Column(
-          children: [
-            Row(children: [children[0], const SizedBox(width: 8), children[1]]),
-            const SizedBox(height: 8),
-            Row(children: [children[2], const SizedBox(width: 8), children[3]]),
-          ],
-        );
-      },
-    );
-  }
-
-  Widget _buildComponentRow(
-    Map<String, dynamic> component,
-    String lang,
-    double userGrams,
-    bool isDark,
-    dynamic t, {
-    void Function(double grams)? onGramsChanged,
-    VoidCallback? onIdentityChange,
-  }) {
-    final name = trilingualString(
-      component,
-      mapKey: 'names',
-      legacyKey: 'name',
-      lang: lang,
-    );
-    final m = _scaledComponentMacros(component, userGrams);
-    final cal = m.cal;
-    final pro = m.pro;
-    final carb = m.carb;
-    final fat = m.fat;
-    final clamped = userGrams.clamp(5.0, 2000.0);
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      decoration: BoxDecoration(
-        color: isDark
-            ? const Color(0xFF1E293B).withValues(alpha: 0.45)
-            : const Color(0xFFF8FAFC),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            name.isNotEmpty ? name : t.unknownFood,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w700,
-              color: isDark ? Colors.white : const Color(0xFF1E293B),
-            ),
-          ),
-          if (onIdentityChange != null)
-            TextButton.icon(
-              onPressed: onIdentityChange,
-              icon: const Icon(Icons.edit_outlined, size: 18),
-              label: Text(
-                lang == 'ar'
-                    ? 'تصحيح الطعام'
-                    : lang == 'ku'
-                    ? 'ڕاستکردنەوەی خواردن'
-                    : 'Correct food',
-              ),
-            ),
-          if (onGramsChanged != null) ...[
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                _portionStepButton(Icons.remove, () {
-                  onGramsChanged((userGrams - 10).clamp(5.0, 2000.0));
-                }, isDark),
-                Expanded(
-                  child: Slider(
-                    value: clamped,
-                    min: 5,
-                    max: 2000,
-                    divisions: 399,
-                    label: '${userGrams.round()} ${t.grams}',
-                    onChanged: (v) => onGramsChanged(v.roundToDouble()),
-                  ),
-                ),
-                _portionStepButton(Icons.add, () {
-                  onGramsChanged((userGrams + 10).clamp(5.0, 2000.0));
-                }, isDark),
-                const SizedBox(width: 6),
-                Text(
-                  '${userGrams.round()} ${t.grams}',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w800,
-                    color: AppTheme.indigo,
-                  ),
-                ),
-              ],
-            ),
-          ] else if (userGrams > 0) ...[
-            const SizedBox(height: 4),
-            Text(
-              '${userGrams.round()} ${t.grams}',
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w600,
-                color: isDark
-                    ? const Color(0xFF94A3B8)
-                    : const Color(0xFF64748B),
-              ),
-            ),
-          ],
-          const SizedBox(height: 6),
-          Wrap(
-            spacing: 8,
-            runSpacing: 4,
-            children: [
-              _componentMacroChip(
-                '${cal.round()} ${t.kcal}',
-                AppTheme.indigo,
-                isDark,
-              ),
-              _componentMacroChip(
-                '${t.protein} ${pro.round()}g',
-                AppTheme.rose,
-                isDark,
-              ),
-              _componentMacroChip(
-                '${t.carbs} ${carb.round()}g',
-                AppTheme.amber,
-                isDark,
-              ),
-              _componentMacroChip(
-                '${t.fat} ${fat.round()}g',
-                AppTheme.emerald,
-                isDark,
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _componentMacroChip(String label, Color color, bool isDark) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: isDark ? 0.14 : 0.1),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          fontSize: 10,
-          fontWeight: FontWeight.w700,
-          color: color,
-        ),
       ),
     );
   }

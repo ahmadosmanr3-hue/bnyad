@@ -23,7 +23,7 @@ class PortionEditor extends StatefulWidget {
 
 class _PortionEditorState extends State<PortionEditor> {
   late final TextEditingController weight = TextEditingController(
-    text: format(widget.amount),
+    text: widget.amount > 0 ? format(widget.amount) : '',
   );
   final count = TextEditingController(text: '1');
   String unit = 'base';

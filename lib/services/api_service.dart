@@ -97,6 +97,9 @@ class ApiService implements FavoritesApi {
       final body = jsonDecode(response.body) as Map<String, dynamic>;
       if (response.statusCode == 200 && body['data'] is Map<String, dynamic>) {
         final data = body['data'] as Map<String, dynamic>;
+        if (operation == 'food' && body['simulated'] == true) {
+          data['simulated'] = true;
+        }
         if (operation == 'shopping') {
           // Keep trilingual maps intact; the view chooses the current locale.
           return data;
@@ -683,6 +686,39 @@ class ApiService implements FavoritesApi {
       }
     } catch (e) {
       debugPrint('addFoodLog error: $e');
+    }
+    return null;
+  }
+
+  String? scanSaveError;
+  Future<List<LogEntry>?> addReviewedScan(Map<String, dynamic> body) async {
+    scanSaveError = null;
+    final owner = _token;
+    if (owner == null) {
+      scanSaveError = 'authentication';
+      return null;
+    }
+    try {
+      final response = await _http.post(
+        Uri.parse('$baseUrl/logs/scan'),
+        headers: _headers,
+        body: jsonEncode(body),
+      );
+      if (_token != owner) return null;
+      if (response.statusCode == 201) {
+        final rows = (jsonDecode(response.body) as Map)['data'] as List;
+        return rows.map((raw) {
+          final row = Map<String, dynamic>.from(raw);
+          return LogEntry.fromMap(row['id'].toString(), row);
+        }).toList();
+      }
+      scanSaveError = response.statusCode == 409
+          ? 'catalog_changed'
+          : response.statusCode == 401
+          ? 'authentication'
+          : 'validation';
+    } catch (_) {
+      scanSaveError = 'network';
     }
     return null;
   }
