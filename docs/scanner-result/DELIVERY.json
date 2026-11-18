@@ -1,0 +1,67 @@
+{
+  "version": "1.0.9",
+  "build": 25,
+  "mainSourceCommit": "4294adefd0a512cf26872780454bbf4540b62184",
+  "backendHead": "3b1f37543174baf78232f8eb3427ec9da4d542ac",
+  "backendRuntimeCommit": "85ea8e282bbb5b90cada194e99ff3b1679301958",
+  "branch": "codex/bnyad-food-system-phase-2",
+  "deployment": {
+    "id": "dpl_H8gU3cazoVogFTaY65QzeLkt1wNx",
+    "status": "READY",
+    "productionUrl": "https://nutrify-api-lovat.vercel.app",
+    "catalogRecords": 942,
+    "catalogRevision": 3,
+    "catalogUnchanged": true
+  },
+  "tests": {
+    "flutter": 521,
+    "backend": 232,
+    "flutterAnalyze": "PASS",
+    "backendTypecheck": "PASS",
+    "backendProductionBuild": "PASS",
+    "isolatedPostgreSQL": "PASS",
+    "androidPhoneNative": "PASS",
+    "androidTabletNative": "PASS",
+    "iOSPhoneNative": "PASS",
+    "androidCorrections": "PASS",
+    "smallIPhoneCorrections": "PASS",
+    "nativeScreenshotsCaptured": 91
+  },
+  "gemini": {
+    "newGoogleAttempts": 0,
+    "developmentLedgerCount": 21,
+    "liveAccuracyVerified": false
+  },
+  "storeStatus": {
+    "android": "Prepared signed AAB; not uploaded/submitted",
+    "iOS": "Prepared signed App Store IPA; not uploaded/submitted"
+  },
+  "artifacts": [
+    {
+      "file": "build/release-1.0.9/BNYAD-1.0.9-25.aab",
+      "package": "com.bnyad.app",
+      "bytes": 75164502,
+      "sha256": "10a607cf86ee05a7fc2bcc1de577dcab41da74753bd3d3909685b390b5f42096",
+      "signatureVerified": true
+    },
+    {
+      "file": "build/release-1.0.9/BNYAD-1.0.9-25.ipa",
+      "package": "com.nutrify.bnyad",
+      "bytes": 30539915,
+      "sha256": "cb1c4796e38b2bab8139ed78b8f3da874a4533fbe7bb802e54917dec23c4ddd2",
+      "signatureVerified": true
+    }
+  ],
+  "limitations": [
+    "No new real Gemini accuracy evaluation",
+    "No new physical-device checks",
+    "iPhone-only official iOS support unchanged",
+    "Unsaved scan drafts do not survive app termination; confirmed diary entries do",
+    "Legacy custom log endpoint retained for older clients; new scanner uses strict authoritative endpoint"
+  ],
+  "setup": {
+    "newEnvironmentVariables": [],
+    "newDependencies": [],
+    "databaseMigrations": false
+  }
+}

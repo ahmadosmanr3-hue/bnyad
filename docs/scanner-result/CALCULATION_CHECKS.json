@@ -1,0 +1,140 @@
+[
+  {
+    "case": "pomegranate",
+    "items": [
+      {
+        "id": "f8",
+        "name": "Pomegranate",
+        "amount": 150,
+        "unit": "g",
+        "referenceAmount": 100.0,
+        "nutrition": {
+          "calories": 124.5,
+          "protein": 2.55,
+          "carbs": 28.5,
+          "fat": 1.8
+        }
+      }
+    ],
+    "totals": {
+      "calories": 124.5,
+      "protein": 2.55,
+      "carbs": 28.5,
+      "fat": 1.8
+    },
+    "basis": "Current bundled catalog estimates; not live photo recognition."
+  },
+  {
+    "case": "rice-chicken",
+    "items": [
+      {
+        "id": "g2",
+        "name": "White Rice",
+        "amount": 200,
+        "unit": "g",
+        "referenceAmount": 100.0,
+        "nutrition": {
+          "calories": 260.0,
+          "protein": 5.4,
+          "carbs": 56.0,
+          "fat": 0.6
+        }
+      },
+      {
+        "id": "p1",
+        "name": "Grilled Chicken Breast",
+        "amount": 100,
+        "unit": "g",
+        "referenceAmount": 100.0,
+        "nutrition": {
+          "calories": 165.0,
+          "protein": 31.0,
+          "carbs": 0.0,
+          "fat": 3.6
+        }
+      }
+    ],
+    "totals": {
+      "calories": 425.0,
+      "protein": 36.4,
+      "carbs": 56.0,
+      "fat": 4.2
+    },
+    "basis": "Current bundled catalog estimates; not live photo recognition."
+  },
+  {
+    "case": "biryani",
+    "items": [
+      {
+        "id": "k2_chicken",
+        "name": "Kurdish Biryani with Chicken",
+        "amount": 200,
+        "unit": "g",
+        "referenceAmount": 100.0,
+        "nutrition": {
+          "calories": 396.0,
+          "protein": 26.0,
+          "carbs": 56.0,
+          "fat": 11.0
+        }
+      }
+    ],
+    "totals": {
+      "calories": 396.0,
+      "protein": 26.0,
+      "carbs": 56.0,
+      "fat": 11.0
+    },
+    "basis": "Current bundled catalog estimates; not live photo recognition."
+  },
+  {
+    "case": "dolma",
+    "items": [
+      {
+        "id": "k1",
+        "name": "Dolma (Kurdish)",
+        "amount": 250,
+        "unit": "g",
+        "referenceAmount": 100.0,
+        "nutrition": {
+          "calories": 375.0,
+          "protein": 12.5,
+          "carbs": 55.0,
+          "fat": 15.0
+        }
+      }
+    ],
+    "totals": {
+      "calories": 375.0,
+      "protein": 12.5,
+      "carbs": 55.0,
+      "fat": 15.0
+    },
+    "basis": "Current bundled catalog estimates; not live photo recognition."
+  },
+  {
+    "case": "drink",
+    "items": [
+      {
+        "id": "usda_sr_171265",
+        "name": "Whole milk, 3.25% fat",
+        "amount": 330,
+        "unit": "ml",
+        "referenceAmount": 100,
+        "nutrition": {
+          "calories": 207.6063,
+          "protein": 10.720709999999999,
+          "carbs": 16.33632,
+          "fat": 11.06094
+        }
+      }
+    ],
+    "totals": {
+      "calories": 207.6063,
+      "protein": 10.720709999999999,
+      "carbs": 16.33632,
+      "fat": 11.06094
+    },
+    "basis": "Current bundled catalog estimates; not live photo recognition."
+  }
+]

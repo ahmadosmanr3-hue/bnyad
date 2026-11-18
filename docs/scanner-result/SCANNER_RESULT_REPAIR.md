@@ -34,6 +34,8 @@ Dashboard, navigation, theme, calorie targets, HealthKit/Health Connect, purchas
 
 Production deployment: `dpl_H8gU3cazoVogFTaY65QzeLkt1wNx`, tested source commit `85ea8e282bbb5b90cada194e99ff3b1679301958` on `codex/bnyad-food-system-phase-2`.
 
+Backend repository head: `3b1f37543174baf78232f8eb3427ec9da4d542ac`; changes after the runtime commit only strengthen local verification and document rollout. Mobile build source: `4294adefd0a512cf26872780454bbf4540b62184`.
+
 Existing endpoint: https://nutrify-api-lovat.vercel.app/api . Deployment is READY and the production alias points to it. Read-only checks pass: `/up` 200; `/catalog` 200; anonymous `/auth/me`, `/logs`, `/logs/scan` and `/ai/generate` 401; development readiness 404. The full public catalog is byte-for-byte equivalent as parsed JSON before/after: **942 foods, revision 3**. No production test meal or account was created. Historical preservation is exercised on local fixtures; private production histories were not downloaded.
 
 Rollback baseline: `dpl_DTKNnj3i1oCnJx2JTpvVJJbjSfyt`. No migration needs reversing. Old clients remain compatible; the old result UI requires a mobile update to change.
@@ -50,11 +52,15 @@ Actual native UI with explicitly simulated recognition data:
 - [Small iPhone corrected components](screenshots/ios-small-sorani-corrected.png)
 - [Small iPhone visible save error](screenshots/ios-small-sorani-save-error.png)
 
-Full captured evidence remains in ignored `build/scanner-result-evidence/`. No user photos or account credentials are included.
+All **91** captured native screenshots remain in ignored `build/scanner-result-evidence/`. No user photos or account credentials are included.
+
+## Calculation evidence
+
+[CALCULATION_CHECKS.json](CALCULATION_CHECKS.json) records unrounded catalog calculations, including 150 g pomegranate = 124.5 kcal; 200 g rice plus 100 g chicken = 425 kcal; 200 g chicken biryani = 396 kcal; and 250 g dolma = 375 kcal. These are catalog estimates, not newly measured nutritional truth or live recognition results.
 
 ## Release and limitations
 
-Prepared mobile version is **1.0.9 (25)**, using the existing production identifiers/signing. Signed package checks and exact source/artifact hashes are in DELIVERY.json when final packaging completes. **No mobile upload, review submission or public rollout was performed for this task.** The published baseline inspected before work was 1.0.8 (Android version code 24).
+Prepared mobile version is **1.0.9 (25)**, using the existing production identifiers/signing. Both signed release packages are prepared and validated. Android uses `com.bnyad.app`, version code 25, non-debuggable release settings and the existing verified upload certificate. The exported iOS IPA uses `com.nutrify.bnyad`, team `632WWWM8AH`, no debug entitlement, HealthKit and production APNs; camera/health explanations and production ATS remain present. Exact source/artifact hashes are in DELIVERY.json. **No mobile upload, review submission or public rollout was performed for this task.** The published baseline inspected before work was 1.0.8 (Android version code 24).
 
 No live Gemini request was made: recognition accuracy and the benefit of a second angle remain **unverified**. This fix makes uncertain results useful and safely editable; it does not claim better model accuracy. Real device camera/health, OTP, push and purchase/restore were not repeated on physical hardware in this task. Existing platform configuration is preserved. iOS remains officially iPhone-only; wider widget tests do not enable full iPad support. An unsaved scan is kept while navigating back to its review but is not persisted across an app termination; confirmed diary entries persist normally.
 
