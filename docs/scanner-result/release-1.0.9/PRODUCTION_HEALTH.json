@@ -1,0 +1,36 @@
+[
+  {
+    "route": "/api/up",
+    "status": 200
+  },
+  {
+    "route": "/api/catalog",
+    "status": 200
+  },
+  {
+    "route": "/api/auth/me",
+    "status": 401
+  },
+  {
+    "route": "/api/logs",
+    "status": 401
+  },
+  {
+    "route": "/api/logs/scan",
+    "status": 401,
+    "method": "POST"
+  },
+  {
+    "route": "/api/ai/generate",
+    "status": 401,
+    "method": "POST"
+  },
+  {
+    "route": "/api/local-development/readiness",
+    "status": 404
+  },
+  {
+    "catalogRecords": 942,
+    "catalogRevision": 3
+  }
+]

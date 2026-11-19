@@ -25,7 +25,8 @@
     "iOSPhoneNative": "PASS",
     "androidCorrections": "PASS",
     "smallIPhoneCorrections": "PASS",
-    "nativeScreenshotsCaptured": 91
+    "nativeScreenshotsCaptured": 91,
+    "androidExactSignedAabStartup": "PASS: build 25 installed over existing emulator package; welcome screen opens; no fatal or Flutter error lines"
   },
   "gemini": {
     "newGoogleAttempts": 0,
@@ -33,8 +34,8 @@
     "liveAccuracyVerified": false
   },
   "storeStatus": {
-    "android": "Prepared signed AAB; not uploaded/submitted",
-    "iOS": "Prepared signed App Store IPA; not uploaded/submitted"
+    "android": "Google Play production: Changes in review; 25 (1.0.9); quick checks complete; 100% rollout after approval; managed publishing off",
+    "iOS": "App Store: Waiting for Review; 1.0.9 (25); automatic release after approval"
   },
   "artifacts": [
     {
@@ -63,5 +64,14 @@
     "newEnvironmentVariables": [],
     "newDependencies": [],
     "databaseMigrations": false
+  },
+  "finalVerificationDate": "2026-11-19",
+  "storeSubmissionVerifiedAt": "2026-11-19T17:32:00+03:00",
+  "storeReceipts": {
+    "androidAppId": "4973400403852746672",
+    "androidReleaseId": "11",
+    "iOSAppId": "6781387722",
+    "iOSBuildId": "02d8daa0-aed0-4ead-a661-cf12a8ca23eb",
+    "publicAvailabilityConfirmed": false
   }
 }
